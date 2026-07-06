@@ -199,10 +199,10 @@ export default function PathSection() {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-16 md:h-screen">
         {/* Heading */}
         <div className="mb-8 text-center">
-          <h2 className="font-display text-[clamp(30px,4.5vw,56px)] leading-[1.3] text-ink">
+          <h2 className="font-display text-display-1 text-ink">
             من بلاغ… إلى طريقٍ مُصلَح
           </h2>
-          <p className="mt-3 text-[18px] text-subtext">
+          <p className="mt-3 text-body-2 text-subtext">
             رحلة واحدة، أربع محطات، مرئية للجميع.
           </p>
         </div>

@@ -1,31 +1,24 @@
 import type { Metadata } from "next";
-import { Almarai } from "next/font/google";
+import localFont from "next/font/local";
 import LenisProvider from "@/lib/lenis";
 import "./globals.css";
 
-const almarai = Almarai({
+/* Body — Almarai, local files (300/400/700/800) */
+const almarai = localFont({
   variable: "--font-almarai",
-  subsets: ["arabic"],
-  weight: ["400", "700", "800"],
+  src: [
+    { path: "./fonts/Almarai/Almarai-Light.ttf", weight: "300" },
+    { path: "./fonts/Almarai/Almarai-Regular.ttf", weight: "400" },
+    { path: "./fonts/Almarai/Almarai-Bold.ttf", weight: "700" },
+    { path: "./fonts/Almarai/Almarai-ExtraBold.ttf", weight: "800" },
+  ],
 });
 
-/*
- * TODO: asset — Rubbama display font files.
- * When the .woff2 files arrive, drop them in ./fonts and replace the
- * fallback below with:
- *
- *   import localFont from "next/font/local";
- *   const rubbama = localFont({
- *     variable: "--font-rubbama",
- *     src: [
- *       { path: "./fonts/Rubbama-Regular.woff2", weight: "400" },
- *       { path: "./fonts/Rubbama-Bold.woff2", weight: "700" },
- *     ],
- *   });
- *
- * …and add `rubbama.variable` to the <html> className. Until then,
- * --font-rubbama resolves to Almarai 800 (the specified fallback).
- */
+/* Display — Rubbama (single Black cut, declared as the regular weight) */
+const rubbama = localFont({
+  variable: "--font-rubbama",
+  src: [{ path: "./fonts/Rubbama/KORubbama-Black.ttf", weight: "400" }],
+});
 
 export const metadata: Metadata = {
   title: "مسار — بلاغٌ واحد، طريقٌ واحد، حلقةٌ تُغلق",
@@ -40,8 +33,10 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${almarai.variable} antialiased`}
-      style={{ ["--font-rubbama" as string]: "var(--font-almarai)" }}
+      className={`${almarai.variable} ${rubbama.variable} antialiased`}
+      /* browser extensions / Chrome auto-translate mutate <html> attrs
+         before hydration on Arabic pages — tolerate that noise */
+      suppressHydrationWarning
     >
       <body>
         <LenisProvider>{children}</LenisProvider>

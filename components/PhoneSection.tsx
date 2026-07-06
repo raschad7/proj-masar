@@ -10,47 +10,76 @@ import {
 import { gsap, useGSAP } from "@/lib/gsap";
 import CityMapBg from "@/components/CityMapBg";
 
-/* ── Tuning constants ────────────────────────────────────────────
-   PIN_DISTANCE : scroll consumed by the pinned 3-stage journey
-   TRAVEL_X     : how far the phone slides off-center (vw)
-   Timeline map : stage holds at 0 / 1 / 2, crossings between.      */
-const PIN_DISTANCE = "+=250%";
+/* ── Tuning constants (all pacing in vh of scroll) ───────────────
+   The section = intro viewport (phone center, header above) + 3 tall
+   role rows. The phone travels center → right → left → right.
+   ROW_VH   : height of each role row — taller = slower journey
+   CROSS_VH : scroll consumed by each crossing
+   TRAVEL_X : how far the phone parks off-center (vw)                */
+const INTRO_VH = 100;
+const ROW_VH = 170;
+const CROSS_VH = 80;
 const TRAVEL_X = 24;
-const CROSS = { start1: 0.45, start2: 1.45, dur: 0.55 };
+
+/* crossing i (1..3) ends exactly when row i is centered in view */
+const crossEnd = (i: number) => INTRO_VH + (i - 1) * ROW_VH + ROW_VH / 2 - 50;
+const TOTAL_VH = INTRO_VH + 3 * ROW_VH - 100;
+
+const CROSSINGS = [1, 2, 3].map((i) => ({
+  at: crossEnd(i) - CROSS_VH,
+  from: i - 1,
+  to: i,
+  x: i === 2 ? -TRAVEL_X : TRAVEL_X, //  right → left → right
+  tilt: i === 2 ? 5 : -5,
+}));
 
 const ROLES = [
   {
     title: "المُبلِّغ / الماسح",
     hex: "#0072DA",
     glass: "rgba(0, 114, 218, 0.10)",
-    side: "left" as const, // card LEFT, phone RIGHT
+    side: "left" as const, // phone RIGHT → copy LEFT
+    char: "/chars/TheScanner.svg",
     copy: "المواطن أو الفريق الميداني يلتقط الطريق، فيصنّف مسار الضرر تلقائياً ويحدّد موقعه وخطورته.",
   },
   {
     title: "المشرف / الموزّع",
     hex: "#FFAB00",
     glass: "rgba(255, 171, 0, 0.12)",
-    side: "right" as const, // card RIGHT, phone LEFT
+    side: "right" as const, // phone LEFT → copy RIGHT
+    char: "/chars/TheSupervisor.svg",
     copy: "يرى كل البلاغات على الخريطة، يرتّبها بالأولوية حسب الخطورة والموقع، ويوزّع الفرق.",
   },
   {
     title: "فريق الإصلاح",
     hex: "#16668E",
     glass: "rgba(22, 102, 142, 0.10)",
-    side: "left" as const, // card LEFT, phone RIGHT
+    side: "left" as const, // phone RIGHT → copy LEFT
+    char: "/chars/TheFixer.svg",
     copy: "يستقبل المهام، يُنجز على الأرض، ويوثّق بالصورة حتى إغلاق البلاغ.",
   },
 ];
 
-/* ── Phone screen mocks — accent color matches the active role ── */
+/* ── Phone screens ─────────────────────────────────────────────── */
+
+function BrandScreen() {
+  return (
+    <div className="relative flex h-full flex-col items-center justify-center gap-3 bg-whitesmoke">
+      <CityMapBg className="opacity-30" fade={false} />
+      <span className="relative h-4 w-4 rounded-full bg-peacock" />
+      <span className="font-display relative text-[26px] text-ink">مسار</span>
+      <span className="relative text-[10px] text-subtext">
+        بلاغٌ واحد، طريقٌ واحد
+      </span>
+    </div>
+  );
+}
 
 function ScannerScreen() {
   return (
     <div className="flex h-full flex-col bg-[#20242A] p-3">
       <div className="relative flex-1 overflow-hidden rounded-2xl bg-[#3A4048]">
-        {/* road illusion */}
         <div className="absolute inset-x-6 bottom-0 top-1/3 rounded-t-[60px] bg-[#4A5058]" />
-        {/* auto-detection box */}
         <div
           className="absolute left-1/2 top-1/2 h-16 w-24 -translate-x-1/2 -translate-y-1/2 rounded-lg"
           style={{ boxShadow: "inset 0 0 0 3px #0072DA" }}
@@ -73,7 +102,7 @@ function DispatcherScreen() {
   return (
     <div className="flex h-full flex-col gap-2 bg-whitesmoke p-3">
       <div className="relative h-[45%] overflow-hidden rounded-2xl bg-seashell">
-        {/* map pins */}
+        <Map24Filled className="absolute bottom-2 left-2 text-mutedtext" />
         <span className="absolute right-[20%] top-[30%] h-3 w-3 rounded-full bg-informative" />
         <span className="absolute right-[55%] top-[55%] h-3 w-3 rounded-full bg-notice" />
         <span className="absolute right-[70%] top-[25%] h-3 w-3 rounded-full bg-negative" />
@@ -127,32 +156,57 @@ function CrewScreen() {
   );
 }
 
-const SCREENS = [ScannerScreen, DispatcherScreen, CrewScreen];
+/* Screen 0 is the brand/idle screen shown while the phone is centered */
+const SCREENS = [BrandScreen, ScannerScreen, DispatcherScreen, CrewScreen];
 
 function RoleCard({ role, index }: { role: (typeof ROLES)[number]; index: number }) {
-  return (
+  const char = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={role.char}
+      alt=""
+      aria-hidden
+      className="role-char w-[140px] shrink-0 md:w-[280px]"
+    />
+  );
+  const card = (
     <div
-      className={`role-card role-card-${index} relative p-8 backdrop-blur-md`}
+      className="flex flex-1 flex-col justify-center p-8 backdrop-blur-md md:min-h-[360px] md:p-12"
       style={{
         borderRadius: "var(--radius-card)",
         background: role.glass,
         boxShadow: "var(--shadow-soft)",
       }}
     >
-      <h3 className="text-[28px] font-extrabold" style={{ color: role.hex }}>
+      <h3 className="text-display-3 font-display" style={{ color: role.hex }}>
         {role.title}
       </h3>
-      <p className="mt-4 text-[18px] leading-relaxed text-ink">{role.copy}</p>
-      {/* TODO: asset — character illustration peeking from the card edge */}
-      <div
-        aria-hidden
-        className="absolute -bottom-6 flex h-20 w-20 items-center justify-center rounded-full text-[10px] font-bold text-white"
-        style={{
-          background: role.hex,
-          [role.side === "left" ? "left" : "right"]: "-1.5rem",
-        }}
-      >
-        شخصية
+      <p className="mt-6 text-[21px] leading-relaxed text-ink">{role.copy}</p>
+    </div>
+  );
+  /* The character stands beside the card on its OUTER edge (away from
+     the phone). RTL flex renders the first child on the right. */
+  return (
+    <div className={`role-card role-card-${index} flex items-end gap-3`}>
+      {role.side === "right" ? char : card}
+      {role.side === "right" ? card : char}
+    </div>
+  );
+}
+
+function PhoneShell() {
+  return (
+    <div
+      className="aspect-[236/480] h-[min(480px,62vh)] rounded-[36px] bg-white p-3"
+      style={{ boxShadow: "var(--shadow-lift)" }}
+    >
+      <div className="relative h-full w-full overflow-hidden rounded-[26px] bg-whitesmoke">
+        {SCREENS.map((Screen, i) => (
+          <div key={i} className={`phone-screen-${i} absolute inset-0`}>
+            <Screen />
+          </div>
+        ))}
+        <span className="absolute left-1/2 top-2 h-1.5 w-16 -translate-x-1/2 rounded-full bg-seashell" />
       </div>
     </div>
   );
@@ -168,10 +222,10 @@ export default function PhoneSection() {
       mm.add(
         "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
         () => {
-          /* Entry hand-off: the phone peeks up from Section 2's tail and
-             settles as this section scrolls in (pre-pin scrub). */
+          /* Entry hand-off: the phone peeks over the tail of The Path
+             and settles into the center of this section (pre-sticky). */
           gsap.from(".phone-rise", {
-            yPercent: 55,
+            y: "45vh",
             ease: "none",
             scrollTrigger: {
               trigger: root.current,
@@ -181,78 +235,89 @@ export default function PhoneSection() {
             },
           });
 
-          /* Initial stage-1 state */
-          gsap.set(".phone-travel", { x: `${TRAVEL_X}vw` });
-          gsap.set(".role-card-1, .role-card-2", { opacity: 0 });
-          gsap.set(".phone-screen-1, .phone-screen-2", { yPercent: 100 });
+          /* Initial: brand screen showing, phone parked center, a touch
+             low so the header owns the top of the intro viewport. */
+          gsap.set(".phone-screen-1, .phone-screen-2, .phone-screen-3", {
+            yPercent: 100,
+          });
+          gsap.set(".phone-center", { y: "7vh" });
 
-          /* Master timeline — pinned, scrubbed across the 3 stages.
-             Stage holds: 0–0.45, 1.0–1.45, 2.0–end. */
+          /* Master timeline — scrubbed across the whole section
+             (sticky stage does the pinning natively). All positions
+             and durations are in vh of scroll: the timeline's total
+             duration equals TOTAL_VH so 1 unit = 1vh, keeping the
+             choreography aligned with the tall rows. */
           const tl = gsap.timeline({
             scrollTrigger: {
               trigger: root.current,
-              pin: true,
-              scrub: true,
               start: "top top",
-              end: PIN_DISTANCE,
+              end: "bottom bottom",
+              scrub: true,
               invalidateOnRefresh: true,
             },
           });
 
-          const crossings: Array<{ at: number; from: number; to: number; x: number; tilt: number }> = [
-            { at: CROSS.start1, from: 0, to: 1, x: -TRAVEL_X, tilt: -6 },
-            { at: CROSS.start2, from: 1, to: 2, x: TRAVEL_X, tilt: 6 },
-          ];
+          /* Header hands the stage to the journey */
+          tl.to(
+            ".roles-header",
+            { opacity: 0, y: -48, duration: 30, ease: "power2.in" },
+            CROSSINGS[0].at - 20
+          );
+          tl.to(
+            ".phone-center",
+            { y: 0, duration: CROSS_VH, ease: "power2.inOut" },
+            CROSSINGS[0].at
+          );
 
-          crossings.forEach(({ at, from, to, x, tilt }) => {
-            // phone slides across with a subtle tilt that settles upright
+          /* Crossings: slow, smooth slides with a settling tilt +
+             synchronized vertical screen swap mid-flight. */
+          CROSSINGS.forEach(({ at, from, to, x, tilt }) => {
             tl.to(
               ".phone-travel",
-              { x: `${x}vw`, duration: CROSS.dur, ease: "power3.inOut" },
+              { x: `${x}vw`, duration: CROSS_VH, ease: "power2.inOut" },
               at
             );
-            tl.to(".phone-tilt", { rotation: tilt, duration: 0.2, ease: "power2.out" }, at);
             tl.to(
               ".phone-tilt",
-              { rotation: 0, duration: 0.3, ease: "power3.out" },
-              at + CROSS.dur - 0.25
+              { rotation: tilt, duration: CROSS_VH * 0.35, ease: "power2.out" },
+              at
             );
-
-            // old card slides toward its side and fades
             tl.to(
-              `.role-card-${from}`,
-              {
-                opacity: 0,
-                x: ROLES[from].side === "left" ? -48 : 48,
-                duration: 0.22,
-                ease: "power2.in",
-              },
-              at - 0.03
+              ".phone-tilt",
+              { rotation: 0, duration: CROSS_VH * 0.45, ease: "power3.out" },
+              at + CROSS_VH * 0.55
             );
-
-            // screen swap mid-crossing: old slides up/out, new in from below
             tl.to(
               `.phone-screen-${from}`,
-              { yPercent: -100, duration: 0.2, ease: "power2.in" },
-              at + 0.16
+              { yPercent: -100, duration: CROSS_VH * 0.28, ease: "power2.in" },
+              at + CROSS_VH * 0.3
             );
             tl.to(
               `.phone-screen-${to}`,
-              { yPercent: 0, duration: 0.22, ease: "power3.out" },
-              at + 0.3
-            );
-
-            // new card fades in, scales up, lifts
-            tl.fromTo(
-              `.role-card-${to}`,
-              { opacity: 0, scale: 0.94, x: ROLES[to].side === "left" ? -48 : 48 },
-              { opacity: 1, scale: 1, x: 0, duration: 0.3, ease: "power3.out" },
-              at + CROSS.dur - 0.1
+              { yPercent: 0, duration: CROSS_VH * 0.3, ease: "power3.out" },
+              at + CROSS_VH * 0.52
             );
           });
 
-          // settle hold on stage 3 before unpin
-          tl.to({}, { duration: 0.3 });
+          /* pad the timeline out to the full scroll span */
+          tl.to({}, { duration: Math.max(0.001, TOTAL_VH - crossEnd(3)) });
+
+          /* Role copy reveals — driven by each row entering the
+             viewport (independent of the phone timeline). */
+          gsap.utils.toArray<HTMLElement>(".role-row").forEach((row, i) => {
+            gsap.from(row.querySelector(".role-card"), {
+              opacity: 0,
+              y: 70,
+              scale: 0.96,
+              duration: 0.8,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: row,
+                start: "top 45%",
+                toggleActions: "play none none reverse",
+              },
+            });
+          });
         }
       );
     },
@@ -260,78 +325,78 @@ export default function PhoneSection() {
   );
 
   return (
-    <section ref={root} id="roles" className="relative overflow-hidden bg-white">
-      <CityMapBg className="opacity-40" />
+    <section ref={root} id="roles" className="relative bg-white">
+      {/* ── Desktop: sticky phone stage + 3 scroll rows ── */}
+      <div className="roles-desktop hidden md:block">
+        {/* Sticky stage — pins the phone for the whole journey */}
+        <div className="pointer-events-none sticky top-0 z-20 h-screen">
+          <CityMapBg className="opacity-40" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-16 md:h-screen">
-        {/* Heading */}
-        <div className="mb-8 text-center">
-          <h2 className="font-display text-[clamp(30px,4.5vw,56px)] leading-[1.3] text-ink">
-            ثلاثة أدوار، لوحة واحدة
-          </h2>
-          <p className="mt-3 text-[18px] text-subtext">
-            من يلتقط، من يوزّع، من يُصلح — كلهم على مسار واحد.
-          </p>
-        </div>
+          {/* Header above the centered phone (intro state) */}
+          <div className="roles-header relative z-10 pt-28 text-center">
+            <h2 className="font-display text-display-1 text-ink">
+              ثلاثة أدوار، لوحة واحدة
+            </h2>
+            <p className="mt-3 text-body-2 text-subtext">
+              من يلتقط، من يوزّع، من يُصلح — كلهم على مسار واحد.
+            </p>
+          </div>
 
-        {/* ── Desktop animated stage ── */}
-        <div className="roles-desktop relative hidden flex-1 md:block">
-          {/* the constant traveler */}
-          <div className="phone-rise absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
-            <div className="phone-travel">
-              <div className="phone-tilt">
-                <div
-                  className="aspect-[236/480] h-[min(480px,64vh)] rounded-[36px] bg-white p-3"
-                  style={{ boxShadow: "var(--shadow-lift)" }}
-                >
-                  <div className="relative h-full w-full overflow-hidden rounded-[26px] bg-whitesmoke">
-                    {SCREENS.map((Screen, i) => (
-                      <div
-                        key={i}
-                        className={`phone-screen-${i} absolute inset-0`}
-                      >
-                        <Screen />
-                      </div>
-                    ))}
-                    {/* notch */}
-                    <span className="absolute left-1/2 top-2 h-1.5 w-16 -translate-x-1/2 rounded-full bg-seashell" />
-                  </div>
+          {/* The traveler */}
+          <div className="phone-center absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
+            <div className="phone-rise">
+              <div className="phone-travel">
+                <div className="phone-tilt">
+                  <PhoneShell />
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* role cards — opposite side of the phone per stage */}
-          {ROLES.map((role, i) => (
+        {/* 3 role rows — the page scrolls, the phone appears to descend */}
+        {ROLES.map((role, i) => (
+          <div
+            key={i}
+            className="role-row relative z-30"
+            style={{ height: `${ROW_VH}vh` }}
+          >
             <div
-              key={i}
-              className="absolute top-1/2 z-10 w-[min(420px,36vw)] -translate-y-1/2"
-              style={role.side === "left" ? { left: "4vw" } : { right: "4vw" }}
+              className="absolute top-1/2 w-[min(820px,56vw)] -translate-y-1/2"
+              style={role.side === "left" ? { left: "2vw" } : { right: "2vw" }}
             >
               <RoleCard role={role} index={i} />
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
+      </div>
 
-        {/* ── Mobile / reduced-motion: static stack ── */}
-        <div className="roles-stack flex flex-col gap-10 md:hidden">
-          {ROLES.map((role, i) => {
-            const Screen = SCREENS[i];
-            return (
-              <div key={i} className="flex flex-col items-center gap-6">
-                <RoleCard role={role} index={i} />
-                <div
-                  className="h-[400px] w-[200px] rounded-[32px] bg-white p-2.5"
-                  style={{ boxShadow: "var(--shadow-soft)" }}
-                >
-                  <div className="h-full w-full overflow-hidden rounded-[24px]">
-                    <Screen />
-                  </div>
+      {/* ── Mobile / reduced-motion: static stack ── */}
+      <div className="roles-stack flex flex-col gap-12 px-6 py-16 md:hidden">
+        <div className="text-center">
+          <h2 className="font-display text-display-2 text-ink">
+            ثلاثة أدوار، لوحة واحدة
+          </h2>
+          <p className="mt-3 text-body-2 text-subtext">
+            من يلتقط، من يوزّع، من يُصلح — كلهم على مسار واحد.
+          </p>
+        </div>
+        {ROLES.map((role, i) => {
+          const Screen = SCREENS[i + 1]; // skip the brand screen
+          return (
+            <div key={i} className="flex flex-col items-center gap-8">
+              <RoleCard role={role} index={i} />
+              <div
+                className="h-[400px] w-[200px] rounded-[32px] bg-white p-2.5"
+                style={{ boxShadow: "var(--shadow-soft)" }}
+              >
+                <div className="h-full w-full overflow-hidden rounded-[24px]">
+                  <Screen />
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

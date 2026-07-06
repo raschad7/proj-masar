@@ -34,9 +34,9 @@ export default function Nav() {
     >
       <div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-6">
         {/* Brand — right side in RTL */}
-        <a href="#top" className="flex items-center gap-2">
-          {/* TODO: asset — replace dot + wordmark with the real logo */}
-          <span className="h-3 w-3 rounded-full bg-peacock" aria-hidden />
+        <a href="#top" className="flex items-center gap-2.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo/Logo 6.svg" alt="" className="h-9 w-9" aria-hidden />
           <span className="font-display text-2xl text-ink">مسار</span>
         </a>
 

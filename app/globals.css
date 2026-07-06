@@ -72,11 +72,53 @@ body {
   overflow-x: hidden;
 }
 
-/* Display headlines: Rubbama, fallback Almarai 800 */
+/* Display headlines: Rubbama (Black cut, declared 400), fallback Almarai */
 .font-display {
   font-family: var(--font-rubbama), var(--font-almarai), sans-serif;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: -0.5px;
+}
+
+/* ── Type scale (brand spec sheet) ──────────────────────────────
+   Display (Rubbama): 56/78 · 48/67 · 40/56 · 32/45
+   Body (Almarai):    24/27 bold · 20/22 · 18/20 · 16/18 · 14/16
+   Display sizes clamp down gracefully on small screens.          */
+.text-display-1 {
+  font-size: clamp(40px, 5.5vw, 56px);
+  line-height: 1.39; /* 78/56 */
+}
+.text-display-2 {
+  font-size: clamp(34px, 4.7vw, 48px);
+  line-height: 1.4; /* 67/48 */
+}
+.text-display-3 {
+  font-size: clamp(30px, 4vw, 40px);
+  line-height: 1.4; /* 56/40 */
+}
+.text-display-4 {
+  font-size: clamp(26px, 3.2vw, 32px);
+  line-height: 1.41; /* 45/32 */
+}
+.text-body-1 {
+  font-size: 24px;
+  line-height: 27px;
+  font-weight: 700;
+}
+.text-body-2 {
+  font-size: 20px;
+  line-height: 22px;
+}
+.text-body-3 {
+  font-size: 18px;
+  line-height: 20px;
+}
+.text-body-4 {
+  font-size: 16px;
+  line-height: 18px;
+}
+.text-body-5 {
+  font-size: 14px;
+  line-height: 16px;
 }
 
 /* Surfaces — no borders anywhere; the one shadow */
@@ -141,29 +183,44 @@ body {
   animation: core-glow 2.4s ease-in-out infinite;
 }
 
-/* ── Scroll-hint mouse wheel dot ── */
-@keyframes wheel-drop {
-  0% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  70% {
-    transform: translateY(10px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 0;
-  }
+/* ── Hero damage hotspots — hover/focus reveals a reading card ── */
+.hotspot {
+  cursor: pointer;
 }
-.wheel-dot {
-  animation: wheel-drop 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+.hotspot .dot-wrap {
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.hotspot:hover .dot-wrap,
+.hotspot:focus-visible .dot-wrap {
+  transform: scale(1.35);
+}
+/* camera focus-lock ring: collapses onto the dot on hover */
+.hotspot .focus-ring {
+  opacity: 0;
+  transform: scale(1.9);
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 0.35s ease;
+}
+.hotspot:hover .focus-ring,
+.hotspot:focus-visible .focus-ring {
+  opacity: 1;
+  transform: scale(1);
+}
+.hotspot .tip {
+  opacity: 0;
+  transform: translate(50%, 8px) scale(0.94);
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.3s ease;
+  pointer-events: none;
+}
+.hotspot:hover .tip,
+.hotspot:focus-visible .tip {
+  opacity: 1;
+  transform: translate(50%, 0) scale(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .radar-ring,
-  .radar-core,
-  .wheel-dot {
+  .radar-core {
     animation: none;
   }
   .radar-ring {
@@ -175,11 +232,13 @@ body {
    static stacks mobile uses (pin/scrub is never created there either). */
 @media (prefers-reduced-motion: reduce) and (min-width: 768px) {
   .roles-desktop,
-  .path-desktop {
+  .path-desktop,
+  .features-desktop {
     display: none !important;
   }
   .roles-stack,
-  .path-stack {
+  .path-stack,
+  .features-stack {
     display: flex !important;
   }
 }

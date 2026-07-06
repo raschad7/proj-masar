@@ -13,11 +13,96 @@ const T = {
   line3: 0.4,
   subtitle: 0.56,
   buttons: 0.68,
-  hint: 1.3,
   lineDur: 0.9,
 };
 
+/* Mouse-parallax depths (px at full viewport offset) */
+const PARALLAX = { scene: 22, content: -8 };
+
 const HEADLINE = ["بلاغٌ واحد،", "طريقٌ واحد،", "حلقةٌ تُغلق"];
+
+/* ── Damage hotspots on the city map ──
+   main: the story-seed signal (3 radar rings). Others ping softly.
+   Hover / keyboard-focus locks a reading card onto the point.     */
+const HOTSPOTS = [
+  {
+    right: "34%",
+    top: "38%",
+    hex: "#0072DA",
+    label: "حفرة عميقة · ٧٠٪",
+    main: true,
+    delay: 0,
+  },
+  {
+    right: "58%",
+    top: "28%",
+    hex: "#FFAB00",
+    label: "تشقق تمساحي · ٦٤٪",
+    main: false,
+    delay: 0.7,
+  },
+  {
+    right: "22%",
+    top: "62%",
+    hex: "#CC3931",
+    label: "حفرة خطرة · ٨٥٪",
+    main: false,
+    delay: 1.4,
+  },
+  {
+    right: "66%",
+    top: "64%",
+    hex: "#197FB0",
+    label: "هبوط إسفلت · ٥٢٪",
+    main: false,
+    delay: 2.1,
+  },
+];
+
+function Hotspot({ spot }: { spot: (typeof HOTSPOTS)[number] }) {
+  const rings = spot.main ? [0, 1, 2] : [0];
+  return (
+    <button
+      type="button"
+      className="hotspot pointer-events-auto absolute"
+      style={{ right: spot.right, top: spot.top }}
+      aria-label={spot.label}
+    >
+      <span className="dot-wrap relative block h-4 w-4">
+        {rings.map((i) => (
+          <span
+            key={i}
+            className="radar-ring absolute inset-0 rounded-full"
+            style={{
+              background: spot.hex,
+              opacity: 0.4,
+              animationDelay: `${spot.delay + i}s`,
+            }}
+          />
+        ))}
+        <span
+          className={`absolute inset-0 rounded-full ${spot.main ? "radar-core" : ""}`}
+          style={{ background: spot.hex }}
+        />
+        {/* focus-lock ring */}
+        <span
+          aria-hidden
+          className="focus-ring absolute -inset-2.5 rounded-full"
+          style={{ boxShadow: `inset 0 0 0 2px ${spot.hex}` }}
+        />
+      </span>
+      {/* reading card */}
+      <span className="tip absolute bottom-full right-1/2 mb-4 flex items-center gap-2 whitespace-nowrap rounded-full bg-white px-4 py-2 shadow-[var(--shadow-soft)]">
+        <span
+          className="h-2 w-2 rounded-full"
+          style={{ background: spot.hex }}
+          aria-hidden
+        />
+        <span className="text-body-5 font-bold text-ink">{spot.label}</span>
+      </span>
+    </button>
+  );
+}
 
 export default function Hero() {
   const root = useRef<HTMLElement>(null);
@@ -26,9 +111,6 @@ export default function Hero() {
     () => {
       const mm = gsap.matchMedia();
 
-      // Full choreography only when motion is welcome.
-      // DOM defaults are the final resting state, so the reduced-motion
-      // branch needs no code at all.
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const ease = "power3.out";
 
@@ -44,23 +126,16 @@ export default function Hero() {
         });
         tl.from(".hero-subtitle", { y: 24, opacity: 0, duration: 0.8 }, T.subtitle);
         tl.from(".hero-buttons", { y: 24, opacity: 0, duration: 0.8 }, T.buttons);
-        tl.from(".hero-hint", { opacity: 0, duration: 0.8 }, T.hint);
+        tl.from(
+          ".hotspot",
+          { scale: 0, opacity: 0, duration: 0.5, stagger: 0.12, ease: "back.out(2)" },
+          0.9
+        );
 
-        /* Parallax hand-off — text rises faster than the signal,
-           the camera starts pushing down into the city. */
-        gsap.to(".hero-content", {
-          yPercent: -28,
-          opacity: 0,
-          ease: "none",
-          scrollTrigger: {
-            trigger: root.current,
-            start: "top top",
-            end: "bottom top", // fully faded after ~1 viewport of scroll
-            scrub: true,
-          },
-        });
-        gsap.to(".hero-signal", {
-          yPercent: -12,
+        /* Scroll: camera pushes into the city while the text lifts away */
+        gsap.to(".hero-scene", {
+          scale: 1.14,
+          yPercent: -9,
           ease: "none",
           scrollTrigger: {
             trigger: root.current,
@@ -69,6 +144,35 @@ export default function Hero() {
             scrub: true,
           },
         });
+        gsap.to(".hero-content", {
+          yPercent: -28,
+          opacity: 0,
+          ease: "none",
+          scrollTrigger: {
+            trigger: root.current,
+            start: "top top",
+            end: "75% top",
+            scrub: true,
+          },
+        });
+
+        /* Mouse parallax — the map drifts against the cursor (fine pointers only) */
+        const fine = window.matchMedia("(pointer: fine)").matches;
+        if (fine) {
+          const sceneX = gsap.quickTo(".hero-scene", "x", { duration: 0.8, ease });
+          const sceneY = gsap.quickTo(".hero-scene", "y", { duration: 0.8, ease });
+          const contentX = gsap.quickTo(".hero-content", "x", { duration: 1, ease });
+
+          const onMove = (e: MouseEvent) => {
+            const nx = e.clientX / window.innerWidth - 0.5;
+            const ny = e.clientY / window.innerHeight - 0.5;
+            sceneX(nx * PARALLAX.scene);
+            sceneY(ny * PARALLAX.scene * 0.6);
+            contentX(nx * PARALLAX.content);
+          };
+          window.addEventListener("mousemove", onMove);
+          return () => window.removeEventListener("mousemove", onMove);
+        }
       });
     },
     { scope: root }
@@ -80,28 +184,19 @@ export default function Hero() {
       id="top"
       className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 pt-[72px]"
     >
-      <CityMapBg className="opacity-50" />
-
-      {/* The seed of the whole story: one pulsing report signal */}
-      <div
-        className="hero-signal absolute"
-        style={{ right: "34%", top: "38%" }}
-        aria-hidden
-      >
-        <div className="relative h-4 w-4">
-          {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="radar-ring absolute inset-0 rounded-full bg-informative/40"
-            />
+      {/* City scene: map + live damage hotspots move as one layer */}
+      <div className="hero-scene absolute inset-0">
+        <CityMapBg className="opacity-50" />
+        <div className="absolute inset-0" aria-hidden={false}>
+          {HOTSPOTS.map((spot) => (
+            <Hotspot key={spot.label} spot={spot} />
           ))}
-          <span className="radar-core absolute inset-0 rounded-full bg-informative" />
         </div>
       </div>
 
-      <div className="hero-content relative z-10 flex max-w-3xl flex-col items-center text-center">
+      <div className="hero-content pointer-events-none relative z-10 flex max-w-3xl flex-col items-center text-center">
         {/* Badge */}
-        <span className="hero-badge pill mb-8 flex items-center gap-2 bg-whitesmoke px-5 py-2.5 text-[14px] font-bold text-subtext shadow-[var(--shadow-soft)]">
+        <span className="hero-badge pill mb-8 flex items-center gap-2 bg-whitesmoke px-5 py-2.5 text-body-5 font-bold text-subtext shadow-[var(--shadow-soft)]">
           <span className="h-2 w-2 rounded-full bg-positive" aria-hidden />
           مصمَّم لبلديات فلسطين
         </span>
@@ -109,10 +204,7 @@ export default function Hero() {
         {/* Headline — each line rises from behind a clip mask */}
         <h1
           className="font-display text-ink"
-          style={{
-            fontSize: "clamp(38px, 7vw, 82px)",
-            lineHeight: 1.16,
-          }}
+          style={{ fontSize: "clamp(38px, 7vw, 82px)", lineHeight: 1.16 }}
         >
           {HEADLINE.map((line, i) => (
             <span key={i} className="block overflow-hidden">
@@ -141,10 +233,10 @@ export default function Hero() {
         </p>
 
         {/* Buttons */}
-        <div className="hero-buttons mt-10 flex flex-wrap items-center justify-center gap-4">
+        <div className="hero-buttons pointer-events-auto mt-10 flex flex-wrap items-center justify-center gap-4">
           <a
             href="#contact"
-            className="pill flex items-center gap-2 bg-peacock px-8 py-4 text-[18px] font-bold text-white transition-colors hover:bg-horizon"
+            className="pill flex items-center gap-2 bg-peacock px-8 py-4 text-body-3 font-bold text-white transition-colors hover:bg-horizon"
             style={{ boxShadow: "var(--shadow-lift)" }}
           >
             احجز عرضاً توضيحياً
@@ -152,7 +244,7 @@ export default function Hero() {
           </a>
           <a
             href="#path"
-            className="pill flex items-center gap-2 bg-whitesmoke px-8 py-4 text-[18px] font-bold text-ink shadow-[var(--shadow-soft)] transition-colors hover:bg-seashell"
+            className="pill flex items-center gap-2 bg-whitesmoke px-8 py-4 text-body-3 font-bold text-ink shadow-[var(--shadow-soft)] transition-colors hover:bg-seashell"
           >
             <Play24Filled className="text-peacock" aria-hidden />
             شاهد كيف يعمل
@@ -160,17 +252,6 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll hint */}
-      <div className="hero-hint absolute bottom-8 z-10 flex flex-col items-center gap-2 text-lighttext">
-        <span
-          aria-hidden
-          className="flex h-10 w-6 items-start justify-center rounded-full p-1.5"
-          style={{ boxShadow: "inset 0 0 0 2px var(--light)" }}
-        >
-          <span className="wheel-dot h-1.5 w-1.5 rounded-full bg-lighttext" />
-        </span>
-        <span className="text-[14px]">تابع النزول</span>
-      </div>
     </section>
   );
 }

@@ -1,0 +1,323 @@
+"use client";
+
+import { useRef } from "react";
+import {
+  Scan24Filled,
+  Map24Filled,
+  ArrowSort24Filled,
+  ImageMultiple24Filled,
+} from "@fluentui/react-icons";
+import { gsap, useGSAP } from "@/lib/gsap";
+
+/* ── Tuning constants ────────────────────────────────────────────
+   PIN_DISTANCE : scroll consumed by the pinned horizontal gallery
+   Timeline runs 0 → 3 (one unit per panel transition). The track's
+   x is LINEAR (the user drives it); assembly beats are power3.     */
+const PIN_DISTANCE = "+=450%";
+const PANEL_COUNT = 4;
+
+/* ── The 4 features ── */
+const FEATURES = [
+  {
+    word: "كشف",
+    num: "ميزة ٠١",
+    Icon: Scan24Filled,
+    hex: "#0072DA",
+    sub: "كشف تلقائي للأضرار — يتعرّف على الحفر والتشقّقات من الصورة ويقدّر خطورتها.",
+  },
+  {
+    word: "خريطة",
+    num: "ميزة ٠٢",
+    Icon: Map24Filled,
+    hex: "#34A8D8",
+    sub: "خريطة موحّدة حيّة — كل البلاغات على خريطة واحدة، لحظياً.",
+  },
+  {
+    word: "أولوية",
+    num: "ميزة ٠٣",
+    Icon: ArrowSort24Filled,
+    hex: "#FFAB00",
+    sub: "أولوية ذكية — ترتيب حسب الخطورة والموقع والكثافة.",
+  },
+  {
+    word: "توثيق",
+    num: "ميزة ٠٤",
+    Icon: ImageMultiple24Filled,
+    hex: "#088A20",
+    sub: "دليل مصوّر قبل/بعد — توثيق كل إصلاح للمساءلة.",
+  },
+];
+
+/* ── Flat vector illustrations — big shapes, brand palette only.
+      Named groups so GSAP can stagger pieces (.pop scales in,
+      .draw uses DrawSVG).  TODO: refine art ─────────────────── */
+
+function IlloDetect() {
+  return (
+    <svg viewBox="0 0 400 300" className="w-full" fill="none" aria-hidden>
+      {/* road */}
+      <rect className="pop" x="40" y="170" width="320" height="90" rx="28" fill="var(--seashell)" />
+      <rect className="pop" x="70" y="209" width="44" height="12" rx="6" fill="var(--white)" />
+      <rect className="pop" x="290" y="209" width="44" height="12" rx="6" fill="var(--white)" />
+      {/* pothole */}
+      <ellipse className="pop" cx="200" cy="215" rx="56" ry="26" fill="var(--text)" />
+      {/* detection bracket — corners draw on */}
+      <path className="draw" d="M128 168 h-24 a12 12 0 0 0 -12 12 v24" stroke="#0072DA" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+      <path className="draw" d="M272 168 h24 a12 12 0 0 1 12 12 v24" stroke="#0072DA" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+      <path className="draw" d="M128 262 h-24 a12 12 0 0 1 -12 -12 v-24" stroke="#0072DA" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+      <path className="draw" d="M272 262 h24 a12 12 0 0 0 12 -12 v-24" stroke="#0072DA" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
+      {/* severity signal */}
+      <circle className="pop" cx="308" cy="132" r="12" fill="var(--notice)" />
+    </svg>
+  );
+}
+
+function IlloMap() {
+  return (
+    <svg viewBox="0 0 400 300" className="w-full" fill="none" aria-hidden>
+      {/* map block */}
+      <rect className="pop" x="60" y="30" width="280" height="240" rx="32" fill="var(--seashell)" />
+      {/* bold rounded streets */}
+      <path className="draw" d="M60 110 H340" stroke="var(--white)" strokeWidth="14" strokeLinecap="round" />
+      <path className="draw" d="M160 30 V270" stroke="var(--white)" strokeWidth="14" strokeLinecap="round" />
+      <path className="draw" d="M60 210 C 140 180, 260 240, 340 200" stroke="var(--white)" strokeWidth="14" strokeLinecap="round" />
+      {/* report pins */}
+      <circle className="pop" cx="120" cy="80" r="13" fill="#0072DA" />
+      <circle className="pop" cx="250" cy="150" r="13" fill="var(--notice)" />
+      <circle className="pop" cx="300" cy="70" r="13" fill="var(--negative)" />
+      <circle className="pop" cx="200" cy="235" r="13" fill="var(--positive)" />
+    </svg>
+  );
+}
+
+function IlloPriority() {
+  return (
+    <svg viewBox="0 0 400 300" className="w-full" fill="none" aria-hidden>
+      {/* stacked by priority — hot on top, calming downward */}
+      <rect className="pop" x="70" y="52" width="260" height="56" rx="28" fill="var(--negative)" />
+      <circle className="pop" cx="106" cy="80" r="10" fill="var(--white)" />
+      <rect className="pop" x="95" y="128" width="210" height="56" rx="28" fill="var(--notice)" />
+      <circle className="pop" cx="131" cy="156" r="10" fill="var(--white)" />
+      <rect className="pop" x="120" y="204" width="160" height="56" rx="28" fill="var(--sports-teal)" />
+      <circle className="pop" cx="156" cy="232" r="10" fill="var(--white)" />
+    </svg>
+  );
+}
+
+function IlloEvidence() {
+  return (
+    <svg viewBox="0 0 400 300" className="w-full" fill="none" aria-hidden>
+      {/* before (right, RTL-first): cracked */}
+      <rect className="pop" x="55" y="60" width="290" height="180" rx="32" fill="var(--seashell)" />
+      <path className="draw" d="M300 96 L272 138 L296 168 L268 206" stroke="var(--text)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+      {/* after (left): fixed */}
+      <path className="pop" d="M55 92 a32 32 0 0 1 32 -32 h113 v180 h-113 a32 32 0 0 1 -32 -32 z" fill="var(--positive)" />
+      <path className="draw" d="M105 150 l22 22 l40 -44" stroke="var(--white)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" />
+      {/* divider sweep */}
+      <rect className="pop" x="194" y="48" width="12" height="204" rx="6" fill="var(--white)" />
+    </svg>
+  );
+}
+
+const ILLOS = [IlloDetect, IlloMap, IlloPriority, IlloEvidence];
+
+function FeatureBlock({
+  feature,
+  index,
+  layout,
+}: {
+  feature: (typeof FEATURES)[number];
+  index: number;
+  layout: "panel" | "stack";
+}) {
+  const { word, num, Icon, hex, sub } = feature;
+  const Illo = ILLOS[index];
+  const flip = layout === "panel" && index % 2 === 1;
+  return (
+    <div
+      className={`feat-content flex items-center justify-center gap-10 ${
+        layout === "panel"
+          ? `w-full max-w-5xl ${flip ? "flex-row-reverse" : "flex-row"}`
+          : "flex-col text-center"
+      }`}
+    >
+      <div className="feat-illo-wrap w-full max-w-[440px] shrink-0">
+        <div className="feat-illo">
+          <Illo />
+        </div>
+      </div>
+      <div className={layout === "panel" ? "max-w-md" : "max-w-md"}>
+        <div
+          className={`feat-word flex items-center gap-2 ${layout === "stack" ? "justify-center" : ""}`}
+        >
+          <Icon style={{ color: hex }} aria-hidden />
+          <span className="text-body-5 font-bold text-lighttext">{num}</span>
+        </div>
+        <h3 className="feat-word font-display mt-3 text-[clamp(48px,6vw,72px)] leading-tight text-ink">
+          {word}
+        </h3>
+        <p className="feat-sub mt-4 text-body-2 leading-relaxed text-subtext">
+          {sub}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function FeaturesSection() {
+  const root = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+
+      mm.add(
+        "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          const track = trackRef.current!;
+
+          /* Initial states: panels 1..3 disassembled (panel 0 assembles
+             on section entry, pre-pin, so it's never seen blank). */
+          for (let i = 1; i < PANEL_COUNT; i++) {
+            gsap.set(`.feat-${i} .feat-illo`, { opacity: 0, scale: 0.9 });
+            gsap.set(`.feat-${i} .pop`, { scale: 0, opacity: 0, transformOrigin: "50% 50%" });
+            // not every illustration has stroke work (e.g. أولوية is all fills)
+            const draws = gsap.utils.toArray(`.feat-${i} .draw`);
+            if (draws.length) gsap.set(draws, { drawSVG: "0%" });
+            gsap.set(`.feat-${i} .feat-word, .feat-${i} .feat-sub`, { y: 40, opacity: 0 });
+          }
+          gsap.set(".feat-dot-fill", { opacity: 0 });
+          gsap.set(".feat-dot-fill-0", { opacity: 1 });
+
+          /* Panel 0 assembles as the section scrolls into view */
+          const intro = gsap.timeline({
+            scrollTrigger: {
+              trigger: root.current,
+              start: "top 70%",
+              toggleActions: "play none none reverse",
+            },
+            defaults: { ease: "power3.out" },
+          });
+          intro
+            .from(".feat-0 .pop", { scale: 0, opacity: 0, stagger: 0.06, duration: 0.5 })
+            .fromTo(".feat-0 .draw", { drawSVG: "0%" }, { drawSVG: "100%", stagger: 0.08, duration: 0.5 }, 0.2)
+            .from(".feat-0 .feat-word", { y: 40, opacity: 0, duration: 0.5 }, 0.25)
+            .from(".feat-0 .feat-sub", { y: 30, opacity: 0, duration: 0.5 }, 0.35);
+
+          /* Master timeline — pin + scrub. Track x is linear (driving
+             feel). RTL: the track overflows to the LEFT, so positive x
+             brings the next panels into view (reading order). */
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: root.current,
+              pin: true,
+              scrub: true,
+              start: "top top",
+              end: PIN_DISTANCE,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          tl.to(
+            track,
+            {
+              x: () => track.scrollWidth - window.innerWidth,
+              ease: "none",
+              duration: PANEL_COUNT - 1,
+            },
+            0
+          );
+
+          for (let i = 1; i < PANEL_COUNT; i++) {
+            const at = i - 0.45;
+            /* assembly as the panel crosses center */
+            tl.to(`.feat-${i} .feat-illo`, { opacity: 1, scale: 1, duration: 0.3, ease: "power3.out" }, at);
+            tl.to(`.feat-${i} .pop`, { scale: 1, opacity: 1, stagger: 0.05, duration: 0.25, ease: "power3.out" }, at + 0.06);
+            const draws = gsap.utils.toArray(`.feat-${i} .draw`);
+            if (draws.length)
+              tl.to(draws, { drawSVG: "100%", stagger: 0.06, duration: 0.28 }, at + 0.1);
+            tl.to(`.feat-${i} .feat-word`, { y: 0, opacity: 1, duration: 0.25, ease: "power3.out" }, at + 0.14);
+            tl.to(`.feat-${i} .feat-sub`, { y: 0, opacity: 1, duration: 0.25, ease: "power3.out" }, at + 0.22);
+            /* progress rail */
+            tl.to(`.feat-dot-fill-${i}`, { opacity: 1, duration: 0.15 }, i - 0.15);
+            tl.to(`.feat-dot-fill-${i - 1}`, { opacity: 0, duration: 0.15 }, i - 0.15);
+          }
+
+          /* leaving panels ease back so the centered one dominates */
+          for (let i = 0; i < PANEL_COUNT - 1; i++) {
+            tl.to(`.feat-${i} .feat-content`, { opacity: 0.6, scale: 0.97, duration: 0.3 }, i + 0.4);
+          }
+
+          /* micro-parallax: illustration drifts against its text */
+          for (let i = 0; i < PANEL_COUNT; i++) {
+            tl.fromTo(
+              `.feat-${i} .feat-illo-wrap`,
+              { x: -60 },
+              { x: 60, ease: "none", duration: 1 },
+              i - 0.5
+            );
+          }
+        }
+      );
+
+      /* Mobile with motion: gentle in-view reveals on the stack */
+      mm.add(
+        "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          gsap.utils.toArray<HTMLElement>(".feat-stack-item").forEach((item) => {
+            gsap.from(item, {
+              opacity: 0,
+              y: 60,
+              duration: 0.8,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: item,
+                start: "top 75%",
+                toggleActions: "play none none reverse",
+              },
+            });
+          });
+        }
+      );
+    },
+    { scope: root }
+  );
+
+  return (
+    <section ref={root} id="features" className="relative overflow-hidden bg-white">
+      {/* ── Desktop: pinned horizontal gallery ── */}
+      <div className="features-desktop hidden h-screen flex-col md:flex">
+        <div ref={trackRef} className="flex h-full" style={{ width: `${PANEL_COUNT * 100}vw` }}>
+          {FEATURES.map((feature, i) => (
+            <div
+              key={i}
+              className={`feat-${i} flex h-full w-screen items-center justify-center px-[8vw]`}
+            >
+              <FeatureBlock feature={feature} index={i} layout="panel" />
+            </div>
+          ))}
+        </div>
+        {/* progress rail */}
+        <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 gap-3" aria-hidden>
+          {FEATURES.map((_, i) => (
+            <span key={i} className="relative h-3 w-3 rounded-full bg-seashell">
+              <span
+                className={`feat-dot-fill feat-dot-fill-${i} absolute inset-0 rounded-full bg-peacock`}
+              />
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Mobile / reduced-motion: vertical stack ── */}
+      <div className="features-stack flex flex-col gap-20 px-6 py-20 md:hidden">
+        {FEATURES.map((feature, i) => (
+          <div key={i} className="feat-stack-item">
+            <FeatureBlock feature={feature} index={i} layout="stack" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
