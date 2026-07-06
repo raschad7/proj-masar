@@ -1,26 +1,185 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────
+   Masar design tokens — LOCKED brand spec. Use ONLY these.
+   ───────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand blues */
+  --peacock: #34a8d8;
+  --horizon: #197fb0;
+  --sports-teal: #16668e;
+
+  /* Semantic (pipeline states) */
+  --informative: #0072da; /* state 1: new report   */
+  --notice: #ffab00;      /* state 2: assigned     */
+  --positive: #088a20;    /* state 4: fixed        */
+  --negative: #cc3931;
+
+  /* Neutrals — light */
+  --white: #ffffff;
+  --whitesmoke: #f7f7f7;
+  --seashell: #f0f0f0;
+
+  /* Text on light */
+  --text: #191919;
+  --subtext: #6e6e6e;
+  --light: #8d8d8d;
+  --muted: #b7b7b7;
+
+  /* Teal gradient accents (decorative only) */
+  --teal: #1f6f5f;
+  --niagara: #2fa084;
+  --shamrock: #6fcf97;
+
+  /* The ONE allowed shadow + button lift variant */
+  --shadow-soft: 0 2px 15px rgba(0, 0, 0, 0.05);
+  --shadow-lift: 0 12px 40px rgba(12, 68, 124, 0.12);
+
+  /* Radii */
+  --radius-card: 32px;
+  --radius-pill: 999px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-peacock: var(--peacock);
+  --color-horizon: var(--horizon);
+  --color-sports-teal: var(--sports-teal);
+  --color-informative: var(--informative);
+  --color-notice: var(--notice);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-whitesmoke: var(--whitesmoke);
+  --color-seashell: var(--seashell);
+  --color-ink: var(--text);
+  --color-subtext: var(--subtext);
+  --color-lighttext: var(--light);
+  --color-mutedtext: var(--muted);
+  --font-body: var(--font-almarai);
+  --font-display: var(--font-rubbama);
+  --radius-card: 32px;
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: auto; /* Lenis owns scrolling */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--white);
+  color: var(--text);
+  font-family: var(--font-almarai), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Display headlines: Rubbama, fallback Almarai 800 */
+.font-display {
+  font-family: var(--font-rubbama), var(--font-almarai), sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+/* Surfaces — no borders anywhere; the one shadow */
+.card-surface {
+  border-radius: var(--radius-card);
+  background: var(--white);
+  box-shadow: var(--shadow-soft);
+}
+
+.pill {
+  border-radius: var(--radius-pill);
+}
+
+/* Visible keyboard focus */
+:focus-visible {
+  outline: 3px solid var(--peacock);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ── Nav scroll state (toggled by ScrollTrigger) ── */
+.site-nav {
+  transition: background-color 0.35s ease, box-shadow 0.35s ease,
+    backdrop-filter 0.35s ease;
+}
+.site-nav.nav-scrolled {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ── Hero radar rings ── */
+@keyframes radar-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(7);
+    opacity: 0;
+  }
+}
+.radar-ring {
+  animation: radar-ping 3s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+}
+.radar-ring:nth-child(2) {
+  animation-delay: 1s;
+}
+.radar-ring:nth-child(3) {
+  animation-delay: 2s;
+}
+@keyframes core-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 12px 3px rgba(0, 114, 218, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 20px 7px rgba(0, 114, 218, 0.65);
+  }
+}
+.radar-core {
+  animation: core-glow 2.4s ease-in-out infinite;
+}
+
+/* ── Scroll-hint mouse wheel dot ── */
+@keyframes wheel-drop {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+.wheel-dot {
+  animation: wheel-drop 1.8s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radar-ring,
+  .radar-core,
+  .wheel-dot {
+    animation: none;
+  }
+  .radar-ring {
+    opacity: 0;
+  }
+}
+
+/* Reduced-motion on desktop: swap the animated layouts for the same
+   static stacks mobile uses (pin/scrub is never created there either). */
+@media (prefers-reduced-motion: reduce) and (min-width: 768px) {
+  .roles-desktop,
+  .path-desktop {
+    display: none !important;
+  }
+  .roles-stack,
+  .path-stack {
+    display: flex !important;
+  }
 }
