@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
-import { useRef } from "react";
+import { useRef } from "react"
 import {
   Camera24Filled,
   Map24Filled,
   CheckmarkCircle24Filled,
   Wrench24Filled,
-} from "@fluentui/react-icons";
-import { gsap, useGSAP } from "@/lib/gsap";
-import CityMapBg from "@/components/CityMapBg";
+} from "@fluentui/react-icons"
+import { gsap, useGSAP } from "@/lib/gsap"
+import CityMapBg from "@/components/CityMapBg"
 
 /* ── Tuning constants (all pacing in vh of scroll) ───────────────
    The section = intro viewport (phone center, header above) + 3 tall
@@ -16,14 +16,14 @@ import CityMapBg from "@/components/CityMapBg";
    ROW_VH   : height of each role row — taller = slower journey
    CROSS_VH : scroll consumed by each crossing
    TRAVEL_X : how far the phone parks off-center (vw)                */
-const INTRO_VH = 100;
-const ROW_VH = 170;
-const CROSS_VH = 80;
-const TRAVEL_X = 24;
+const INTRO_VH = 100
+const ROW_VH = 170
+const CROSS_VH = 80
+const TRAVEL_X = 24
 
 /* crossing i (1..3) ends exactly when row i is centered in view */
-const crossEnd = (i: number) => INTRO_VH + (i - 1) * ROW_VH + ROW_VH / 2 - 50;
-const TOTAL_VH = INTRO_VH + 3 * ROW_VH - 100;
+const crossEnd = (i: number) => INTRO_VH + (i - 1) * ROW_VH + ROW_VH / 2 - 50
+const TOTAL_VH = INTRO_VH + 3 * ROW_VH - 100
 
 const CROSSINGS = [1, 2, 3].map((i) => ({
   at: crossEnd(i) - CROSS_VH,
@@ -31,7 +31,7 @@ const CROSSINGS = [1, 2, 3].map((i) => ({
   to: i,
   x: i === 2 ? -TRAVEL_X : TRAVEL_X, //  right → left → right
   tilt: i === 2 ? 5 : -5,
-}));
+}))
 
 const ROLES = [
   {
@@ -58,7 +58,7 @@ const ROLES = [
     char: "/chars/TheFixer.svg",
     copy: "يستقبل المهام، يُنجز على الأرض، ويوثّق بالصورة حتى إغلاق البلاغ.",
   },
-];
+]
 
 /* ── Phone screens ─────────────────────────────────────────────── */
 
@@ -72,7 +72,7 @@ function BrandScreen() {
         بلاغٌ واحد، طريقٌ واحد
       </span>
     </div>
-  );
+  )
 }
 
 function ScannerScreen() {
@@ -95,7 +95,7 @@ function ScannerScreen() {
         </span>
       </div>
     </div>
-  );
+  )
 }
 
 function DispatcherScreen() {
@@ -118,13 +118,16 @@ function DispatcherScreen() {
             key={t}
             className="flex items-center gap-2 rounded-xl bg-white p-2 shadow-[var(--shadow-soft)]"
           >
-            <span className="h-2.5 w-2.5 rounded-full" style={{ background: c }} />
+            <span
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ background: c }}
+            />
             <span className="text-[10px] font-bold text-ink">{t}</span>
           </div>
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 function CrewScreen() {
@@ -153,25 +156,31 @@ function CrewScreen() {
         />
       </div>
     </div>
-  );
+  )
 }
 
 /* Screen 0 is the brand/idle screen shown while the phone is centered */
-const SCREENS = [BrandScreen, ScannerScreen, DispatcherScreen, CrewScreen];
+const SCREENS = [BrandScreen, ScannerScreen, DispatcherScreen, CrewScreen]
 
-function RoleCard({ role, index }: { role: (typeof ROLES)[number]; index: number }) {
+function RoleCard({
+  role,
+  index,
+}: {
+  role: (typeof ROLES)[number]
+  index: number
+}) {
   const char = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={role.char}
       alt=""
       aria-hidden
-      className="role-char w-[140px] shrink-0 md:w-[280px]"
+      className="role-char w-[200px] shrink-0 md:w-[340px]"
     />
-  );
+  )
   const card = (
     <div
-      className="flex flex-1 flex-col justify-center p-8 backdrop-blur-md md:min-h-[360px] md:p-12"
+      className="flex flex-1 flex-col justify-center p-6 backdrop-blur-md md:min-h-[300px] md:p-12"
       style={{
         borderRadius: "var(--radius-card)",
         background: role.glass,
@@ -183,7 +192,7 @@ function RoleCard({ role, index }: { role: (typeof ROLES)[number]; index: number
       </h3>
       <p className="mt-6 text-[21px] leading-relaxed text-ink">{role.copy}</p>
     </div>
-  );
+  )
   /* The character stands beside the card on its OUTER edge (away from
      the phone). RTL flex renders the first child on the right. */
   return (
@@ -191,7 +200,7 @@ function RoleCard({ role, index }: { role: (typeof ROLES)[number]; index: number
       {role.side === "right" ? char : card}
       {role.side === "right" ? card : char}
     </div>
-  );
+  )
 }
 
 function PhoneShell() {
@@ -209,15 +218,15 @@ function PhoneShell() {
         <span className="absolute left-1/2 top-2 h-1.5 w-16 -translate-x-1/2 rounded-full bg-seashell" />
       </div>
     </div>
-  );
+  )
 }
 
 export default function PhoneSection() {
-  const root = useRef<HTMLElement>(null);
+  const root = useRef<HTMLElement>(null)
 
   useGSAP(
     () => {
-      const mm = gsap.matchMedia();
+      const mm = gsap.matchMedia()
 
       mm.add(
         "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
@@ -233,14 +242,14 @@ export default function PhoneSection() {
               end: "top top",
               scrub: true,
             },
-          });
+          })
 
           /* Initial: brand screen showing, phone parked center, a touch
              low so the header owns the top of the intro viewport. */
           gsap.set(".phone-screen-1, .phone-screen-2, .phone-screen-3", {
             yPercent: 100,
-          });
-          gsap.set(".phone-center", { y: "7vh" });
+          })
+          gsap.set(".phone-center", { y: "7vh" })
 
           /* Master timeline — scrubbed across the whole section
              (sticky stage does the pinning natively). All positions
@@ -255,19 +264,19 @@ export default function PhoneSection() {
               scrub: true,
               invalidateOnRefresh: true,
             },
-          });
+          })
 
           /* Header hands the stage to the journey */
           tl.to(
             ".roles-header",
             { opacity: 0, y: -48, duration: 30, ease: "power2.in" },
-            CROSSINGS[0].at - 20
-          );
+            CROSSINGS[0].at - 20,
+          )
           tl.to(
             ".phone-center",
             { y: 0, duration: CROSS_VH, ease: "power2.inOut" },
-            CROSSINGS[0].at
-          );
+            CROSSINGS[0].at,
+          )
 
           /* Crossings: slow, smooth slides with a settling tilt +
              synchronized vertical screen swap mid-flight. */
@@ -275,32 +284,32 @@ export default function PhoneSection() {
             tl.to(
               ".phone-travel",
               { x: `${x}vw`, duration: CROSS_VH, ease: "power2.inOut" },
-              at
-            );
+              at,
+            )
             tl.to(
               ".phone-tilt",
               { rotation: tilt, duration: CROSS_VH * 0.35, ease: "power2.out" },
-              at
-            );
+              at,
+            )
             tl.to(
               ".phone-tilt",
               { rotation: 0, duration: CROSS_VH * 0.45, ease: "power3.out" },
-              at + CROSS_VH * 0.55
-            );
+              at + CROSS_VH * 0.55,
+            )
             tl.to(
               `.phone-screen-${from}`,
               { yPercent: -100, duration: CROSS_VH * 0.28, ease: "power2.in" },
-              at + CROSS_VH * 0.3
-            );
+              at + CROSS_VH * 0.3,
+            )
             tl.to(
               `.phone-screen-${to}`,
               { yPercent: 0, duration: CROSS_VH * 0.3, ease: "power3.out" },
-              at + CROSS_VH * 0.52
-            );
-          });
+              at + CROSS_VH * 0.52,
+            )
+          })
 
           /* pad the timeline out to the full scroll span */
-          tl.to({}, { duration: Math.max(0.001, TOTAL_VH - crossEnd(3)) });
+          tl.to({}, { duration: Math.max(0.001, TOTAL_VH - crossEnd(3)) })
 
           /* Role copy reveals — driven by each row entering the
              viewport (independent of the phone timeline). */
@@ -316,13 +325,13 @@ export default function PhoneSection() {
                 start: "top 45%",
                 toggleActions: "play none none reverse",
               },
-            });
-          });
-        }
-      );
+            })
+          })
+        },
+      )
     },
-    { scope: root }
-  );
+    { scope: root },
+  )
 
   return (
     <section ref={root} id="roles" className="relative bg-white">
@@ -382,7 +391,7 @@ export default function PhoneSection() {
           </p>
         </div>
         {ROLES.map((role, i) => {
-          const Screen = SCREENS[i + 1]; // skip the brand screen
+          const Screen = SCREENS[i + 1] // skip the brand screen
           return (
             <div key={i} className="flex flex-col items-center gap-8">
               <RoleCard role={role} index={i} />
@@ -395,9 +404,9 @@ export default function PhoneSection() {
                 </div>
               </div>
             </div>
-          );
+          )
         })}
       </div>
     </section>
-  );
+  )
 }

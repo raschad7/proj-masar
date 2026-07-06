@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import LenisProvider from "@/lib/lenis";
+import CursorFollower from "@/components/CursorFollower";
 import "./globals.css";
 
 /* Body — Almarai, local files (300/400/700/800) */
@@ -38,7 +39,11 @@ export default function RootLayout({
          before hydration on Arabic pages — tolerate that noise */
       suppressHydrationWarning
     >
-      <body>
+      {/* body also suppressed: extensions (Grammarly, dark-mode, ColorZilla)
+          and Chrome auto-translate inject attributes onto <body> before
+          hydration — html's flag doesn't cascade to it */}
+      <body suppressHydrationWarning>
+        <CursorFollower />
         <LenisProvider>{children}</LenisProvider>
       </body>
     </html>

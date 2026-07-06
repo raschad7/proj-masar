@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
+import DetectionFootage from "@/components/DetectionFootage";
 
 /* ── Tuning constants ────────────────────────────────────────────
    PIN_DISTANCE : scroll consumed by the pinned analysis
@@ -34,6 +35,7 @@ const BOX_CRACK = { x: 525, y: 165, w: 150, h: 225 };
 
 export default function TechSection() {
   const root = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
 
   useGSAP(
     () => {
@@ -56,10 +58,12 @@ export default function TechSection() {
           gsap.set(".tech-extra-pin", { opacity: 0, scale: 0 });
           gsap.set(".tech-step-fill", { opacity: 0 });
 
+          /* pin ONLY the stage — the footage climax lives in the
+             section's normal-scroll tail, after the unpin */
           const tl = gsap.timeline({
             scrollTrigger: {
-              trigger: root.current,
-              pin: true,
+              trigger: stageRef.current,
+              pin: stageRef.current,
               scrub: true,
               start: "top top",
               end: PIN_DISTANCE,
@@ -133,7 +137,10 @@ export default function TechSection() {
 
   return (
     <section ref={root} id="tech" className="relative bg-white">
-      <div className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 py-16 md:h-screen">
+      <div
+        ref={stageRef}
+        className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 py-16 md:h-screen"
+      >
         {/* Heading */}
         <div className="mb-10 text-center">
           <h2 className="font-display text-display-1 text-ink">
@@ -307,6 +314,14 @@ export default function TechSection() {
           ))}
         </div>
       </div>
+
+      {/* ── Climax: the real thing (normal-scroll tail, never scrubbed) ── */}
+      <div className="pt-10 text-center">
+        <h3 className="font-display text-display-3 text-ink">
+          …وهذا هو فعلياً على الأرض
+        </h3>
+      </div>
+      <DetectionFootage />
     </section>
   );
 }

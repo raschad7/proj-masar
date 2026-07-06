@@ -65,6 +65,13 @@ html {
   scroll-behavior: auto; /* Lenis owns scrolling */
 }
 
+/* Custom cursor active → hide the native one everywhere (fine pointers
+   only; the class is added by CursorFollower on capable devices). */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
 body {
   background: var(--white);
   color: var(--text);
@@ -233,12 +240,14 @@ body {
 @media (prefers-reduced-motion: reduce) and (min-width: 768px) {
   .roles-desktop,
   .path-desktop,
-  .features-desktop {
+  .features-desktop,
+  .trust-marquee {
     display: none !important;
   }
   .roles-stack,
   .path-stack,
-  .features-stack {
+  .features-stack,
+  .trust-grid {
     display: flex !important;
   }
 }
