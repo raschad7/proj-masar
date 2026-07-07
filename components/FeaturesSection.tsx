@@ -205,9 +205,13 @@ export default function FeaturesSection() {
             .from(".feat-0 .feat-word", { y: 40, opacity: 0, duration: 0.5 }, 0.25)
             .from(".feat-0 .feat-sub", { y: 30, opacity: 0, duration: 0.5 }, 0.35);
 
-          /* Master timeline — pin + scrub. Track x is linear (driving
-             feel). RTL: the track overflows to the LEFT, so positive x
-             brings the next panels into view (reading order). */
+          /* Master timeline — pin + scrub, built as MOVE → HOLD segments
+             so each card slides to center then DWELLS (a pause in the
+             scroll) before the next one moves in. RTL: the track overflows
+             LEFT, so positive x brings later panels into view.            */
+          const MOVE = 1; //   scroll units to slide one panel to center
+          const HOLD = 1.1; //  dwell once centered — the reveal plays here
+
           const tl = gsap.timeline({
             scrollTrigger: {
               trigger: root.current,
@@ -219,44 +223,39 @@ export default function FeaturesSection() {
             },
           });
 
-          tl.to(
-            track,
-            {
-              x: () => track.scrollWidth - window.innerWidth,
-              ease: "none",
-              duration: PANEL_COUNT - 1,
-            },
-            0
-          );
+          /* x that centers panel i (function → recomputed on refresh) */
+          const stepX = (i: number) => () =>
+            (track.scrollWidth - window.innerWidth) * (i / (PANEL_COUNT - 1));
+
+          /* dwell on the first (already-assembled) panel */
+          tl.to(track, { x: stepX(0), duration: HOLD });
 
           for (let i = 1; i < PANEL_COUNT; i++) {
-            const at = i - 0.45;
-            /* assembly as the panel crosses center */
-            tl.to(`.feat-${i} .feat-illo`, { opacity: 1, scale: 1, duration: 0.3, ease: "power3.out" }, at);
-            tl.to(`.feat-${i} .pop`, { scale: 1, opacity: 1, stagger: 0.05, duration: 0.25, ease: "power3.out" }, at + 0.06);
+            const at = tl.duration(); // this move begins where we left off
+
+            /* slide the (still-blank) card to center with a gentle settle */
+            tl.to(track, { x: stepX(i), duration: MOVE, ease: "power1.inOut" }, at);
+
+            /* previous panel eases back as we leave it */
+            tl.to(`.feat-${i - 1} .feat-content`, { opacity: 0.6, scale: 0.97, duration: MOVE * 0.6, ease: "power2.inOut" }, at);
+
+            /* ── ASSEMBLE once the card ARRIVES at center (during the dwell)
+               so the reveal is front-and-center, not lost mid-slide ── */
+            const arr = at + MOVE;
+            tl.to(`.feat-${i} .feat-illo`, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" }, arr);
+            tl.to(`.feat-${i} .pop`, { scale: 1, opacity: 1, stagger: 0.07, duration: 0.4, ease: "back.out(1.7)" }, arr + 0.08);
             const draws = gsap.utils.toArray(`.feat-${i} .draw`);
             if (draws.length)
-              tl.to(draws, { drawSVG: "100%", stagger: 0.06, duration: 0.28 }, at + 0.1);
-            tl.to(`.feat-${i} .feat-word`, { y: 0, opacity: 1, duration: 0.25, ease: "power3.out" }, at + 0.14);
-            tl.to(`.feat-${i} .feat-sub`, { y: 0, opacity: 1, duration: 0.25, ease: "power3.out" }, at + 0.22);
-            /* progress rail */
-            tl.to(`.feat-dot-fill-${i}`, { opacity: 1, duration: 0.15 }, i - 0.15);
-            tl.to(`.feat-dot-fill-${i - 1}`, { opacity: 0, duration: 0.15 }, i - 0.15);
-          }
+              tl.to(draws, { drawSVG: "100%", stagger: 0.1, duration: 0.5, ease: "power2.out" }, arr + 0.2);
+            tl.to(`.feat-${i} .feat-word`, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, arr + 0.3);
+            tl.to(`.feat-${i} .feat-sub`, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, arr + 0.45);
 
-          /* leaving panels ease back so the centered one dominates */
-          for (let i = 0; i < PANEL_COUNT - 1; i++) {
-            tl.to(`.feat-${i} .feat-content`, { opacity: 0.6, scale: 0.97, duration: 0.3 }, i + 0.4);
-          }
+            /* progress rail swaps as the card lands */
+            tl.to(`.feat-dot-fill-${i}`, { opacity: 1, duration: 0.12 }, arr);
+            tl.to(`.feat-dot-fill-${i - 1}`, { opacity: 0, duration: 0.12 }, arr);
 
-          /* micro-parallax: illustration drifts against its text */
-          for (let i = 0; i < PANEL_COUNT; i++) {
-            tl.fromTo(
-              `.feat-${i} .feat-illo-wrap`,
-              { x: -60 },
-              { x: 60, ease: "none", duration: 1 },
-              i - 0.5
-            );
+            /* DWELL — the pause spans the whole reveal, then holds a beat */
+            tl.to(track, { x: stepX(i), duration: HOLD }, arr);
           }
         }
       );
@@ -292,9 +291,19 @@ export default function FeaturesSection() {
           {FEATURES.map((feature, i) => (
             <div
               key={i}
-              className={`feat-${i} flex h-full w-screen items-center justify-center px-[8vw]`}
+              className={`feat-${i} flex h-full w-screen items-center justify-center px-[4vw] py-[9vh]`}
             >
-              <FeatureBlock feature={feature} index={i} layout="panel" />
+              {/* each feature is its own #F0F0F0 rounded card; the track
+                  slide makes the current card exit as the next enters */}
+              <div
+                className="flex h-full w-full max-w-6xl items-center justify-center overflow-hidden px-[5vw]"
+                style={{
+                  background: "var(--seashell)",
+                  borderRadius: "var(--radius-card)",
+                }}
+              >
+                <FeatureBlock feature={feature} index={i} layout="panel" />
+              </div>
             </div>
           ))}
         </div>
@@ -313,7 +322,14 @@ export default function FeaturesSection() {
       {/* ── Mobile / reduced-motion: vertical stack ── */}
       <div className="features-stack flex flex-col gap-20 px-6 py-20 md:hidden">
         {FEATURES.map((feature, i) => (
-          <div key={i} className="feat-stack-item">
+          <div
+            key={i}
+            className="feat-stack-item px-6 py-12"
+            style={{
+              background: "var(--seashell)",
+              borderRadius: "var(--radius-card)",
+            }}
+          >
             <FeatureBlock feature={feature} index={i} layout="stack" />
           </div>
         ))}

@@ -74,14 +74,26 @@ export default function CursorFollower() {
     };
     const onDown = () => gsap.to(arrow, { scale: 0.8, duration: 0.15 });
     const onUp = () => gsap.to(arrow, { scale: 1, duration: 0.2 });
-    const onLeave = () => gsap.to([arrow, glow], { autoAlpha: 0, duration: 0.2 });
+    /* Hide when the pointer truly leaves the window, and RESET `visible`
+       so the next move re-reveals it. Without the reset, re-entering the
+       page (or refocusing the tab) left the cursor stuck hidden. */
+    const hide = () => {
+      visible = false;
+      gsap.to([arrow, glow], { autoAlpha: 0, duration: 0.2 });
+    };
+    /* Only hide on a real window exit — a mouseout whose relatedTarget is
+       null means the pointer left the document, not just crossed elements. */
+    const onWindowOut = (e: MouseEvent) => {
+      if (!e.relatedTarget) hide();
+    };
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseover", onOver);
     window.addEventListener("mouseout", onOut);
     window.addEventListener("mousedown", onDown);
     window.addEventListener("mouseup", onUp);
-    document.addEventListener("mouseleave", onLeave);
+    window.addEventListener("mouseout", onWindowOut);
+    window.addEventListener("blur", hide);
 
     return () => {
       window.removeEventListener("mousemove", onMove);
@@ -89,7 +101,8 @@ export default function CursorFollower() {
       window.removeEventListener("mouseout", onOut);
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseup", onUp);
-      document.removeEventListener("mouseleave", onLeave);
+      window.removeEventListener("mouseout", onWindowOut);
+      window.removeEventListener("blur", hide);
       document.documentElement.classList.remove("has-custom-cursor");
     };
   }, []);

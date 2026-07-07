@@ -5,7 +5,10 @@ import PhoneSection from "@/components/PhoneSection";
 import SectionBreak from "@/components/SectionBreak";
 import FeaturesSection from "@/components/FeaturesSection";
 import TechSection from "@/components/TechSection";
+import AppGallery from "@/components/AppGallery";
 import TrustBar from "@/components/TrustBar";
+import ImpactSection from "@/components/ImpactSection";
+import GridShowcase from "@/components/GridShowcase";
 import CTASection from "@/components/CTASection";
 
 export default function Home() {
@@ -20,7 +23,13 @@ export default function Home() {
         <FeaturesSection />
         <SectionBreak label="كيف يعمل" />
         <TechSection />
+        <SectionBreak label="التطبيق" />
+        <AppGallery />
         <TrustBar />
+        <SectionBreak label="الأثر" />
+        <ImpactSection />
+        <SectionBreak label="من الميدان" />
+        <GridShowcase />
         <CTASection />
       </main>
       <footer className="relative z-10 bg-whitesmoke py-16 text-center">
