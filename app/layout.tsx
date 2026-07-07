@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import LenisProvider from "@/lib/lenis";
 import CursorFollower from "@/components/CursorFollower";
+import Preloader from "@/components/Preloader";
 import "./globals.css";
 
 /* Body — Almarai, local files (300/400/700/800) */
@@ -43,6 +44,7 @@ export default function RootLayout({
           and Chrome auto-translate inject attributes onto <body> before
           hydration — html's flag doesn't cascade to it */}
       <body suppressHydrationWarning>
+        <Preloader />
         <CursorFollower />
         <LenisProvider>{children}</LenisProvider>
       </body>
