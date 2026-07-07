@@ -44,6 +44,33 @@ export default function CursorFollower() {
     const gx = gsap.quickTo(glow, "x", { duration: 0.5, ease: "power3" });
     const gy = gsap.quickTo(glow, "y", { duration: 0.5, ease: "power3" });
 
+    /* Invert to white over brand-blue surfaces (tagged data-cursor="invert");
+       a nested data-cursor="normal" island (e.g. a white button inside the
+       blue CTA card) opts back out. The nearest tagged ancestor wins. */
+    const path = arrow.querySelector("path");
+    const PEACOCK = "#34a8d8";
+    const GLOW_PEACOCK =
+      "radial-gradient(circle, rgba(52,168,216,0.55) 0%, rgba(52,168,216,0) 70%)";
+    const GLOW_WHITE =
+      "radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%)";
+    let inverted = false;
+    const setInvert = (on: boolean) => {
+      if (on === inverted) return;
+      inverted = on;
+      if (path)
+        gsap.to(path, {
+          fill: on ? "#ffffff" : PEACOCK,
+          duration: 0.25,
+          ease: "power2.out",
+        });
+      glow.style.background = on ? GLOW_WHITE : GLOW_PEACOCK;
+    };
+    const evalInvert = (t: EventTarget | null) => {
+      if (!(t instanceof Element)) return setInvert(false);
+      const tagged = t.closest<HTMLElement>("[data-cursor]");
+      setInvert(tagged?.dataset.cursor === "invert");
+    };
+
     let visible = false;
     const onMove = (e: MouseEvent) => {
       if (!visible) {
@@ -54,6 +81,7 @@ export default function CursorFollower() {
       ay(e.clientY - TIP_Y);
       gx(e.clientX);
       gy(e.clientY);
+      evalInvert(e.target);
     };
 
     const INTERACTIVE = "a,button,[role=button],input,label,summary,.hotspot";

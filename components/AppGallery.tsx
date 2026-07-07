@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useLenis } from "@/lib/lenis";
 import CityMapBg from "@/components/CityMapBg";
 
@@ -47,29 +47,33 @@ const SCREENS: Screen[] = [
 const N = SCREENS.length;
 
 /* eslint-disable @next/next/no-img-element */
-function PhoneReel({ trackRef }: { trackRef: React.RefObject<HTMLDivElement | null> }) {
+function PhoneReel({
+  screensRef,
+}: {
+  screensRef: React.RefObject<(HTMLDivElement | null)[]>;
+}) {
   return (
     <div
       className="relative rounded-[46px] bg-ink p-2.5"
       style={{ height: "min(600px, 68vh)", aspectRatio: "1206 / 2622", boxShadow: "var(--shadow-lift)" }}
     >
-      {/* screen viewport — the reel scrolls inside */}
+      {/* screen viewport — screens slide across it, one per beat */}
       <div className="relative h-full w-full overflow-hidden rounded-[38px] bg-whitesmoke">
-        <div
-          ref={trackRef}
-          className="absolute inset-x-0 top-0"
-          style={{ height: `${N * 100}%` }}
-        >
-          {SCREENS.map((s, i) => (
-            <div key={i} style={{ height: `${100 / N}%` }} className="w-full">
-              <img
-                src={s.img}
-                alt={s.name}
-                className="h-full w-full object-cover object-top"
-              />
-            </div>
-          ))}
-        </div>
+        {SCREENS.map((s, i) => (
+          <div
+            key={i}
+            ref={(el) => {
+              screensRef.current[i] = el;
+            }}
+            className="absolute inset-0 will-change-transform"
+          >
+            <img
+              src={s.img}
+              alt={s.name}
+              className="h-full w-full object-cover object-top"
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -92,10 +96,25 @@ function StaticPhone({ img, alt }: { img: string; alt: string }) {
 export default function AppGallery() {
   const root = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
+  const screensRef = useRef<(HTMLDivElement | null)[]>([]);
   const stRef = useRef<ScrollTrigger | null>(null);
+  const mounted = useRef(false);
   const lenis = useLenis();
   const [active, setActive] = useState(0);
+
+  /* Slide carousel: each screen sits at xPercent = (i - active) * 100, so a
+     change of `active` eases the next screen in while the current slides out.
+     First run positions them instantly; afterwards it animates. */
+  useGSAP(
+    () => {
+      const dur = mounted.current ? 0.6 : 0;
+      screensRef.current.forEach((el, i) => {
+        if (el) gsap.to(el, { xPercent: (i - active) * 100, duration: dur, ease: "power3.inOut" });
+      });
+      mounted.current = true;
+    },
+    { dependencies: [active], scope: root }
+  );
 
   useGSAP(
     () => {
@@ -105,31 +124,24 @@ export default function AppGallery() {
         "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
         () => {
           let last = 0;
-          const tl = gsap.timeline({
-            scrollTrigger: {
-              trigger: stageRef.current,
-              pin: stageRef.current,
-              scrub: true,
-              start: "top top",
-              end: PIN_DISTANCE,
-              invalidateOnRefresh: true,
-              onUpdate: (self) => {
-                const i = Math.min(N - 1, Math.round(self.progress * (N - 1)));
-                if (i !== last) {
-                  last = i;
-                  setActive(i);
-                }
-              },
+          /* pin the stage; scroll only drives WHICH screen is active. Snap so
+             the reel rests on a screen, giving each slide room to settle. */
+          const st = ScrollTrigger.create({
+            trigger: stageRef.current,
+            pin: stageRef.current,
+            start: "top top",
+            end: PIN_DISTANCE,
+            invalidateOnRefresh: true,
+            snap: { snapTo: 1 / (N - 1), duration: 0.4, ease: "power2.inOut" },
+            onUpdate: (self) => {
+              const i = Math.min(N - 1, Math.round(self.progress * (N - 1)));
+              if (i !== last) {
+                last = i;
+                setActive(i);
+              }
             },
           });
-          stRef.current = tl.scrollTrigger ?? null;
-
-          /* the reel scrolls up one screen per beat (linear = user drives) */
-          tl.to(trackRef.current, {
-            yPercent: -100 * (N - 1) / N,
-            ease: "none",
-            duration: 1,
-          });
+          stRef.current = st;
 
           /* heading eases up a touch as the journey takes over */
           gsap.from(".gallery-reveal", {
@@ -251,7 +263,7 @@ export default function AppGallery() {
 
             {/* phone reel (RTL: left column) */}
             <div className="order-1 flex justify-center">
-              <PhoneReel trackRef={trackRef} />
+              <PhoneReel screensRef={screensRef} />
             </div>
           </div>
         </div>

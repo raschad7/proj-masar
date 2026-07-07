@@ -1,26 +1,26 @@
-"use client";
+"use client"
 
-import { useRef } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { useRef } from "react"
+import { gsap, useGSAP } from "@/lib/gsap"
 
 /* ── Card types ──────────────────────────────────────────────── */
 type ImageCard = {
-  type: "image";
-  src: string;
-  alt: string;
-  label: string;
-  desc: string;
-  grid: string;
-};
+  type: "image"
+  src: string
+  alt: string
+  label: string
+  desc: string
+  grid: string
+}
 type SolidCard = {
-  type: "solid";
-  bg: string;
-  textColor: string;
-  word: string;
-  grid: string;
-  accent?: string;
-};
-type CardItem = ImageCard | SolidCard;
+  type: "solid"
+  bg: string
+  textColor: string
+  word: string
+  grid: string
+  accent?: string
+}
+type CardItem = ImageCard | SolidCard
 
 /* ── Bento grid — 7 cards (5 images + 2 solid) ───────────────
    Desktop 4 cols × 3 rows  (320 px / 195 px / 270 px)
@@ -93,9 +93,9 @@ const ITEMS: CardItem[] = [
     desc: "إبلاغ بلمسة واحدة",
     grid: "md:col-start-2 md:row-start-3",
   },
-];
+]
 
-const EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)";
+const EASE = "cubic-bezier(0.2, 0.7, 0.2, 1)"
 
 /* ── Image card ──────────────────────────────────────────────── */
 function ImageTile({ item }: { item: ImageCard }) {
@@ -140,16 +140,6 @@ function ImageTile({ item }: { item: ImageCard }) {
 
       {/* Content overlay */}
       <div className="absolute inset-0 z-[2] flex flex-col justify-end p-5 md:p-7">
-        <span
-          className="pill mb-2 inline-flex w-fit items-center gap-1.5 bg-white/90 px-3 py-1 text-[12px] font-bold text-ink backdrop-blur-sm translate-y-3 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 md:text-[13px]"
-          style={{ transitionTimingFunction: EASE }}
-        >
-          <span
-            className="h-1.5 w-1.5 rounded-full bg-peacock"
-            aria-hidden
-          />
-          {item.label}
-        </span>
         <p
           className="font-bold text-white translate-y-4 opacity-0 transition-all duration-500 delay-75 group-hover:translate-y-0 group-hover:opacity-100 text-[15px] md:text-[17px]"
           style={{ transitionTimingFunction: EASE }}
@@ -157,26 +147,15 @@ function ImageTile({ item }: { item: ImageCard }) {
           {item.desc}
         </p>
       </div>
-
-      {/* Corner dot */}
-      <div
-        className="absolute top-4 left-4 z-[2] flex h-8 w-8 items-center justify-center rounded-full bg-white/0 transition-all duration-500 group-hover:bg-white/90 group-hover:backdrop-blur-sm md:top-5 md:left-5"
-        style={{ transitionTimingFunction: EASE }}
-        aria-hidden
-      >
-        <span
-          className="h-2 w-2 rounded-full bg-peacock scale-0 transition-transform duration-500 group-hover:scale-100"
-          style={{ transitionTimingFunction: EASE }}
-        />
-      </div>
     </>
-  );
+  )
 }
 
 /* ── Solid colour card ───────────────────────────────────────── */
 function SolidTile({ item }: { item: SolidCard }) {
   return (
     <div
+      data-cursor={item.textColor === "#ffffff" ? "invert" : undefined}
       className="absolute inset-0 flex items-center justify-center overflow-hidden"
       style={{ borderRadius: "inherit", background: item.bg }}
     >
@@ -219,19 +198,19 @@ function SolidTile({ item }: { item: SolidCard }) {
         {item.word}
       </span>
     </div>
-  );
+  )
 }
 
 /* ── Main section ────────────────────────────────────────────── */
 export default function GridShowcase() {
-  const root = useRef<HTMLElement>(null);
+  const root = useRef<HTMLElement>(null)
 
   useGSAP(
     () => {
-      const mm = gsap.matchMedia();
+      const mm = gsap.matchMedia()
 
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const cards = gsap.utils.toArray<HTMLElement>(".grid-card");
+        const cards = gsap.utils.toArray<HTMLElement>(".grid-card")
         cards.forEach((card, i) => {
           gsap.from(card, {
             y: 60,
@@ -245,12 +224,12 @@ export default function GridShowcase() {
               start: "top 90%",
               toggleActions: "play none none none",
             },
-          });
-        });
+          })
+        })
 
         /* Parallax on image cards */
         cards.forEach((card) => {
-          const img = card.querySelector<HTMLElement>(".grid-card-img");
+          const img = card.querySelector<HTMLElement>(".grid-card-img")
           if (img) {
             gsap.to(img, {
               yPercent: -8,
@@ -261,13 +240,13 @@ export default function GridShowcase() {
                 end: "bottom top",
                 scrub: true,
               },
-            });
+            })
           }
-        });
-      });
+        })
+      })
     },
-    { scope: root }
-  );
+    { scope: root },
+  )
 
   return (
     <section
@@ -277,19 +256,15 @@ export default function GridShowcase() {
     >
       {/* Section header */}
       <div className="mx-auto mb-16 max-w-3xl text-center md:mb-20">
-        <span className="pill mb-6 inline-flex items-center gap-2 bg-whitesmoke px-5 py-2.5 text-body-5 font-bold text-subtext shadow-[var(--shadow-soft)]">
-          <span className="h-2 w-2 rounded-full bg-peacock" aria-hidden />
-          من الميدان
-        </span>
-        <h2 className="font-display text-display-2 text-ink mt-4">
+        <h2 className="font-display text-display-2 text-ink">
           كل صورة، <span className="text-peacock">قصة طريق</span>
         </h2>
         <p
           className="mt-6 text-subtext"
           style={{ fontSize: 19, lineHeight: 1.85 }}
         >
-          من رصد الأضرار عبر الخرائط الذكية، إلى الإصلاح الفعلي على أرض الواقع
-          — مسار يغطّي كل مرحلة.
+          من رصد الأضرار عبر الخرائط الذكية، إلى الإصلاح الفعلي على أرض الواقع —
+          مسار يغطّي كل مرحلة.
         </p>
       </div>
 
@@ -298,9 +273,7 @@ export default function GridShowcase() {
         className="mx-auto max-w-[1200px] rounded-[36px] p-2.5 md:p-3"
         style={{ background: "#E9E9E9" }}
       >
-        <div
-          className="grid grid-cols-2 auto-rows-[170px] gap-2.5 md:grid-cols-4 md:grid-rows-[320px_195px_270px] md:auto-rows-auto md:gap-3"
-        >
+        <div className="grid grid-cols-2 auto-rows-[170px] gap-2.5 md:grid-cols-4 md:grid-rows-[320px_195px_270px] md:auto-rows-auto md:gap-3">
           {ITEMS.map((item) => (
             <div
               key={item.type === "image" ? item.src : item.word}
@@ -317,5 +290,5 @@ export default function GridShowcase() {
         </div>
       </div>
     </section>
-  );
+  )
 }

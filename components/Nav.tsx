@@ -212,7 +212,7 @@ export default function Nav() {
     <nav ref={navRef} aria-label="التنقل الرئيسي">
       {/* ── floating logo (top-right) — no card, larger ── */}
       <div ref={logoRef} className="fixed right-6 top-5 z-50">
-        <button type="button" onClick={toTop} aria-label="مسار — أعلى الصفحة">
+        <button type="button" onClick={toTop} aria-label="مسار — أعلى الصفحة" data-cursor="invert">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo/Logo 6.svg" alt="مسار" className="h-14 w-14" />
         </button>

@@ -31,9 +31,10 @@
   --niagara: #2fa084;
   --shamrock: #6fcf97;
 
-  /* The ONE allowed shadow + button lift variant */
-  --shadow-soft: 0 2px 15px rgba(0, 0, 0, 0.05);
-  --shadow-lift: 0 12px 40px rgba(12, 68, 124, 0.12);
+  /* Shadows removed sitewide — kept as tokens (set to none) so every
+     var(--shadow-*) reference resolves to no shadow. */
+  --shadow-soft: none;
+  --shadow-lift: none;
 
   /* Radii */
   --radius-card: 32px;

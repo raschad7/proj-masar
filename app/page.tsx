@@ -35,7 +35,7 @@ export default function Home() {
       <footer className="relative z-10 bg-whitesmoke py-16 text-center">
         <div className="flex items-center justify-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo/Logo 6.svg" alt="" className="h-9 w-9" aria-hidden />
+          <img src="/logo/Logo 6.svg" alt="" className="h-9 w-9" aria-hidden data-cursor="invert" />
           <p className="font-display text-2xl text-ink">مسار</p>
         </div>
         <p className="mt-2 text-[16px] text-subtext">

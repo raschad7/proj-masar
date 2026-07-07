@@ -75,6 +75,7 @@ export default function CTASection() {
   return (
     <section ref={root} id="contact" className="bg-white px-6 py-24">
       <div
+        data-cursor="invert"
         className="relative mx-auto max-w-6xl overflow-hidden bg-peacock px-8 py-24 text-center md:px-16 md:py-32"
         style={{ borderRadius: "var(--radius-card)", boxShadow: "var(--shadow-lift)" }}
       >
@@ -118,6 +119,7 @@ export default function CTASection() {
           <div className="cta-buttons mt-10 flex flex-wrap items-center justify-center gap-4">
             <a
               href="mailto:hello@masar.ps"
+              data-cursor="normal"
               className="pill flex items-center gap-2 bg-white px-9 py-4 text-body-3 font-bold text-peacock transition-transform hover:scale-[1.03]"
               style={{ boxShadow: "var(--shadow-lift)" }}
             >

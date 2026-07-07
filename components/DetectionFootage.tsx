@@ -160,13 +160,6 @@ export default function DetectionFootage() {
           </button>
         </div>
 
-        {/* rawness labelled as a virtue */}
-        <span className="pill absolute right-7 top-7 z-10 flex items-center gap-2 bg-whitesmoke px-4 py-2 shadow-[var(--shadow-soft)] md:right-8 md:top-8">
-          <span className="h-2 w-2 rounded-full bg-positive" aria-hidden />
-          <span className="text-body-5 font-bold text-subtext">
-            تسجيل حقيقي · من الميدان
-          </span>
-        </span>
       </div>
 
       <p className="footage-caption mt-5 text-center text-body-4 text-subtext">

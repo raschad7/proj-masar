@@ -117,10 +117,6 @@ export default function ImpactSection() {
       <div className="relative z-10 mx-auto max-w-6xl">
         {/* Heading */}
         <div className="mb-14 text-center">
-          <span className="impact-reveal pill mb-5 inline-flex items-center gap-2 bg-whitesmoke px-5 py-2.5 text-body-5 font-bold text-subtext shadow-[var(--shadow-soft)]">
-            <span className="h-2 w-2 rounded-full bg-positive" aria-hidden />
-            أرقامٌ توضيحية
-          </span>
           <h2 className="impact-reveal font-display text-display-1 text-ink">
             نتائجُ تُقنع مجلس البلدية
           </h2>
