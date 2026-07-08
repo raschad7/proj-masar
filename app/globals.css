@@ -336,3 +336,109 @@ body {
     display: flex !important;
   }
 }
+
+/* ── Footer "Nightfall" — ambient details ── */
+/* animated grain so the dark slab never reads flat */
+.ft-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: ft-grain-shift 0.6s steps(2) infinite;
+}
+@keyframes ft-grain-shift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-2%, 1%); }
+  100% { transform: translate(1%, -1%); }
+}
+/* drifting dust motes */
+@keyframes ft-float {
+  0%, 100% { transform: translateY(0); opacity: 0.14; }
+  50% { transform: translateY(-14px); opacity: 0.4; }
+}
+.ft-mote {
+  animation: ft-float 7s ease-in-out infinite;
+}
+/* faulty-streetlight flicker */
+@keyframes ft-flicker {
+  0%, 100% { opacity: 1; }
+  42% { opacity: 1; }
+  44% { opacity: 0.25; }
+  46% { opacity: 1; }
+  70% { opacity: 1; }
+  72% { opacity: 0.35; }
+  74% { opacity: 1; }
+}
+.ft-flicker {
+  animation: ft-flicker 5.5s ease-in-out infinite;
+}
+/* pin breathing ring after it lands */
+@keyframes ft-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.5); opacity: 0.12; }
+}
+.ft-pin-breathe {
+  animation: ft-breathe 2.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ft-grain,
+  .ft-mote,
+  .ft-flicker,
+  .ft-pin-breathe {
+    animation: none;
+  }
+}
+
+/* ── ClaudeImpact — reduced-motion static fallback ── */
+/* the pinned stage releases and the figure panels stack normally */
+.cip-static .cip-stage {
+  height: auto;
+}
+.cip-static .cip-panels {
+  flex-direction: column;
+  gap: 4rem;
+  padding-block: 4rem;
+}
+.cip-static .cip-panel {
+  position: relative;
+  inset: auto;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ── FullscreenImpact — wipe-up slideshow inside a card ── */
+/* default (mobile / reduced motion): panels flow-stack inside the card */
+.fsi-card {
+  position: relative;
+}
+.fsi-panel {
+  position: relative;
+  min-height: 460px;
+  overflow: hidden;
+}
+/* animated (desktop + motion): card is a fixed viewport, panels overlap */
+.fsi-card.fsi-animated {
+  height: min(78vh, 640px);
+  overflow: hidden;
+}
+.fsi-card.fsi-animated .fsi-panel {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+}
+
+/* ── TiqmoImpact — wipe-up slideshow ── */
+/* default (mobile / reduced motion): panels flow-stack, each full height */
+.tiq-panel {
+  position: relative;
+  min-height: 100vh;
+}
+/* animated (desktop + motion): panels overlap and are wiped up by GSAP */
+.tiq-animated {
+  height: 100vh;
+  overflow: hidden;
+}
+.tiq-animated .tiq-panel {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+}

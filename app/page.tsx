@@ -1,21 +1,22 @@
-import Nav from "@/components/Nav";
-import Hero from "@/components/Hero";
-import PathSection from "@/components/PathSection";
-import PhoneSection from "@/components/PhoneSection";
-import SectionBreak from "@/components/SectionBreak";
-import FeaturesSection from "@/components/FeaturesSection";
-import TechSection from "@/components/TechSection";
-import AppGallery from "@/components/AppGallery";
-import TrustBar from "@/components/TrustBar";
-import ImpactSection from "@/components/ImpactSection";
-import GridShowcase from "@/components/GridShowcase";
-import CTASection from "@/components/CTASection";
+import Nav from "@/components/Nav"
+import Hero from "@/components/Hero"
+import PathSection from "@/components/PathSection"
+import PhoneSection from "@/components/PhoneSection"
+import SectionBreak from "@/components/SectionBreak"
+import FeaturesSection from "@/components/FeaturesSection"
+import TechSection from "@/components/TechSection"
+import AppGallery from "@/components/AppGallery"
+import TrustBar, { LOGOS as TRUST_LOGOS } from "@/components/TrustBar"
+import GridShowcase from "@/components/GridShowcase"
+import ClaudeImpact from "@/components/ClaudeImpact"
+import Footer from "@/components/Footer"
+import CTASection from "@/components/CTASection"
 
 export default function Home() {
   return (
     <>
       <Nav />
-      <main>
+      <main className="relative z-[1] bg-white">
         <Hero />
         <PathSection />
         <PhoneSection />
@@ -26,22 +27,14 @@ export default function Home() {
         <SectionBreak label="التطبيق" />
         <AppGallery />
         <TrustBar />
+        <div className="hidden h-[72px] px-6 md:block"></div>
         <SectionBreak label="الأثر" />
-        <ImpactSection />
+        <ClaudeImpact />
         <SectionBreak label="من الميدان" />
         <GridShowcase />
         <CTASection />
       </main>
-      <footer className="relative z-10 bg-whitesmoke py-16 text-center">
-        <div className="flex items-center justify-center gap-2.5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo/Logo 6.svg" alt="" className="h-9 w-9" aria-hidden data-cursor="invert" />
-          <p className="font-display text-2xl text-ink">مسار</p>
-        </div>
-        <p className="mt-2 text-[16px] text-subtext">
-          بلاغٌ واحد، طريقٌ واحد، حلقةٌ تُغلق.
-        </p>
-      </footer>
+      <Footer />
     </>
-  );
+  )
 }

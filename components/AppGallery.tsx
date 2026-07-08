@@ -253,7 +253,7 @@ export default function AppGallery() {
                         </div>
                       </div>
                       <span className="text-body-5 font-bold text-lighttext">
-                        {["١", "٢", "٣", "٤"][i]}
+                        {["1", "2", "3", "4"][i]}
                       </span>
                     </button>
                   </li>

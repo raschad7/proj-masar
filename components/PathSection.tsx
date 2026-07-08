@@ -33,7 +33,7 @@ const STATES: State[] = [
     hex: "#0072DA",
     tint: "rgba(0,114,218,0.10)",
     loc: "شارع النصر · حي المخفية",
-    time: "٩:١٢",
+    time: "9:12",
     head: "تقود فقط… ومسار يرى",
     line: "كاميرا المركبة ترصد كل حفرةٍ وتشقّق تلقائياً أثناء القيادة — تحدّد الموقع والخطورة دون أي إدخالٍ يدوي.",
     log: "رُصد تلقائياً",
@@ -42,18 +42,18 @@ const STATES: State[] = [
     label: "مُسنَد",
     hex: "#FFAB00",
     tint: "rgba(255,171,0,0.12)",
-    loc: "أولوية عالية · فريق ٣",
-    time: "٩:١٣",
+    loc: "أولوية عالية · فريق 3",
+    time: "9:13",
     head: "لكل بلاغٍ مالكٌ ووقت",
     line: "يفرزه النظام حسب الخطورة ويُسنده إلى الفريق الأقرب — لا بلاغ يضيع أو يُنسى في زحمة القنوات.",
-    log: "أُسند إلى فريق ٣",
+    log: "أُسند إلى فريق 3",
   },
   {
     label: "قيد الإصلاح",
     hex: "#16668E",
     tint: "rgba(22,102,142,0.10)",
     loc: "الفريق في الموقع",
-    time: "١٠:٤٠",
+    time: "10:40",
     head: "الحالة مرئية لحظياً",
     line: "يتسلّم الفريق المهمة ويبدأ العمل، وتتحدّث الحالة مباشرةً على المسار — دون مكالمات متابعة.",
     log: "بدأ الإصلاح في الموقع",
@@ -63,7 +63,7 @@ const STATES: State[] = [
     hex: "#088A20",
     tint: "rgba(8,138,32,0.10)",
     loc: "مُوثّق · جاهز للتدقيق",
-    time: "١١:٢٥",
+    time: "11:25",
     head: "يُغلق بدليلٍ موثّق",
     line: "يُرفع دليلٌ مصوّر قبل/بعد ويُغلق البلاغ في سجلٍّ قابلٍ للتدقيق من مجلس البلدية.",
     log: "أُغلق بدليل مصوّر",
@@ -71,7 +71,7 @@ const STATES: State[] = [
 ];
 
 const N = STATES.length;
-const REPORT_ID = "بلاغ #٠٤٢";
+const REPORT_ID = "بلاغ #042";
 
 /* ── Media that morphs per state (stacked, crossfaded by `active`) ── */
 /* eslint-disable @next/next/no-img-element */
@@ -107,7 +107,7 @@ function TicketMedia({ active }: { active: number }) {
           }}
         >
           <span className="absolute -top-6 right-0 rounded-md bg-peacock px-2 py-0.5 text-[11px] font-bold text-white whitespace-nowrap">
-            حفرة · ٧٠٪
+            حفرة · 70٪
           </span>
         </div>
         {/* REC chip */}
@@ -130,12 +130,12 @@ function TicketMedia({ active }: { active: number }) {
             <img src="/chars/TheFixer.svg" alt="" className="h-8 w-8" />
           </span>
           <div className="text-right">
-            <p className="text-[15px] font-bold text-ink">فريق الإصلاح · وحدة ٣</p>
-            <p className="text-[13px] text-subtext">أقرب فريق · ١.٢ كم</p>
+            <p className="text-[15px] font-bold text-ink">فريق الإصلاح · وحدة 3</p>
+            <p className="text-[13px] text-subtext">أقرب فريق · 1.2 كم</p>
           </div>
         </div>
         <span className="rounded-full bg-notice/15 px-4 py-1.5 text-[13px] font-bold text-[#8a5a00]">
-          أُسند ٩:١٣ ص
+          أُسند 9:13 ص
         </span>
       </div>
 
@@ -342,7 +342,7 @@ export default function PathSection() {
                       transform: i === active ? "scale(1.12)" : "scale(1)",
                     }}
                   >
-                    {["١", "٢", "٣", "٤"][i]}
+                    {["1", "2", "3", "4"][i]}
                   </span>
                   <span
                     className="text-[13px] font-bold transition-colors duration-300"
@@ -399,7 +399,7 @@ export default function PathSection() {
           <div key={i} className="path-stack-item overflow-hidden rounded-[24px] bg-white">
             <div className="flex items-center justify-between px-5 py-4" style={{ background: s.hex }}>
               <span className="text-[15px] font-bold text-white">
-                {["١", "٢", "٣", "٤"][i]} · {s.label}
+                {["1", "2", "3", "4"][i]} · {s.label}
               </span>
               <span className="text-[13px] font-bold text-white/85">{s.time} ص</span>
             </div>

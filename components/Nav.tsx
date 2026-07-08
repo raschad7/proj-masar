@@ -13,12 +13,12 @@ import LogoArrow from "@/components/LogoArrow"
    hover/active. Logo + CTA float free and hide on scroll-down.        */
 
 const SECTIONS = [
-  { n: "٠١", label: "المسار", id: "path" },
-  { n: "٠٢", label: "الأدوار", id: "roles" },
-  { n: "٠٣", label: "الميزات", id: "features" },
-  { n: "٠٤", label: "التطبيق", id: "gallery" },
-  { n: "٠٥", label: "الأثر", id: "impact" },
-  { n: "٠٦", label: "تواصل", id: "contact" },
+  { n: "01", label: "المسار", id: "path" },
+  { n: "02", label: "الأدوار", id: "roles" },
+  { n: "03", label: "الميزات", id: "features" },
+  { n: "04", label: "التطبيق", id: "gallery" },
+  { n: "05", label: "الأثر", id: "impact" },
+  { n: "06", label: "تواصل", id: "contact" },
 ]
 const N = SECTIONS.length
 
@@ -238,7 +238,7 @@ export default function Nav() {
       <div className="fixed right-5 top-1/2 z-40 hidden -translate-y-1/2 md:block">
         <div
           ref={islandRef}
-          className="nav-island card-surface group relative w-[54px] overflow-hidden py-3 transition-[width] duration-300 ease-out hover:w-[130px]"
+          className="nav-island group relative w-[54px] overflow-hidden py-3 transition-[width] duration-300 ease-out hover:w-[130px]"
           style={{ opacity: 0, visibility: "hidden" }}
         >
           <div className="relative" style={{ height: ROWS_H }}>

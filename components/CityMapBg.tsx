@@ -49,25 +49,6 @@ export default function CityMapBg({
           <path d="M1500 180 C 1180 260, 980 140, 700 260 S 260 340, -40 260" />
         </g>
 
-        {/* soft building blocks */}
-        <g fill="#F0F0F0" opacity="0.8">
-          <rect x="150" y="120" width="90" height="70" rx="8" />
-          <rect x="310" y="260" width="110" height="80" rx="8" />
-          <rect x="480" y="110" width="80" height="95" rx="8" />
-          <rect x="640" y="320" width="95" height="70" rx="8" />
-          <rect x="820" y="150" width="120" height="60" rx="8" />
-          <rect x="1010" y="280" width="85" height="90" rx="8" />
-          <rect x="1170" y="120" width="100" height="75" rx="8" />
-          <rect x="220" y="470" width="100" height="85" rx="8" />
-          <rect x="520" y="520" width="85" height="65" rx="8" />
-          <rect x="760" y="470" width="110" height="80" rx="8" />
-          <rect x="980" y="540" width="90" height="70" rx="8" />
-          <rect x="1200" y="440" width="105" height="90" rx="8" />
-          <rect x="380" y="690" width="95" height="70" rx="8" />
-          <rect x="660" y="720" width="120" height="65" rx="8" />
-          <rect x="940" y="700" width="80" height="85" rx="8" />
-          <rect x="1160" y="680" width="100" height="70" rx="8" />
-        </g>
       </svg>
     </div>
   );
