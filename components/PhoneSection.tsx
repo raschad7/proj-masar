@@ -1,6 +1,7 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
+import dynamic from "next/dynamic"
 import {
   Camera24Filled,
   Map24Filled,
@@ -9,6 +10,12 @@ import {
 } from "@fluentui/react-icons"
 import { gsap, useGSAP } from "@/lib/gsap"
 import CityMapBg from "@/components/CityMapBg"
+import type { PhonePose } from "@/components/PhoneCanvas"
+
+/* three.js is heavy and WebGL is client-only — split it out */
+const PhoneCanvas = dynamic(() => import("@/components/PhoneCanvas"), {
+  ssr: false,
+})
 
 /* ── Tuning constants (all pacing in vh of scroll) ───────────────
    The section = intro viewport (phone center, header above) + 3 tall
@@ -25,13 +32,28 @@ const TRAVEL_X = 24
 const crossEnd = (i: number) => INTRO_VH + (i - 1) * ROW_VH + ROW_VH / 2 - 50
 const TOTAL_VH = INTRO_VH + 3 * ROW_VH - 100
 
-const CROSSINGS = [1, 2, 3].map((i) => ({
-  at: crossEnd(i) - CROSS_VH,
-  from: i - 1,
-  to: i,
-  x: i === 2 ? -TRAVEL_X : TRAVEL_X, //  right → left → right
-  tilt: i === 2 ? 5 : -5,
-}))
+/* Each crossing spins the phone a full 360° around its own Y axis
+   (plus the difference between parked angles), scrubbed to scroll —
+   scrolling back spins it back. The screen texture swaps at the
+   half-turn, while the back of the phone faces the viewer.
+   CSS rotateY(+) faces the viewer's right, so a phone parked on the
+   right (x > 0) settles at a NEGATIVE yaw, facing its copy card.
+   `ry` accumulates so each tween is one continuous rotation. */
+let runningYaw = 0
+const CROSSINGS = [1, 2, 3].map((i) => {
+  const x = i === 2 ? -TRAVEL_X : TRAVEL_X //  right → left → right
+  const dir = Math.sign(x)
+  const parked = -dir * 16
+  const prevParked = i === 1 ? 0 : dir * 16 //  opposite side last time
+  runningYaw += -dir * 360 + (parked - prevParked)
+  return {
+    at: crossEnd(i) - CROSS_VH,
+    to: i,
+    x,
+    ry: runningYaw,
+    bank: dir * 4, //  leans into the direction of travel
+  }
+})
 
 const ROLES = [
   {
@@ -203,26 +225,75 @@ function RoleCard({
   )
 }
 
-function PhoneShell() {
+/* Flat DOM stand-in when WebGL isn't available — shows the brand
+   screen. Rendered inside the oversized canvas area (128% × 160% of
+   the phone box), so it insets itself back down to the box:
+   (1 − 1/1.28)/2 and (1 − 1/1.6)/2. */
+function PhoneShellFallback() {
   return (
-    <div
-      className="aspect-[236/480] h-[min(480px,62vh)] rounded-[36px] bg-white p-3"
-      style={{ boxShadow: "var(--shadow-lift)" }}
-    >
-      <div className="relative h-full w-full overflow-hidden rounded-[26px] bg-whitesmoke">
-        {SCREENS.map((Screen, i) => (
-          <div key={i} className={`phone-screen-${i} absolute inset-0`}>
-            <Screen />
-          </div>
-        ))}
-        <span className="absolute left-1/2 top-2 h-1.5 w-16 -translate-x-1/2 rounded-full bg-seashell" />
+    <div className="absolute inset-x-[18.75%] inset-y-[10.9375%]">
+      <div className="h-full w-full rounded-[36px] bg-white p-3">
+        <div className="relative h-full w-full overflow-hidden rounded-[26px] bg-whitesmoke">
+          <BrandScreen />
+          <span className="absolute left-1/2 top-2 h-1.5 w-16 -translate-x-1/2 rounded-full bg-seashell" />
+        </div>
       </div>
     </div>
   )
 }
 
+/* Floating UI overlays that accompany the phone (Tiqmo-style):
+   a persistent availability pill and a step counter that recolors
+   per role. Decorative — the stage is pointer-events-none. */
+const STEP_NUMERALS = ["١", "٢", "٣"]
+
+function PhoneChips() {
+  return (
+    <>
+      <div
+        aria-hidden
+        className="phone-chip chip-cta pill absolute -left-28 bottom-24 z-30 flex items-center gap-2 bg-white/80 px-4 py-2 backdrop-blur-md"
+      >
+        <span className="rec-blink h-2 w-2 rounded-full bg-positive" />
+        <span className="text-body-5 font-bold text-ink">
+          متاح الآن للبلديات
+        </span>
+      </div>
+      <div
+        aria-hidden
+        className="phone-chip chip-step pill absolute -right-14 top-12 z-30 h-9 w-[88px] bg-white/80 backdrop-blur-md"
+      >
+        {ROLES.map((role, i) => (
+          <span
+            key={i}
+            className={`step-layer-${i} absolute inset-0 flex items-center justify-center gap-2`}
+          >
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ background: role.hex }}
+            />
+            <span className="text-body-5 font-bold text-ink">
+              {STEP_NUMERALS[i]} / ٣
+            </span>
+          </span>
+        ))}
+      </div>
+    </>
+  )
+}
+
 export default function PhoneSection() {
   const root = useRef<HTMLElement>(null)
+  /* 3D pose in CSS-transform conventions — the GSAP timeline tweens
+     this plain object and PhoneCanvas applies it every frame. State
+     only for identity stability; it is mutated, never re-set. */
+  const [pose] = useState<PhonePose>(() => ({
+    rx: 8,
+    ry: 0,
+    rz: 0,
+    z: 0,
+    screen: 0,
+  }))
 
   useGSAP(
     () => {
@@ -231,8 +302,14 @@ export default function PhoneSection() {
       mm.add(
         "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
         () => {
+          /* Initial pose: brand screen showing, phone parked center a
+             touch low, tipped slightly back in 3D space. */
+          gsap.set(".phone-center", { y: "7vh" })
+          gsap.set(".phone-chip", { autoAlpha: 0 })
+          gsap.set(".step-layer-1, .step-layer-2", { autoAlpha: 0 })
+
           /* Entry hand-off: the phone peeks over the tail of The Path
-             and settles into the center of this section (pre-sticky). */
+             and tips upright as it settles into center (pre-sticky). */
           gsap.from(".phone-rise", {
             y: "45vh",
             ease: "none",
@@ -243,13 +320,48 @@ export default function PhoneSection() {
               scrub: true,
             },
           })
-
-          /* Initial: brand screen showing, phone parked center, a touch
-             low so the header owns the top of the intro viewport. */
-          gsap.set(".phone-screen-1, .phone-screen-2, .phone-screen-3", {
-            yPercent: 100,
+          gsap.from(pose, {
+            rx: 34,
+            ease: "none",
+            scrollTrigger: {
+              trigger: root.current,
+              start: "top bottom",
+              end: "top top",
+              scrub: true,
+            },
           })
-          gsap.set(".phone-center", { y: "7vh" })
+
+          /* Idle float — time-based, layered on its own element so it
+             never fights the scrubbed transforms. */
+          gsap.to(".phone-float", {
+            y: -12,
+            duration: 2.8,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          })
+          gsap.to(".phone-float", {
+            rotation: 0.6,
+            duration: 3.7,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          })
+          gsap.to(".chip-cta", {
+            y: -8,
+            duration: 2.3,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          })
+          gsap.to(".chip-step", {
+            y: 7,
+            duration: 2.9,
+            delay: 0.4,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          })
 
           /* Master timeline — scrubbed across the whole section
              (sticky stage does the pinning natively). All positions
@@ -278,34 +390,88 @@ export default function PhoneSection() {
             CROSSINGS[0].at,
           )
 
-          /* Crossings: slow, smooth slides with a settling tilt +
-             synchronized vertical screen swap mid-flight. */
-          CROSSINGS.forEach(({ at, from, to, x, tilt }) => {
+          /* Overlay chips join the story as the journey starts */
+          tl.to(
+            ".phone-chip",
+            { autoAlpha: 1, duration: 24, ease: "power2.out" },
+            CROSSINGS[0].at,
+          )
+
+          /* Crossings: the phone flies through 3D space — it recedes
+             (z), banks into the travel direction, and spins a full
+             turn around its own axis, settling angled toward the copy.
+             The screen texture swaps at the half-turn, while the back
+             of the phone faces the viewer. */
+          CROSSINGS.forEach(({ at, to, x, ry, bank }, ci) => {
             tl.to(
               ".phone-travel",
               { x: `${x}vw`, duration: CROSS_VH, ease: "power2.inOut" },
               at,
             )
+            /* one continuous scrub-linked spin across the crossing */
             tl.to(
-              ".phone-tilt",
-              { rotation: tilt, duration: CROSS_VH * 0.35, ease: "power2.out" },
+              pose,
+              { ry, duration: CROSS_VH, ease: "power2.inOut" },
               at,
             )
+            /* out: recede + pitch and bank into the motion */
             tl.to(
-              ".phone-tilt",
-              { rotation: 0, duration: CROSS_VH * 0.45, ease: "power3.out" },
-              at + CROSS_VH * 0.55,
+              pose,
+              {
+                rx: 15,
+                rz: bank,
+                z: -110,
+                duration: CROSS_VH * 0.5,
+                ease: "power2.inOut",
+              },
+              at,
             )
+            /* settle: come forward and level out */
             tl.to(
-              `.phone-screen-${from}`,
-              { yPercent: -100, duration: CROSS_VH * 0.28, ease: "power2.in" },
+              pose,
+              {
+                rx: 8,
+                rz: 0,
+                z: 0,
+                duration: CROSS_VH * 0.5,
+                ease: "power3.out",
+              },
+              at + CROSS_VH * 0.5,
+            )
+            /* texture swap, hidden at the half-turn (back showing) */
+            tl.set(pose, { screen: to }, at + CROSS_VH * 0.5)
+            /* ambient glow crossfades to the incoming role's tint */
+            if (ci > 0) {
+              tl.to(
+                `.role-glow-${ci - 1}`,
+                { opacity: 0, duration: CROSS_VH * 0.5 },
+                at,
+              )
+            }
+            tl.to(
+              `.role-glow-${ci}`,
+              { opacity: 1, duration: CROSS_VH * 0.5 },
               at + CROSS_VH * 0.3,
             )
-            tl.to(
-              `.phone-screen-${to}`,
-              { yPercent: 0, duration: CROSS_VH * 0.3, ease: "power3.out" },
-              at + CROSS_VH * 0.52,
-            )
+            /* step counter flips to the incoming role */
+            if (ci > 0) {
+              tl.to(
+                `.step-layer-${ci - 1}`,
+                { autoAlpha: 0, yPercent: -60, duration: CROSS_VH * 0.25 },
+                at + CROSS_VH * 0.35,
+              )
+              tl.fromTo(
+                `.step-layer-${ci}`,
+                { autoAlpha: 0, yPercent: 60 },
+                {
+                  autoAlpha: 1,
+                  yPercent: 0,
+                  duration: CROSS_VH * 0.25,
+                  immediateRender: false,
+                },
+                at + CROSS_VH * 0.5,
+              )
+            }
           })
 
           /* pad the timeline out to the full scroll span */
@@ -313,7 +479,7 @@ export default function PhoneSection() {
 
           /* Role copy reveals — driven by each row entering the
              viewport (independent of the phone timeline). */
-          gsap.utils.toArray<HTMLElement>(".role-row").forEach((row, i) => {
+          gsap.utils.toArray<HTMLElement>(".role-row").forEach((row) => {
             gsap.from(row.querySelector(".role-card"), {
               opacity: 0,
               y: 70,
@@ -351,12 +517,33 @@ export default function PhoneSection() {
             </p>
           </div>
 
-          {/* The traveler */}
+          {/* The traveler — nested layers so scrubbed transforms never
+              fight: rise (entry y) → travel (x) → float (idle bob) →
+              3d (yaw/pitch/bank/z). Chips ride along without rotating. */}
           <div className="phone-center absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
             <div className="phone-rise">
-              <div className="phone-travel">
-                <div className="phone-tilt">
-                  <PhoneShell />
+              <div className="phone-travel relative">
+                {/* Role-tinted ambient glow, travels with the phone */}
+                {ROLES.map((role, i) => (
+                  <div
+                    key={i}
+                    aria-hidden
+                    className={`role-glow-${i} absolute -inset-24 -z-10 rounded-full opacity-0`}
+                    style={{
+                      background: `radial-gradient(closest-side, ${role.glass}, transparent)`,
+                    }}
+                  />
+                ))}
+                <div className="phone-float relative">
+                  {/* Phone-sized box; the WebGL canvas overhangs it so
+                      the body never clips while rotating. The camera
+                      distance renders the phone at exactly this size. */}
+                  <div className="relative aspect-[236/480] h-[min(480px,62vh)]">
+                    <div className="absolute -inset-x-[30%] -inset-y-[14%]">
+                      <PhoneCanvas pose={pose} fallback={<PhoneShellFallback />} />
+                    </div>
+                  </div>
+                  <PhoneChips />
                 </div>
               </div>
             </div>

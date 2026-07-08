@@ -8,9 +8,9 @@ import TechSection from "@/components/TechSection"
 import AppGallery from "@/components/AppGallery"
 import TrustBar, { LOGOS as TRUST_LOGOS } from "@/components/TrustBar"
 import GridShowcase from "@/components/GridShowcase"
-import ClaudeImpact from "@/components/ClaudeImpact"
 import Footer from "@/components/Footer"
 import CTASection from "@/components/CTASection"
+import ClaudeImpact from "@/components/ClaudeImpact"
 
 export default function Home() {
   return (
@@ -26,10 +26,11 @@ export default function Home() {
         <TechSection />
         <SectionBreak label="التطبيق" />
         <AppGallery />
-        <TrustBar />
-        <div className="hidden h-[72px] px-6 md:block"></div>
         <SectionBreak label="الأثر" />
         <ClaudeImpact />
+        <TrustBar />
+        <div className="hidden h-[72px] px-6 md:block"></div>
+
         <SectionBreak label="من الميدان" />
         <GridShowcase />
         <CTASection />
