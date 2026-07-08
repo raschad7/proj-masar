@@ -72,6 +72,21 @@ function IlloDetect() {
   );
 }
 
+/* One brand arrow dropped onto the map at (x,y), sized to the old pin.
+   Nested <svg> lets us reuse the logo path in the illustration's space. */
+const ARROW_PATH =
+  "M26.8471 38.0051L21.2015 20.2617C20.9429 19.4492 21.7545 18.7067 22.5409 19.0362L27.4135 21.078C27.6608 21.1817 27.9393 21.1817 28.1865 21.078L33.0592 19.0362C33.8455 18.7067 34.6571 19.4492 34.3986 20.2617L28.7529 38.0051C28.4573 38.9342 27.1427 38.9342 26.8471 38.0051Z"
+
+function MapArrow({ x, y, fill }: { x: number; y: number; fill: string }) {
+  const w = 30
+  const h = 34
+  return (
+    <svg className="pop" x={x - w / 2} y={y - h / 2} width={w} height={h} viewBox="18 17 20 23">
+      <path d={ARROW_PATH} fill={fill} />
+    </svg>
+  )
+}
+
 function IlloMap() {
   return (
     <svg viewBox="0 0 400 300" className="w-full" fill="none" aria-hidden>
@@ -81,11 +96,11 @@ function IlloMap() {
       <path className="draw" d="M60 110 H340" stroke="var(--white)" strokeWidth="14" strokeLinecap="round" />
       <path className="draw" d="M160 30 V270" stroke="var(--white)" strokeWidth="14" strokeLinecap="round" />
       <path className="draw" d="M60 210 C 140 180, 260 240, 340 200" stroke="var(--white)" strokeWidth="14" strokeLinecap="round" />
-      {/* report pins */}
-      <circle className="pop" cx="120" cy="80" r="13" fill="#0072DA" />
-      <circle className="pop" cx="250" cy="150" r="13" fill="var(--notice)" />
-      <circle className="pop" cx="300" cy="70" r="13" fill="var(--negative)" />
-      <circle className="pop" cx="200" cy="235" r="13" fill="var(--positive)" />
+      {/* report pins — the مسار arrow marks each one */}
+      <MapArrow x={120} y={80} fill="#0072DA" />
+      <MapArrow x={250} y={150} fill="var(--notice)" />
+      <MapArrow x={300} y={70} fill="var(--negative)" />
+      <MapArrow x={200} y={235} fill="var(--positive)" />
     </svg>
   );
 }

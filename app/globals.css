@@ -157,6 +157,71 @@ body {
   backdrop-filter: blur(14px);
   box-shadow: var(--shadow-soft);
 }
+/* ── Logo hover — arrows wave bounce ── */
+@keyframes arrow-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.logo-arrow {
+  transition: transform 0.2s ease;
+}
+.nav-logo-btn:hover .logo-arrow-1 {
+  animation: arrow-bounce 0.6s ease-in-out infinite;
+}
+.nav-logo-btn:hover .logo-arrow-2 {
+  animation: arrow-bounce 0.6s ease-in-out infinite;
+  animation-delay: 0.12s;
+}
+.nav-logo-btn:hover .logo-arrow-3 {
+  animation: arrow-bounce 0.6s ease-in-out infinite;
+  animation-delay: 0.24s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-logo-btn:hover .logo-arrow { animation: none; }
+}
+
+/* ── Nav CTA — attention-grabbing tease ── */
+
+/* 1) whole button: gentle scale pulse */
+@keyframes cta-pulse {
+  0%, 78%, 100% { transform: scale(1); }
+  86%           { transform: scale(1.07); }
+  92%           { transform: scale(0.98); }
+}
+.nav-cta-pulse {
+  animation: cta-pulse 3.5s ease-in-out infinite;
+}
+
+/* 2) arrow: bold slide + bounce */
+@keyframes cta-arrow-nudge {
+  0%, 78%  { transform: translateX(0); }
+  85%      { transform: translateX(-10px); }
+  90%      { transform: translateX(2px); }
+  95%      { transform: translateX(-3px); }
+  100%     { transform: translateX(0); }
+}
+.nav-cta-arrow {
+  animation: cta-arrow-nudge 3.5s ease-in-out infinite;
+}
+
+/* 3) underline: sweep in from right, hold, sweep out left */
+@keyframes cta-underline {
+  0%, 75%  { transform: scaleX(0); transform-origin: 100% 50%; }
+  84%      { transform: scaleX(1); transform-origin: 100% 50%; }
+  85%      { transform: scaleX(1); transform-origin: 0% 50%; }
+  95%      { transform: scaleX(0); transform-origin: 0% 50%; }
+  100%     { transform: scaleX(0); transform-origin: 0% 50%; }
+}
+.nav-cta-underline {
+  animation: cta-underline 3.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-cta-pulse,
+  .nav-cta-arrow,
+  .nav-cta-underline { animation: none; }
+  .nav-cta-underline { display: none; }
+}
 
 /* ── Hero radar rings ── */
 @keyframes radar-ping {
@@ -189,6 +254,25 @@ body {
 }
 .radar-core {
   animation: core-glow 2.4s ease-in-out infinite;
+}
+
+/* ── Live "REC"/on-site status dot blink ── */
+@keyframes rec-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.rec-blink {
+  animation: rec-blink 1.1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rec-blink {
+    animation: none;
+  }
 }
 
 /* ── Hero damage hotspots — hover/focus reveals a reading card ── */

@@ -84,16 +84,34 @@ export default function TrustBar() {
           });
 
           /* decorative marquee — constant speed, NOT scroll-linked.
-             Two identical sets; +50% x == one full set == seamless wrap. */
-          tweenRef.current = gsap.to(marqueeRef.current, {
-            xPercent: 50,
-            duration: 40,
-            ease: "none",
-            repeat: -1,
-          });
+             Measured seamless loop: translate by exactly ONE set width,
+             then wrap with a modifier so it never gaps or resets visibly.
+             Speed is width-based so it reads the same at any set size. */
+          const track = marqueeRef.current!;
+          const build = () => {
+            tweenRef.current?.kill();
+            const set = track.firstElementChild as HTMLElement | null;
+            if (!set) return;
+            const setWidth = set.getBoundingClientRect().width;
+            if (!setWidth) return;
+            gsap.set(track, { x: 0 });
+            tweenRef.current = gsap.to(track, {
+              x: `-=${setWidth}`,
+              duration: setWidth / 60, // ~60px per second
+              ease: "none",
+              repeat: -1,
+              modifiers: {
+                x: (x) => `${(parseFloat(x) % setWidth)}px`,
+              },
+            });
+          };
+          build();
+          document.fonts?.ready.then(build);
+          window.addEventListener("resize", build);
           return () => {
             tweenRef.current?.kill();
             tweenRef.current = null;
+            window.removeEventListener("resize", build);
           };
         }
       );
@@ -114,11 +132,12 @@ export default function TrustBar() {
         onMouseLeave={() => tweenRef.current?.play()}
       >
         <div ref={marqueeRef} className="flex w-max">
-          {/* two IDENTICAL halves → xPercent 50 wraps seamlessly */}
-          {[0, 1].map((copy) => (
+          {/* identical sets; the loop shifts by exactly one set width and
+              wraps. Extra copies guarantee the viewport is always filled. */}
+          {[0, 1, 2, 3].map((copy) => (
             <div
               key={copy}
-              aria-hidden={copy === 1}
+              aria-hidden={copy !== 0}
               className="flex items-center gap-16 pe-16"
             >
               {MUNICIPALITIES.map((m) => (

@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import { ArrowLeft20Filled } from "@fluentui/react-icons"
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap"
 import { useLenis } from "@/lib/lenis"
+import LogoArrow from "@/components/LogoArrow"
 
 /* ── The nav IS the مسار — now vertical ───────────────────────────
    A floating island on the right: a vertical path whose marker (the
@@ -102,17 +103,7 @@ export default function Nav() {
       }
       gsap.ticker.add(tick)
 
-      /* CTA live-dot pulse */
-      if (!reduce) {
-        gsap.to(".nav-pulse", {
-          scale: 1.5,
-          opacity: 0.55,
-          duration: 1.1,
-          ease: "sine.inOut",
-          repeat: -1,
-          yoyo: true,
-        })
-      }
+
 
       /* ── island draws in on first scroll ── */
       const playReveal = () => {
@@ -212,9 +203,13 @@ export default function Nav() {
     <nav ref={navRef} aria-label="التنقل الرئيسي">
       {/* ── floating logo (top-right) — no card, larger ── */}
       <div ref={logoRef} className="fixed right-6 top-5 z-50">
-        <button type="button" onClick={toTop} aria-label="مسار — أعلى الصفحة" data-cursor="invert">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo/Logo 6.svg" alt="مسار" className="h-14 w-14" />
+        <button type="button" onClick={toTop} aria-label="مسار — أعلى الصفحة" data-cursor="invert" className="nav-logo-btn block">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-14 w-14">
+            <rect width="56" height="56" rx="16" fill="#34A8D9"/>
+            <path className="logo-arrow logo-arrow-1" d="M16.8376 17.9785L5.97976 36.6039C5.45769 37.4995 6.47538 38.5 7.36193 37.9628L15.2983 33.1536C15.6502 32.9403 16.0969 32.9644 16.4239 33.2144L22.8304 38.112C23.6024 38.7022 24.6775 37.9558 24.3944 37.0263L18.6581 18.1908C18.4039 17.3559 17.2771 17.2245 16.8376 17.9785Z" fill="#111717"/>
+            <path className="logo-arrow logo-arrow-2" d="M38.7624 17.9785L49.6202 36.6039C50.1423 37.4995 49.1246 38.5 48.238 37.9628L40.3017 33.1536C39.9497 32.9403 39.503 32.9644 39.1761 33.2144L32.7696 38.112C31.9976 38.7022 30.9225 37.9558 31.2056 37.0263L36.9419 18.1908C37.1961 17.3559 38.3229 17.2245 38.7624 17.9785Z" fill="#111717"/>
+            <path className="logo-arrow logo-arrow-3" d="M26.8471 38.0051L21.2015 20.2617C20.9429 19.4492 21.7545 18.7067 22.5409 19.0362L27.4135 21.078C27.6608 21.1817 27.9393 21.1817 28.1865 21.078L33.0592 19.0362C33.8455 18.7067 34.6571 19.4492 34.3986 20.2617L28.7529 38.0051C28.4573 38.9342 27.1427 38.9342 26.8471 38.0051Z" fill="#111717"/>
+          </svg>
         </button>
       </div>
 
@@ -224,17 +219,18 @@ export default function Nav() {
           ref={ctaRef}
           type="button"
           onClick={() => scrollToId("contact")}
-          className="group flex items-center gap-2"
+          className="group relative flex items-center gap-2"
         >
-          <span className="relative flex h-2 w-2">
-            <span className="nav-pulse absolute inset-0 rounded-full bg-positive" />
-            <span className="relative h-2 w-2 rounded-full bg-positive" />
+          <span className="nav-cta-pulse flex items-center gap-2">
+            <span className="relative">
+              <span className="text-[15px] font-bold text-ink">احجز عرضاً</span>
+              <span className="nav-cta-underline absolute -bottom-1 left-0 h-[2px] w-full bg-peacock" aria-hidden />
+            </span>
+            <ArrowLeft20Filled
+              className="nav-cta-arrow text-peacock"
+              aria-hidden
+            />
           </span>
-          <span className="text-[15px] font-bold text-ink">احجز عرضاً</span>
-          <ArrowLeft20Filled
-            className="text-peacock transition-transform duration-300 group-hover:-translate-x-1"
-            aria-hidden
-          />
         </button>
       </div>
 
@@ -302,13 +298,17 @@ export default function Nav() {
                   >
                     {s.n}
                   </span>
-                  <span
-                    className={`nav-tick h-2 w-2 shrink-0 rounded-full transition-colors duration-300 ${
+                  <LogoArrow
+                    color={
                       isActive
-                        ? "bg-peacock"
-                        : "bg-mutedtext group-hover:bg-peacock"
+                        ? "var(--peacock)"
+                        : "currentColor"
+                    }
+                    className={`nav-tick h-3.5 w-3 shrink-0 transition-colors duration-300 ${
+                      isActive
+                        ? "text-peacock"
+                        : "text-mutedtext group-hover:text-peacock"
                     }`}
-                    aria-hidden
                   />
                 </button>
               )

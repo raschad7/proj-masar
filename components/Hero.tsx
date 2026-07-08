@@ -4,6 +4,7 @@ import { useRef } from "react"
 import { ChevronRight24Filled, Play24Filled } from "@fluentui/react-icons"
 import { gsap, useGSAP } from "@/lib/gsap"
 import CityMapBg from "@/components/CityMapBg"
+import LogoArrow from "@/components/LogoArrow"
 
 /* ── Timing constants (seconds) — tune here ─────────────────── */
 const T = {
@@ -19,20 +20,23 @@ const T = {
 /* Mouse-parallax depths (px at full viewport offset) */
 const PARALLAX = { scene: 22, content: -8 }
 
-const HEADLINE = ["بلاغٌ واحد،", "طريقٌ واحد،", "حلقةٌ تُغلق"]
+/* Headline — two lines, each split into words so they can rise
+   one-by-one from behind a clip mask. */
+const HEADLINE: string[][] = [
+  ["بلاغٌ", "واحد،", "طريقٌ", "واحد،"],
+  ["حلقةٌ", "تُغلق"],
+]
 
 /* ── Damage hotspots on the city map ──
    main: the story-seed signal (3 radar rings). Others ping softly.
-   Hover / keyboard-focus locks a reading card onto the point.     */
-type DamageType = "pothole" | "crack" | "subsidence"
-
+   Hover / keyboard-focus locks a reading card onto the point.
+   Every marker is the same مسار arrow, tinted per state.          */
 const HOTSPOTS = [
   {
     right: "34%",
     top: "38%",
     hex: "#0072DA",
     label: "حفرة عميقة · ٧٠٪",
-    type: "pothole" as DamageType,
     main: true,
     delay: 0,
   },
@@ -41,7 +45,6 @@ const HOTSPOTS = [
     top: "28%",
     hex: "#FFAB00",
     label: "تشقق تمساحي · ٦٤٪",
-    type: "crack" as DamageType,
     main: false,
     delay: 0.7,
   },
@@ -50,7 +53,6 @@ const HOTSPOTS = [
     top: "62%",
     hex: "#CC3931",
     label: "حفرة خطرة · ٨٥٪",
-    type: "pothole" as DamageType,
     main: false,
     delay: 1.4,
   },
@@ -59,60 +61,10 @@ const HOTSPOTS = [
     top: "64%",
     hex: "#197FB0",
     label: "هبوط إسفلت · ٥٢٪",
-    type: "subsidence" as DamageType,
     main: false,
     delay: 2.1,
   },
 ]
-
-/* Road-damage glyphs — same footprint as the old dot, coloured per state.
-   pothole: irregular filled hole · crack: alligator cracking (strokes) ·
-   subsidence: dished depression (nested ellipses). */
-function DamageGlyph({
-  type,
-  hex,
-  className,
-}: {
-  type: DamageType
-  hex: string
-  className?: string
-}) {
-  const common = {
-    viewBox: "0 0 24 24",
-    className,
-    "aria-hidden": true as const,
-    xmlns: "http://www.w3.org/2000/svg",
-  }
-  if (type === "crack") {
-    return (
-      <svg {...common} fill="none">
-        <path
-          d="M12 2v20M3 12h18M5 5l14 14M19 5L5 19"
-          stroke={hex}
-          strokeWidth="1.8"
-          strokeLinecap="round"
-        />
-      </svg>
-    )
-  }
-  if (type === "subsidence") {
-    return (
-      <svg {...common} fill="none">
-        <ellipse cx="12" cy="13" rx="9.5" ry="6.5" fill={hex} />
-        <ellipse cx="12" cy="12" rx="5.5" ry="3.6" fill="#fff" opacity="0.3" />
-      </svg>
-    )
-  }
-  // pothole
-  return (
-    <svg {...common} fill="none">
-      <path
-        d="M12 3.5c2.7-.3 5.5.7 6.8 2.7 1.2 1.9.3 3.9.7 5.7.4 2 1.7 4-.2 5.5-1.9 1.5-4.9 1.4-7.4.9-2.6-.5-5.2-1.4-6.1-3.6-.9-2.2.4-4.4.5-6.6C7.2 6 9.6 3.9 12 3.5z"
-        fill={hex}
-      />
-    </svg>
-  )
-}
 
 function Hotspot({ spot }: { spot: (typeof HOTSPOTS)[number] }) {
   const rings = spot.main ? [0, 1, 2] : [0]
@@ -142,10 +94,9 @@ function Hotspot({ spot }: { spot: (typeof HOTSPOTS)[number] }) {
             style={{ background: spot.hex, opacity: 0.25 }}
           />
         )}
-        {/* damage shape replaces the old solid dot */}
-        <DamageGlyph
-          type={spot.type}
-          hex={spot.hex}
+        {/* the مسار arrow marks every damage point */}
+        <LogoArrow
+          color={spot.hex}
           className="absolute inset-0 h-full w-full"
         />
         {/* focus-lock ring */}
@@ -178,15 +129,13 @@ export default function Hero() {
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const ease = "power3.out"
 
-        /* Orchestrated entrance */
+        /* Orchestrated entrance — words rise one-by-one from clip masks */
         const tl = gsap.timeline({ defaults: { ease } })
-        HEADLINE.forEach((_, i) => {
-          tl.from(
-            `.hero-line-${i}`,
-            { yPercent: 105, duration: T.lineDur },
-            [T.line1, T.line2, T.line3][i],
-          )
-        })
+        tl.from(
+          ".hero-word",
+          { yPercent: 115, duration: T.lineDur, stagger: 0.09 },
+          T.line1,
+        )
         tl.from(
           ".hero-subtitle",
           { y: 24, opacity: 0, duration: 0.8 },
@@ -286,17 +235,20 @@ export default function Hero() {
           className="font-display text-ink"
           style={{ fontSize: "clamp(38px, 7vw, 82px)", lineHeight: 1.16 }}
         >
-          {HEADLINE.map((line, i) => (
-            <span key={i} className="block overflow-hidden">
-              <span className={`hero-line-${i} block`}>
-                {i === 2 ? (
-                  <>
-                    حلقةٌ <span className="text-peacock">تُغلق</span>
-                  </>
-                ) : (
-                  line
-                )}
-              </span>
+          {HEADLINE.map((words, li) => (
+            <span key={li} className="flex flex-wrap justify-center gap-x-[0.28em]">
+              {words.map((word, wi) => {
+                const isClose = li === 1 && wi === 1 // "تُغلق"
+                return (
+                  <span key={wi} className="block overflow-hidden pb-[0.06em]">
+                    <span
+                      className={`hero-word block ${isClose ? "text-peacock" : ""}`}
+                    >
+                      {word}
+                    </span>
+                  </span>
+                )
+              })}
             </span>
           ))}
         </h1>
