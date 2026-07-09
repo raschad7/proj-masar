@@ -21,7 +21,7 @@ const SCREENS: Screen[] = [
   {
     name: "الرئيسية · قائمة الرحلات",
     desc: "كل البلاغات النشطة في مكانٍ واحد، مع حالتها على المسار.",
-    hex: "#0072DA",
+    hex: "#44729D",
     img: "/gallary/1.png",
   },
   {
@@ -39,7 +39,7 @@ const SCREENS: Screen[] = [
   {
     name: "رحلة البلاغ",
     desc: "المحطات الأربع بتوقيتها — من الاكتشاف حتى إغلاق الحلقة.",
-    hex: "#088A20",
+    hex: "#599664",
     img: "/gallary/4.png",
   },
 ];
@@ -223,15 +223,7 @@ export default function AppGallery() {
                         boxShadow: isActive ? "var(--shadow-soft)" : "none",
                       }}
                     >
-                      {/* active accent bar (no borders per design system) */}
-                      <span
-                        className="h-10 w-1.5 shrink-0 rounded-full transition-all duration-300"
-                        style={{
-                          background: isActive ? s.hex : "var(--seashell)",
-                          opacity: isActive ? 1 : 0.6,
-                          transform: isActive ? "scaleY(1)" : "scaleY(0.5)",
-                        }}
-                      />
+
                       <div className="min-w-0 flex-1">
                         <h3
                           className="text-[21px] font-bold transition-colors"

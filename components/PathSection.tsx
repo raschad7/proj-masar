@@ -29,8 +29,8 @@ type State = {
 const STATES: State[] = [
   {
     label: "يُرصد تلقائياً",
-    hex: "#0072DA",
-    tint: "rgba(0,114,218,0.10)",
+    hex: "#44729D",
+    tint: "rgba(68,114,157,0.10)",
     loc: "شارع النصر · حي المخفية",
     time: "9:12",
     head: "تقود فقط… ومسار يرى",
@@ -39,8 +39,8 @@ const STATES: State[] = [
   },
   {
     label: "مُسنَد",
-    hex: "#FFAB00",
-    tint: "rgba(255,171,0,0.12)",
+    hex: "#D1A242",
+    tint: "rgba(209,162,66,0.12)",
     loc: "أولوية عالية · فريق 3",
     time: "9:13",
     head: "لكل بلاغٍ مالكٌ ووقت",
@@ -59,8 +59,8 @@ const STATES: State[] = [
   },
   {
     label: "أُغلق بدليل",
-    hex: "#088A20",
-    tint: "rgba(8,138,32,0.10)",
+    hex: "#599664",
+    tint: "rgba(89,150,100,0.10)",
     loc: "مُوثّق · جاهز للتدقيق",
     time: "11:25",
     head: "يُغلق بدليلٍ موثّق",
@@ -132,7 +132,7 @@ function TicketMedia({ active }: { active: number }) {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(120% 90% at 62% 40%, rgba(255,171,0,0.22) 0%, transparent 55%)",
+              "radial-gradient(120% 90% at 62% 40%, rgba(209,162,66,0.22) 0%, transparent 55%)",
           }}
         />
 
@@ -146,11 +146,11 @@ function TicketMedia({ active }: { active: number }) {
         <div className="absolute" style={{ right: "40%", top: "38%" }}>
           <span
             className="absolute -inset-3 rounded-full"
-            style={{ background: "rgba(255,171,0,0.25)" }}
+            style={{ background: "rgba(209,162,66,0.25)" }}
           />
           <span
             className="relative block h-3.5 w-3.5 rounded-full border-2 border-white"
-            style={{ background: "#FFAB00" }}
+            style={{ background: "#D1A242" }}
           />
         </div>
 
@@ -159,7 +159,7 @@ function TicketMedia({ active }: { active: number }) {
           <div className="flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
             <span
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
-              style={{ background: "rgba(255,171,0,0.18)" }}
+              style={{ background: "rgba(209,162,66,0.18)" }}
             >
               <img src="/chars/TheFixer.svg" alt="" className="h-7 w-7" />
             </span>

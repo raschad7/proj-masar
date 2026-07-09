@@ -10,10 +10,10 @@
   --sports-teal: #16668e;
 
   /* Semantic (pipeline states) */
-  --informative: #0072da; /* state 1: new report   */
-  --notice: #ffab00;      /* state 2: assigned     */
-  --positive: #088a20;    /* state 4: fixed        */
-  --negative: #cc3931;
+  --informative: #44729d; /* state 1: new report   */
+  --notice: #d1a242;      /* state 2: assigned     */
+  --positive: #599664;    /* state 4: fixed        */
+  --negative: #c0625d;
 
   /* Neutrals — light */
   --white: #ffffff;
@@ -64,6 +64,13 @@
 
 html {
   scroll-behavior: auto; /* Lenis owns scrolling */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+::-webkit-scrollbar {
+  display: none;
 }
 
 /* Custom cursor active → hide the native one everywhere (fine pointers

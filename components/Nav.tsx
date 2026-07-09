@@ -266,7 +266,7 @@ export default function Nav() {
       <div className="fixed right-5 top-1/2 z-40 hidden -translate-y-1/2 md:block ">
         <div
           ref={islandRef}
-          className="nav-island group relative w-[54px] overflow-hidden py-3 transition-[width] duration-300 ease-out hover:w-[130px]"
+          className="nav-island group relative w-[64px] overflow-hidden rounded-[32px] py-3 transition-[width] duration-300 ease-out hover:w-[140px]"
           style={{ opacity: 0, visibility: "hidden" }}
         >
           <div className="relative" style={{ height: ROWS_H }}>
@@ -278,7 +278,7 @@ export default function Nav() {
             {/* traveled fill (top → down) */}
             <div
               ref={fillRef}
-              className="absolute rounded-full"
+              className={`absolute rounded-full transition-colors duration-300 ${active === 7 ? "bg-white group-hover:bg-gray-400" : ""}`}
               style={{
                 top: OFFSET,
                 height: TRACK_H,
@@ -286,20 +286,26 @@ export default function Nav() {
                 right: 15,
                 transformOrigin: "50% 0%",
                 transform: "scaleY(0)",
-                background:
-                  "linear-gradient(180deg,#088A20 0%,#34A8D8 55%,#0072DA 100%)",
+                background: active === 7 ? undefined : "#34A8D8",
               }}
             />
             {/* the marker — the report dot */}
             <div
               ref={markerRef}
-              className="nav-marker absolute rounded-full bg-ink shadow-[0_0_0_4px_var(--white)]"
+              className={`nav-marker absolute rounded-full shadow-[0_0_0_4px_var(--white)] transition-colors duration-300 ${active === 7 ? "bg-white group-hover:bg-gray-400" : "bg-ink"}`}
               style={{ top: 14, right: 9, width: 11, height: 11 }}
             />
 
             {/* section rows — labels reveal + go blue when the island opens */}
             {SECTIONS.map((s, i) => {
               const isActive = i === active
+              const inFooter = active === 7
+              
+              const labelColor = inFooter ? "text-white group-hover/row:text-gray-400" : (isActive ? "text-peacock" : "text-ink");
+              const numColor = inFooter ? "text-white group-hover/row:text-gray-400" : (isActive ? "text-peacock" : "text-mutedtext group-hover/row:text-peacock");
+              const tickColor = inFooter ? "text-white group-hover/row:text-gray-400" : (isActive ? "text-peacock" : "text-mutedtext group-hover/row:text-peacock");
+              const tickFill = inFooter ? "currentColor" : (isActive ? "var(--peacock)" : "currentColor");
+
               return (
                 <button
                   key={s.id}
@@ -311,28 +317,18 @@ export default function Nav() {
                   style={{ height: STEP }}
                 >
                   <span
-                    className={`whitespace-nowrap text-[13px] font-bold opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover/row:-translate-x-0.5 group-hover/row:text-peacock ${
-                      isActive ? "text-peacock" : "text-ink"
-                    }`}
+                    className={`whitespace-nowrap text-[13px] font-bold opacity-0 transition-colors duration-200 group-hover:opacity-100 group-hover/row:-translate-x-0.5 ${labelColor}`}
                   >
                     {s.label}
                   </span>
                   <span
-                    className={`text-[10px] font-bold tracking-widest transition-colors duration-300 group-hover/row:text-peacock ${
-                      isActive
-                        ? "text-peacock"
-                        : "text-mutedtext group-hover:text-peacock"
-                    }`}
+                    className={`text-[10px] font-bold tracking-widest transition-colors duration-300 ${numColor}`}
                   >
                     {s.n}
                   </span>
                   <LogoArrow
-                    color={isActive ? "var(--peacock)" : "currentColor"}
-                    className={`nav-tick h-3.5 w-3 shrink-0 transition-colors duration-300 group-hover/row:text-peacock ${
-                      isActive
-                        ? "text-peacock"
-                        : "text-mutedtext group-hover:text-peacock"
-                    }`}
+                    color={tickFill}
+                    className={`nav-tick h-3.5 w-3 shrink-0 transition-colors duration-300 ${tickColor}`}
                   />
                 </button>
               )

@@ -12,22 +12,13 @@ const PIN_DISTANCE = "+=500%";
 
 const STEPS = [
   { label: "يلتقط", hex: "#34A8D8" },
-  { label: "يرى", hex: "#0072DA" },
-  { label: "يصنّف", hex: "#FFAB00" },
+  { label: "يرى", hex: "#44729D" },
+  { label: "يصنّف", hex: "#D1A242" },
   { label: "يوطّن", hex: "#16668E" },
-  { label: "يزامن", hex: "#088A20" },
+  { label: "يزامن", hex: "#599664" },
 ];
 
-/* Corner-bracket path (L shape) generator for a box at x,y,w,h */
-function brackets(x: number, y: number, w: number, h: number, r = 10) {
-  const L = 26;
-  return [
-    `M${x + L} ${y} h-${L - r} a${r} ${r} 0 0 0 -${r} ${r} v${L - r}`,
-    `M${x + w - L} ${y} h${L - r} a${r} ${r} 0 0 1 ${r} ${r} v${L - r}`,
-    `M${x + L} ${y + h} h-${L - r} a${r} ${r} 0 0 1 -${r} -${r} v-${L - r}`,
-    `M${x + w - L} ${y + h} h${L - r} a${r} ${r} 0 0 0 ${r} -${r} v-${L - r}`,
-  ];
-}
+
 
 /* Detection boxes (SVG viewBox coords) */
 const BOX_POTHOLE = { x: 185, y: 238, w: 215, h: 130 };
@@ -49,7 +40,7 @@ export default function TechSection() {
         () => {
           /* Initial: raw frame only */
           gsap.set(".tech-scan", { xPercent: -130, opacity: 0 });
-          gsap.set(".tech-bracket, .tech-rect", { drawSVG: "0%" });
+          gsap.set(".tech-rect", { drawSVG: "0%" });
           gsap.set(".tech-chip", { opacity: 0, scale: 0.6 });
           gsap.set(".tech-conf", { scaleX: 0, transformOrigin: "100% 50%" });
           gsap.set(".tech-coords", { opacity: 0, y: -8 });
@@ -81,13 +72,11 @@ export default function TechSection() {
           tl.to(".tech-scan", { opacity: 0, duration: 0.12 }, 0.68);
 
           /* ── Beat 2 · يرى — THE HERO BEAT.
-             Corners first, then edges connect (machine-vision feel).
+             Bounding boxes connect (machine-vision feel).
              Pothole box leads, crack box follows. Hold to settle. ── */
           step(1, 1);
-          tl.to(".tb-pothole .tech-bracket", { drawSVG: "100%", duration: 0.14, stagger: 0.07, ease: "power2.out" }, 1.05);
-          tl.to(".tb-pothole .tech-rect", { drawSVG: "100%", duration: 0.3, ease: "power2.inOut" }, 1.4);
-          tl.to(".tb-crack .tech-bracket", { drawSVG: "100%", duration: 0.14, stagger: 0.07, ease: "power2.out" }, 1.35);
-          tl.to(".tb-crack .tech-rect", { drawSVG: "100%", duration: 0.3, ease: "power2.inOut" }, 1.68);
+          tl.to(".tb-pothole .tech-rect", { drawSVG: "100%", duration: 0.4, ease: "power2.inOut" }, 1.1);
+          tl.to(".tb-crack .tech-rect", { drawSVG: "100%", duration: 0.4, ease: "power2.inOut" }, 1.4);
 
           /* ── Beat 3 · يصنّف — label chips pop + confidence fills ── */
           step(2, 2);
@@ -208,8 +197,8 @@ export default function TechSection() {
 
             {/* detection overlays */}
             {[
-              { cls: "tb-pothole", box: BOX_POTHOLE, hex: "#0072DA" },
-              { cls: "tb-crack", box: BOX_CRACK, hex: "#0072DA" },
+              { cls: "tb-pothole", box: BOX_POTHOLE, hex: "#44729D" },
+              { cls: "tb-crack", box: BOX_CRACK, hex: "#44729D" },
             ].map(({ cls, box, hex }) => (
               <g key={cls} className={cls}>
                 <rect
@@ -223,17 +212,6 @@ export default function TechSection() {
                   strokeWidth="4"
                   opacity="0.85"
                 />
-                {brackets(box.x - 8, box.y - 8, box.w + 16, box.h + 16).map((d, i) => (
-                  <path
-                    key={i}
-                    className="tech-bracket"
-                    d={d}
-                    stroke={hex}
-                    strokeWidth="7"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                ))}
               </g>
             ))}
           </svg>

@@ -147,9 +147,9 @@ export default function ImpactSection() {
                 />
                 <defs>
                   <linearGradient id="impactGauge" gradientUnits="userSpaceOnUse" x1="20" y1="20" x2="240" y2="240">
-                    <stop offset="0%" stopColor="#0072DA" />
+                    <stop offset="0%" stopColor="#44729D" />
                     <stop offset="55%" stopColor="#34A8D8" />
-                    <stop offset="100%" stopColor="#088A20" />
+                    <stop offset="100%" stopColor="#599664" />
                   </linearGradient>
                 </defs>
               </svg>
