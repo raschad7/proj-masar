@@ -1,10 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { CheckmarkCircle24Filled } from "@fluentui/react-icons";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useLenis } from "@/lib/lenis";
-import CityMapBg from "@/components/CityMapBg";
 
 /* ── The life of one report ───────────────────────────────────────
    A single work-item "ticket" travels through the four pipeline
@@ -77,7 +76,7 @@ const REPORT_ID = "بلاغ #042";
 /* eslint-disable @next/next/no-img-element */
 function TicketMedia({ active }: { active: number }) {
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-ink">
+    <div className="relative aspect-[4/3] w-full overflow-hidden bg-ink">
       {/* 1 — dashcam auto-detection */}
       <div
         className="absolute inset-0 transition-opacity duration-500"
@@ -117,26 +116,62 @@ function TicketMedia({ active }: { active: number }) {
         </span>
       </div>
 
-      {/* 2 — assigned to a crew */}
+      {/* 2 — assigned to the nearest crew (map dispatch) */}
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center gap-4 transition-opacity duration-500"
-        style={{ opacity: active === 1 ? 1 : 0, background: "#FFF7E6" }}
+        className="absolute inset-0 transition-opacity duration-500"
+        style={{ opacity: active === 1 ? 1 : 0 }}
       >
-        <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4">
+        <img
+          src="/grid/Gemini_Generated_Image_v3jpk7v3jpk7v3jp.png"
+          alt=""
+          className="h-full w-full object-cover"
+        />
+        {/* darken + amber wash so text and card read clearly */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/10" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(120% 90% at 62% 40%, rgba(255,171,0,0.22) 0%, transparent 55%)",
+          }}
+        />
+
+        {/* status chip */}
+        <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-sm">
+          <span className="h-2 w-2 rounded-full bg-notice rec-blink" />
+          الإسناد الذكي
+        </span>
+
+        {/* location pin on the map (report site) */}
+        <div className="absolute" style={{ right: "40%", top: "38%" }}>
           <span
-            className="flex h-12 w-12 items-center justify-center rounded-full"
-            style={{ background: "rgba(255,171,0,0.18)" }}
-          >
-            <img src="/chars/TheFixer.svg" alt="" className="h-8 w-8" />
-          </span>
-          <div className="text-right">
-            <p className="text-[15px] font-bold text-ink">فريق الإصلاح · وحدة 3</p>
-            <p className="text-[13px] text-subtext">أقرب فريق · 1.2 كم</p>
+            className="absolute -inset-3 rounded-full"
+            style={{ background: "rgba(255,171,0,0.25)" }}
+          />
+          <span
+            className="relative block h-3.5 w-3.5 rounded-full border-2 border-white"
+            style={{ background: "#FFAB00" }}
+          />
+        </div>
+
+        {/* floating dispatch card */}
+        <div className="absolute inset-x-4 bottom-4">
+          <div className="flex items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
+            <span
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full"
+              style={{ background: "rgba(255,171,0,0.18)" }}
+            >
+              <img src="/chars/TheFixer.svg" alt="" className="h-7 w-7" />
+            </span>
+            <div className="min-w-0 flex-1 text-right">
+              <p className="text-[15px] font-bold text-ink">فريق الإصلاح · وحدة 3</p>
+              <p className="text-[13px] text-subtext">أقرب فريق · 1.2 كم</p>
+            </div>
+            <span className="shrink-0 rounded-full bg-notice/15 px-3 py-1 text-[12px] font-bold text-[#8a5a00]">
+              أولوية عالية
+            </span>
           </div>
         </div>
-        <span className="rounded-full bg-notice/15 px-4 py-1.5 text-[13px] font-bold text-[#8a5a00]">
-          أُسند 9:13 ص
-        </span>
       </div>
 
       {/* 3 — in repair, on site */}
@@ -161,84 +196,113 @@ function TicketMedia({ active }: { active: number }) {
         </div>
       </div>
 
-      {/* 4 — closed with before/after proof */}
+      {/* 4 — closed with before/after proof (single composite image) */}
       <div
-        className="absolute inset-0 flex flex-col transition-opacity duration-500"
-        style={{ opacity: active === 3 ? 1 : 0, background: "#F1FAF2" }}
+        className="absolute inset-0 transition-opacity duration-500"
+        style={{ opacity: active === 3 ? 1 : 0 }}
       >
-        <div className="grid flex-1 grid-cols-2 gap-1 p-1">
-          <div className="relative overflow-hidden rounded-xl">
-            <img src="/media/detection-poster.jpg" alt="" className="h-full w-full object-cover" />
-            <span className="absolute bottom-1.5 right-1.5 rounded bg-black/55 px-1.5 py-0.5 text-[10px] font-bold text-white">قبل</span>
+        <img
+          src="/gallary/pathPic.png"
+          alt="قبل وبعد الإصلاح"
+          className="h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
+        <span className="absolute inset-x-4 bottom-4 flex items-center justify-center gap-2 rounded-full bg-positive/95 px-3 py-2 text-[13px] font-bold text-white backdrop-blur-sm">
+          <CheckmarkCircle24Filled aria-hidden className="h-4 w-4" />
+          أُغلق البلاغ · موثّق
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ── The travelling ticket ──────────────────────────────────────
+   Flat, borderless, shadowless (locked system): the media is the
+   hero, depth comes from a full-bleed state-coloured footer with a
+   large Arabic-Indic ordinal watermark. Progress lives in the
+   stepper rail above, so no duplicate timeline here. */
+const AR_ORD = ["٠١", "٠٢", "٠٣", "٠٤"];
+
+function Ticket({ active }: { active: number }) {
+  const s = STATES[active];
+  return (
+    <div className="path-ticket w-full max-w-[400px] overflow-hidden rounded-[28px] bg-white">
+      {/* media — the hero, edge to edge */}
+      <TicketMedia active={active} />
+
+      {/* state-coloured footer — colour + layering carry the depth */}
+      <div
+        className="relative overflow-hidden px-5 pb-5 pt-4 transition-colors duration-500"
+        style={{ background: s.hex }}
+      >
+        {/* oversized ordinal watermark */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -bottom-5 left-3 select-none font-display leading-none text-white/15"
+          style={{ fontSize: 96 }}
+        >
+          {AR_ORD[active]}
+        </span>
+
+        <div className="relative flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-white/90" />
+              <span className="truncate text-[16px] font-bold text-white">
+                {s.label}
+              </span>
+            </div>
+            <p className="mt-1 truncate text-[12.5px] text-white/75">{s.loc}</p>
           </div>
-          <div className="relative overflow-hidden rounded-xl">
-            <img src="/grid/pexels-ismail-nabhan-2159803207-36627992.jpg" alt="" className="h-full w-full object-cover" />
-            <span className="absolute bottom-1.5 right-1.5 rounded bg-positive px-1.5 py-0.5 text-[10px] font-bold text-white">بعد</span>
+          <div className="shrink-0 text-left">
+            <p className="text-[13px] font-bold tracking-wide text-white tabular-nums">
+              {REPORT_ID}
+            </p>
+            <p className="mt-1 text-[12.5px] text-white/75 tabular-nums">
+              {s.time} ص
+            </p>
           </div>
-        </div>
-        <div className="flex items-center justify-center gap-2 py-3 text-positive">
-          <CheckmarkCircle24Filled aria-hidden />
-          <span className="text-[15px] font-bold">أُغلق البلاغ · موثّق</span>
         </div>
       </div>
     </div>
   );
 }
 
-/* ── The travelling ticket card ── */
-function Ticket({ active }: { active: number }) {
-  const s = STATES[active];
+/* ── Headline with a per-word reveal (re-runs when the copy changes).
+   Arabic is split by word, never by character — character splitting
+   breaks the cursive joining. Rise + de-blur, no hard clip mask so
+   diacritics never get cropped. */
+function SplitHeading({ text }: { text: string }) {
+  const ref = useRef<HTMLHeadingElement>(null);
+  const words = text.split(" ");
+  useGSAP(
+    () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const inners = ref.current!.querySelectorAll(".ph-word");
+      gsap.fromTo(
+        inners,
+        { yPercent: 60, opacity: 0, filter: "blur(6px)" },
+        {
+          yPercent: 0,
+          opacity: 1,
+          filter: "blur(0px)",
+          duration: 0.7,
+          ease: "power3.out",
+          stagger: 0.06,
+        }
+      );
+    },
+    { dependencies: [text], scope: ref }
+  );
   return (
-    <div
-      className="path-ticket w-full max-w-[420px] overflow-hidden rounded-[28px] bg-white"
-    >
-      {/* coloured header floods with the active state */}
-      <div
-        className="flex items-center justify-between px-5 py-4 transition-colors duration-500"
-        style={{ background: s.hex }}
-      >
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-white/90" />
-          <span className="text-[15px] font-bold text-white">{s.label}</span>
-        </div>
-        <span className="text-[13px] font-bold text-white/85">{REPORT_ID}</span>
-      </div>
-
-      <div className="p-4" style={{ background: s.tint, transition: "background 0.5s" }}>
-        {/* location line */}
-        <div className="mb-3 flex items-center justify-between text-[13px]">
-          <span className="font-bold text-ink transition-all duration-300" key={s.loc}>
-            {s.loc}
-          </span>
-          <span className="text-subtext">{s.time} ص</span>
-        </div>
-
-        <TicketMedia active={active} />
-
-        {/* accumulating log */}
-        <ul className="mt-4 flex flex-col gap-1.5">
-          {STATES.map((st, i) => (
-            <li
-              key={i}
-              className="flex items-center gap-2 text-[12px] transition-all duration-500"
-              style={{
-                opacity: i <= active ? 1 : 0.28,
-                transform: i <= active ? "translateY(0)" : "translateY(2px)",
-              }}
-            >
-              <span
-                className="h-1.5 w-1.5 shrink-0 rounded-full"
-                style={{ background: i <= active ? st.hex : "var(--muted)" }}
-              />
-              <span className="text-subtext">{st.time}</span>
-              <span className={i <= active ? "font-bold text-ink" : "text-mutedtext"}>
-                {st.log}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <h3 ref={ref} className="font-display text-display-3 leading-[1.15] text-ink">
+      {words.map((w, i) => (
+        <Fragment key={i}>
+          <span className="ph-word inline-block will-change-transform">{w}</span>
+          {i < words.length - 1 ? " " : ""}
+        </Fragment>
+      ))}
+    </h3>
   );
 }
 
@@ -311,7 +375,6 @@ export default function PathSection() {
 
   return (
     <section ref={root} id="path" className="relative overflow-hidden bg-white">
-      <CityMapBg className="opacity-30" />
 
       {/* ── Desktop: pinned travelling ticket ── */}
       <div className="hidden md:block">
@@ -371,9 +434,7 @@ export default function PathSection() {
                 className="mb-3 inline-block h-1.5 w-12 rounded-full transition-colors duration-500"
                 style={{ background: STATES[active].hex }}
               />
-              <h3 className="font-display text-display-3 text-ink" key={STATES[active].head}>
-                {STATES[active].head}
-              </h3>
+              <SplitHeading text={STATES[active].head} key={STATES[active].head} />
               <p className="mt-4 max-w-md text-body-2 leading-relaxed text-subtext">
                 {STATES[active].line}
               </p>

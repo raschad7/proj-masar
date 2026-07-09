@@ -11,6 +11,7 @@ import GridShowcase from "@/components/GridShowcase"
 import Footer from "@/components/Footer"
 import CTASection from "@/components/CTASection"
 import ClaudeImpact from "@/components/ClaudeImpact"
+import GeminiPath from "@/components/GeminiPath"
 
 export default function Home() {
   return (
@@ -18,8 +19,9 @@ export default function Home() {
       <Nav />
       <main className="relative z-[1] bg-white">
         <Hero />
-        <PathSection />
+        <GeminiPath />
         <PhoneSection />
+
         <SectionBreak label="الميزات" />
         <FeaturesSection />
         <SectionBreak label="كيف يعمل" />
