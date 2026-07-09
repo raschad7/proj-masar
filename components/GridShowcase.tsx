@@ -22,19 +22,14 @@ type SolidCard = {
 }
 type CardItem = ImageCard | SolidCard
 
-/* ── Bento grid — 7 cards (5 images + 2 solid) ───────────────
-   Desktop 4 cols × 3 rows  (320 px / 195 px / 270 px)
-   ┌──────────────────────────┬──────────┐
-   │                          │          │
-   │   Dashboard  (3c × 1r)   │  نرصد    │  320 px
-   │                          │          │
-   ├──────────┬───────┬───────┴──────────┤
-   │  Road    │ نُصلح │                   │
-   │  (1c×1r) │(1c×1r)│  Worker (2c × 2r) │  195 px
-   ├──────────┼───────┤                   │
-   │  Car     │ Phone │                   │
-   │  (1c×1r) │(1c×1r)│                   │  270 px
-   └──────────┴───────┴───────────────────┘
+/* ── Bento grid — 6 cards (4 images + 2 solid) ───────────────
+   Desktop landscape: 6 cols × 2 rows, unequal (300 / 240 px)
+   Deliberately irregular — varied spans, no two neighbours alike.
+   ┌──────────────────────┬───────┬───────────────┐
+   │   Dashboard (3c×1r)  │ نرصد  │               │
+   ├───────┬──────┬───────┴───────┤ Worker(2c×2r) │
+   │ Road  │ نُصلح│  بلاغ (2c×1r)  │   (tall)      │
+   └───────┴──────┴───────────────┴───────────────┘
    ─────────────────────────────────────────────────────────── */
 const ITEMS: CardItem[] = [
   {
@@ -55,6 +50,14 @@ const ITEMS: CardItem[] = [
   },
   {
     type: "image",
+    src: "/grid/pexels-gaion-27937015.jpg",
+    alt: "عامل يقوم بإصلاح الطريق",
+    label: "إصلاح فعلي",
+    desc: "من البلاغ إلى الإنجاز",
+    grid: "md:col-start-5 md:col-end-7 md:row-start-1 md:row-end-3",
+  },
+  {
+    type: "image",
     src: "/grid/pexels-annpeach-12308486.jpg",
     alt: "طريق ريفي بين الأشجار",
     label: "بنية تحتية",
@@ -71,27 +74,11 @@ const ITEMS: CardItem[] = [
   },
   {
     type: "image",
-    src: "/grid/pexels-gaion-27937015.jpg",
-    alt: "عامل يقوم بإصلاح الطريق",
-    label: "إصلاح فعلي",
-    desc: "من البلاغ إلى الإنجاز",
-    grid: "md:col-start-3 md:col-end-5 md:row-start-2 md:row-end-4",
-  },
-  {
-    type: "image",
-    src: "/grid/pexels-ismail-nabhan-2159803207-36627992.jpg",
-    alt: "سيارة تسير على طريق مدينة",
-    label: "حياة يومية",
-    desc: "شوارع تخدم الجميع",
-    grid: "md:col-start-1 md:row-start-3",
-  },
-  {
-    type: "image",
     src: "/grid/pexels-samson-katt-5226497.jpg",
     alt: "شخص يستخدم تطبيق الخرائط على الهاتف",
     label: "بلاغ مواطن",
     desc: "إبلاغ بلمسة واحدة",
-    grid: "md:col-start-2 md:row-start-3",
+    grid: "col-span-2 md:col-start-3 md:col-end-5 md:row-start-2",
   },
 ]
 
@@ -273,7 +260,7 @@ export default function GridShowcase() {
         className="mx-auto max-w-[1200px] rounded-[36px] p-2.5 md:p-3"
         style={{ background: "#E9E9E9" }}
       >
-        <div className="grid grid-cols-2 auto-rows-[170px] gap-2.5 md:grid-cols-4 md:grid-rows-[320px_195px_270px] md:auto-rows-auto md:gap-3">
+        <div className="grid grid-cols-2 auto-rows-[170px] gap-2.5 md:grid-cols-6 md:grid-rows-[300px_240px] md:auto-rows-auto md:gap-3">
           {ITEMS.map((item) => (
             <div
               key={item.type === "image" ? item.src : item.word}

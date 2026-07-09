@@ -16,9 +16,11 @@ const SECTIONS = [
   { n: "01", label: "المسار", id: "path" },
   { n: "02", label: "الأدوار", id: "roles" },
   { n: "03", label: "الميزات", id: "features" },
-  { n: "04", label: "التطبيق", id: "gallery" },
-  { n: "05", label: "الأثر", id: "impact" },
-  { n: "06", label: "تواصل", id: "contact" },
+  { n: "04", label: "كيف يعمل", id: "tech" },
+  { n: "05", label: "التطبيق", id: "gallery" },
+  { n: "06", label: "الأثر", id: "impact-claude" },
+  { n: "07", label: "من الميدان", id: "grid-showcase" },
+  { n: "08", label: "تواصل", id: "contact" },
 ]
 const N = SECTIONS.length
 
@@ -102,8 +104,6 @@ export default function Nav() {
         apply(cur)
       }
       gsap.ticker.add(tick)
-
-
 
       /* ── island draws in on first scroll ── */
       const playReveal = () => {
@@ -203,12 +203,37 @@ export default function Nav() {
     <nav ref={navRef} aria-label="التنقل الرئيسي">
       {/* ── floating logo (top-right) — no card, larger ── */}
       <div ref={logoRef} className="fixed right-6 top-5 z-50">
-        <button type="button" onClick={toTop} aria-label="مسار — أعلى الصفحة" data-cursor="invert" className="nav-logo-btn block">
-          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-14 w-14">
-            <rect width="56" height="56" rx="16" fill="#34A8D9"/>
-            <path className="logo-arrow logo-arrow-1" d="M16.8376 17.9785L5.97976 36.6039C5.45769 37.4995 6.47538 38.5 7.36193 37.9628L15.2983 33.1536C15.6502 32.9403 16.0969 32.9644 16.4239 33.2144L22.8304 38.112C23.6024 38.7022 24.6775 37.9558 24.3944 37.0263L18.6581 18.1908C18.4039 17.3559 17.2771 17.2245 16.8376 17.9785Z" fill="#111717"/>
-            <path className="logo-arrow logo-arrow-2" d="M38.7624 17.9785L49.6202 36.6039C50.1423 37.4995 49.1246 38.5 48.238 37.9628L40.3017 33.1536C39.9497 32.9403 39.503 32.9644 39.1761 33.2144L32.7696 38.112C31.9976 38.7022 30.9225 37.9558 31.2056 37.0263L36.9419 18.1908C37.1961 17.3559 38.3229 17.2245 38.7624 17.9785Z" fill="#111717"/>
-            <path className="logo-arrow logo-arrow-3" d="M26.8471 38.0051L21.2015 20.2617C20.9429 19.4492 21.7545 18.7067 22.5409 19.0362L27.4135 21.078C27.6608 21.1817 27.9393 21.1817 28.1865 21.078L33.0592 19.0362C33.8455 18.7067 34.6571 19.4492 34.3986 20.2617L28.7529 38.0051C28.4573 38.9342 27.1427 38.9342 26.8471 38.0051Z" fill="#111717"/>
+        <button
+          type="button"
+          onClick={toTop}
+          aria-label="مسار — أعلى الصفحة"
+          data-cursor="invert"
+          className="nav-logo-btn block"
+        >
+          <svg
+            width="56"
+            height="56"
+            viewBox="0 0 56 56"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-14 w-14"
+          >
+            <rect width="56" height="56" rx="16" fill="#34A8D9" />
+            <path
+              className="logo-arrow logo-arrow-1"
+              d="M16.8376 17.9785L5.97976 36.6039C5.45769 37.4995 6.47538 38.5 7.36193 37.9628L15.2983 33.1536C15.6502 32.9403 16.0969 32.9644 16.4239 33.2144L22.8304 38.112C23.6024 38.7022 24.6775 37.9558 24.3944 37.0263L18.6581 18.1908C18.4039 17.3559 17.2771 17.2245 16.8376 17.9785Z"
+              fill="#111717"
+            />
+            <path
+              className="logo-arrow logo-arrow-2"
+              d="M38.7624 17.9785L49.6202 36.6039C50.1423 37.4995 49.1246 38.5 48.238 37.9628L40.3017 33.1536C39.9497 32.9403 39.503 32.9644 39.1761 33.2144L32.7696 38.112C31.9976 38.7022 30.9225 37.9558 31.2056 37.0263L36.9419 18.1908C37.1961 17.3559 38.3229 17.2245 38.7624 17.9785Z"
+              fill="#111717"
+            />
+            <path
+              className="logo-arrow logo-arrow-3"
+              d="M26.8471 38.0051L21.2015 20.2617C20.9429 19.4492 21.7545 18.7067 22.5409 19.0362L27.4135 21.078C27.6608 21.1817 27.9393 21.1817 28.1865 21.078L33.0592 19.0362C33.8455 18.7067 34.6571 19.4492 34.3986 20.2617L28.7529 38.0051C28.4573 38.9342 27.1427 38.9342 26.8471 38.0051Z"
+              fill="#111717"
+            />
           </svg>
         </button>
       </div>
@@ -224,7 +249,10 @@ export default function Nav() {
           <span className="nav-cta-pulse flex items-center gap-2">
             <span className="relative">
               <span className="text-[15px] font-bold text-ink">احجز عرضاً</span>
-              <span className="nav-cta-underline absolute -bottom-1 left-0 h-[2px] w-full bg-peacock" aria-hidden />
+              <span
+                className="nav-cta-underline absolute -bottom-1 left-0 h-[2px] w-full bg-peacock"
+                aria-hidden
+              />
             </span>
             <ArrowLeft20Filled
               className="nav-cta-arrow text-peacock"
@@ -235,7 +263,7 @@ export default function Nav() {
       </div>
 
       {/* ── vertical progress island (right, centered) — expands on hover ── */}
-      <div className="fixed right-5 top-1/2 z-40 hidden -translate-y-1/2 md:block">
+      <div className="fixed right-5 top-1/2 z-40 hidden -translate-y-1/2 md:block ">
         <div
           ref={islandRef}
           className="nav-island group relative w-[54px] overflow-hidden py-3 transition-[width] duration-300 ease-out hover:w-[130px]"
@@ -266,7 +294,7 @@ export default function Nav() {
             <div
               ref={markerRef}
               className="nav-marker absolute rounded-full bg-ink shadow-[0_0_0_4px_var(--white)]"
-              style={{ top: 14, right: 9, width: 14, height: 14 }}
+              style={{ top: 14, right: 9, width: 11, height: 11 }}
             />
 
             {/* section rows — labels reveal + go blue when the island opens */}
@@ -279,18 +307,18 @@ export default function Nav() {
                   onClick={() => scrollToId(s.id)}
                   aria-label={s.label}
                   aria-current={isActive ? "true" : undefined}
-                  className="relative flex w-full items-center justify-end gap-2.5 pr-3"
+                  className="group/row relative flex w-full items-center justify-end gap-2.5 pr-12"
                   style={{ height: STEP }}
                 >
                   <span
-                    className={`whitespace-nowrap text-[13px] font-bold opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${
+                    className={`whitespace-nowrap text-[13px] font-bold opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover/row:-translate-x-0.5 group-hover/row:text-peacock ${
                       isActive ? "text-peacock" : "text-ink"
                     }`}
                   >
                     {s.label}
                   </span>
                   <span
-                    className={`text-[10px] font-bold tracking-widest transition-colors duration-300 ${
+                    className={`text-[10px] font-bold tracking-widest transition-colors duration-300 group-hover/row:text-peacock ${
                       isActive
                         ? "text-peacock"
                         : "text-mutedtext group-hover:text-peacock"
@@ -299,12 +327,8 @@ export default function Nav() {
                     {s.n}
                   </span>
                   <LogoArrow
-                    color={
-                      isActive
-                        ? "var(--peacock)"
-                        : "currentColor"
-                    }
-                    className={`nav-tick h-3.5 w-3 shrink-0 transition-colors duration-300 ${
+                    color={isActive ? "var(--peacock)" : "currentColor"}
+                    className={`nav-tick h-3.5 w-3 shrink-0 transition-colors duration-300 group-hover/row:text-peacock ${
                       isActive
                         ? "text-peacock"
                         : "text-mutedtext group-hover:text-peacock"

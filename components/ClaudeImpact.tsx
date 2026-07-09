@@ -39,7 +39,7 @@ const STATS: Stat[] = [
     title: "خفضٌ في كلفة الصيانة الطارئة",
     desc: "الكشف المبكر يمنع تحوّل الضرر إلى إصلاح مكلف.",
     color: "#088a20",
-    photo: "/grid/pexels-gaion-27937015.jpg",
+    photo: "/impactPics/money.png",
     caption: "صيانةٌ استباقية",
   },
   {
@@ -50,7 +50,7 @@ const STATS: Stat[] = [
     title: "شكاوى متكررة أقلّ",
     desc: "يُعالَج الضرر قبل أن يتفاقم ويشتكي المواطن مجدداً.",
     color: "#ffab00",
-    photo: "/grid/pexels-samson-katt-5226497.jpg",
+    photo: "/impactPics/less-complaints.png",
     caption: "بلاغُ المواطن",
   },
   {
@@ -61,7 +61,7 @@ const STATS: Stat[] = [
     title: "أسرع في مسح شبكة الطرق",
     desc: "سيارة واحدة تمسح المدينة بدل جولات تفتيش يدوية.",
     color: "#34a8d8",
-    photo: "/grid/pexels-ismail-nabhan-2159803207-36627992.jpg",
+    photo: "/impactPics/faster.png",
     caption: "مسحٌ أثناء القيادة",
   },
   {
@@ -72,7 +72,7 @@ const STATS: Stat[] = [
     title: "دقة الكشف التلقائي",
     desc: "نموذج رؤية مُدرَّب على أضرار الطرق.",
     color: "#0072da",
-    photo: "/media/detection-poster.jpg",
+    photo: "/impactPics/accuracy.png",
     caption: "كشفٌ تلقائي مباشر",
   },
 ]
@@ -100,7 +100,7 @@ export default function ClaudeImpact() {
             opacity: i === 0 ? 1 : 0,
             yPercent: i === 0 ? 0 : 10,
           })
-          gsap.set(`.cip-arc-${i}`, {
+          gsap.set(`.cip-arc-${i}, .cip-ring-glow-${i}`, {
             strokeDasharray: 942.48,
             strokeDashoffset: 942.48,
           })
@@ -164,7 +164,7 @@ export default function ClaudeImpact() {
             at + 0.1,
           )
           tl.to(
-            `.cip-arc-${i}`,
+            `.cip-arc-${i}, .cip-ring-glow-${i}`,
             {
               strokeDashoffset: 942.48 - (942.48 * s.arcPct) / 100,
               duration: SEG * 0.62,
@@ -172,13 +172,22 @@ export default function ClaudeImpact() {
             },
             at + 0.1,
           )
-          // photo settles from a gentle zoom as it enters
+          // picture transition — a clip-path wipe with a subtle scale as it enters
           tl.fromTo(
             `.cip-photo-img-${i}`,
-            { scale: 1.12 },
-            { scale: 1, duration: SEG * 0.9, ease: "power2.out" },
+            {
+              clipPath: "inset(0% 0% 0% 100%)",
+              scale: 1.08,
+            },
+            {
+              clipPath: "inset(0% 0% 0% 0%)",
+              scale: 1,
+              duration: SEG * 0.85,
+              ease: "power3.out",
+            },
             at,
           )
+
           // a soft pulse on the ring as it settles
           tl.fromTo(
             `.cip-ring-glow-${i}`,
@@ -190,39 +199,13 @@ export default function ClaudeImpact() {
 
         // hold the last figure a beat before releasing the pin
         tl.to({}, { duration: 1.4 })
-
-        // mouse parallax — photo drifts one way, gauge the other (fine pointers)
-        if (window.matchMedia("(pointer: fine)").matches) {
-          const px = gsap.quickTo(".cip-photo", "x", {
-            duration: 0.9,
-            ease: "power3.out",
-          })
-          const py = gsap.quickTo(".cip-photo", "y", {
-            duration: 0.9,
-            ease: "power3.out",
-          })
-          const gx = gsap.quickTo(".cip-panel > div", "x", {
-            duration: 1.1,
-            ease: "power3.out",
-          })
-          const onMove = (e: MouseEvent) => {
-            const r = stage.current!.getBoundingClientRect()
-            const nx = (e.clientX - r.left) / r.width - 0.5
-            const ny = (e.clientY - r.top) / r.height - 0.5
-            px(nx * 34)
-            py(ny * 24)
-            gx(nx * -12)
-          }
-          window.addEventListener("mousemove", onMove)
-          return () => window.removeEventListener("mousemove", onMove)
-        }
       })
 
       // reduced motion — static stack, final values, no pin
       mm.add("(prefers-reduced-motion: reduce)", () => {
         root.current!.classList.add("cip-static")
         STATS.forEach((s, i) => {
-          gsap.set(`.cip-arc-${i}`, {
+          gsap.set(`.cip-arc-${i}, .cip-ring-glow-${i}`, {
             strokeDasharray: 942.48,
             strokeDashoffset: 942.48 - (942.48 * s.arcPct) / 100,
           })
@@ -248,7 +231,7 @@ export default function ClaudeImpact() {
             الأثر
           </p>
           <h2 className="mt-2 text-center font-display text-display-2 text-ink md:text-display-1">
-            نتائجُ تُقنع مجلس البلدية
+            نتائجُ نفخر بها
           </h2>
 
           {/* progress rail */}
@@ -284,7 +267,7 @@ export default function ClaudeImpact() {
               {/* photo on the left, gauge on the right — centered as a group */}
               <div
                 dir="ltr"
-                className="flex flex-col items-center justify-center gap-8 md:flex-row md:gap-20 lg:gap-28"
+                className="flex flex-col items-center justify-center gap-16 md:flex-row md:gap-40 lg:gap-56"
               >
                 {/* real photo — swaps with each figure */}
                 <div className="cip-photo relative h-[min(50vh,360px)] w-[min(88vw,420px)] lg:h-[min(50vh,420px)] lg:w-[min(88vw,480px)] shrink-0 overflow-hidden rounded-[32px]">
@@ -294,17 +277,6 @@ export default function ClaudeImpact() {
                     alt={s.title}
                     className={`cip-photo-img-${i} h-full w-full object-cover`}
                   />
-                  {/* caption chip */}
-                  <span
-                    dir="rtl"
-                    className="absolute bottom-6 right-6 flex items-center gap-2 rounded-full bg-black/45 px-3 py-1.5 text-body-5 font-bold text-white backdrop-blur-md"
-                  >
-                    <span
-                      className="inline-block h-2 w-2 rounded-full"
-                      style={{ background: s.color }}
-                    />
-                    {s.caption}
-                  </span>
                 </div>
 
                 {/* gauge ring + Almarai number + title inside */}

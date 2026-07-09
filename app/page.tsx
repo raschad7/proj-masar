@@ -29,7 +29,6 @@ export default function Home() {
         <SectionBreak label="الأثر" />
         <ClaudeImpact />
         <TrustBar />
-        <div className="hidden h-[72px] px-6 md:block"></div>
 
         <SectionBreak label="من الميدان" />
         <GridShowcase />
