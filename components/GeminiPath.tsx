@@ -18,7 +18,7 @@ type State = {
 const STATES: State[] = [
   {
     label: "يُرصد تلقائياً",
-    hex: "#0072DA",
+    hex: "#44729D",
     loc: "شارع النصر · حي المخفية",
     time: "9:12",
     head: "تقود فقط… ومسار يرى",
@@ -26,7 +26,7 @@ const STATES: State[] = [
   },
   {
     label: "مُسنَد",
-    hex: "#FFAB00",
+    hex: "#D1A242",
     loc: "أولوية عالية · فريق 3",
     time: "9:13",
     head: "لكل بلاغٍ مالكٌ ووقت",
@@ -34,7 +34,7 @@ const STATES: State[] = [
   },
   {
     label: "قيد الإصلاح",
-    hex: "#16668E",
+    hex: "#44729D",
     loc: "الفريق في الموقع",
     time: "10:40",
     head: "الحالة مرئية لحظياً",
@@ -42,7 +42,7 @@ const STATES: State[] = [
   },
   {
     label: "أُغلق بدليل",
-    hex: "#088A20",
+    hex: "#599664",
     loc: "مُوثّق · جاهز للتدقيق",
     time: "11:25",
     head: "يُغلق بدليلٍ موثّق",
@@ -104,22 +104,6 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
           <source src="/media/detection.webm" type="video/webm" />
           <source src="/media/detection.mp4" type="video/mp4" />
         </video>
-        
-        {/* Subtle dot matrix overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.1)_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none opacity-40" />
-
-        {/* AI Scanner Line */}
-        {activeIndex === 0 && (
-          <div className="absolute inset-x-0 h-0.5 bg-[#34A8D8] shadow-[0_0_15px_3px_rgba(52,168,216,0.6)] animate-ai-scan z-10" />
-        )}
-
-        <div
-          className="absolute"
-          style={{
-            right: "34%", top: "46%", width: "30%", height: "26%",
-            boxShadow: "inset 0 0 0 2px #34A8D8", borderRadius: 6,
-          }}
-        />
       </div>
 
       {/* 2 — Dispatch Map */}
@@ -266,22 +250,17 @@ export default function GeminiPath() {
   }, [active]);
 
   return (
-    <section ref={root} id="path" className="relative bg-white overflow-hidden">
+    <section ref={root} id="path" className="relative bg-white pb-24 md:pb-0">
       <div className="container mx-auto px-6 md:px-12 relative z-10">
         
         {/* Desktop Layout: Pinned In-Place Morphing */}
-        <div className="hidden md:flex h-screen items-center relative">
+        <div className="hidden md:flex h-screen min-h-[600px] items-center relative">
             
             {/* Left Side (RTL Right): Text Morphing Container */}
-            <div className="w-1/2 pr-12 lg:pr-24 relative h-[500px]">
+            <div className="w-1/2 pr-[90px] lg:pr-[140px] relative grid">
                 
-                {/* Global Header (Optional, fades out on first scroll or stays fixed) */}
-                <div className="absolute -top-24 right-12 lg:right-24">
-                  <h2 className="font-display text-[20px] text-mutedtext tracking-wide">حياةُ بلاغٍ واحد</h2>
-                </div>
-
                 {STATES.map((s, i) => (
-                    <div key={i} className={`text-state text-state-${i} absolute inset-0 flex-col justify-center`} style={{ display: i === 0 ? 'flex' : 'none' }}>
+                    <div key={i} className={`text-state text-state-${i} col-start-1 row-start-1 flex-col justify-center`} style={{ display: i === 0 ? 'flex' : 'none' }}>
                         
                         {/* Title of Phase (Label) */}
                         <div className="fade-up-elem mb-6 flex items-center gap-4">

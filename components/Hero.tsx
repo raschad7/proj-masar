@@ -2,7 +2,7 @@
 
 import { useRef } from "react"
 import { ChevronRight24Filled, Play24Filled } from "@fluentui/react-icons"
-import { gsap, useGSAP } from "@/lib/gsap"
+import { gsap, SplitText, useGSAP } from "@/lib/gsap"
 import CityMapBg from "@/components/CityMapBg"
 import LogoArrow from "@/components/LogoArrow"
 
@@ -33,33 +33,34 @@ const HEADLINE: string[][] = [
    Every marker is the same مسار arrow, tinted per state.          */
 const HOTSPOTS = [
   {
-    right: "15%",
-    top: "22%",
-    hex: "#44729D",
+    right: "18%",
+    top: "24%",
+    hex: "#0072DA",
     label: "حفرة عميقة · 70٪",
     main: true,
     delay: 0,
   },
   {
-    right: "78%",
-    top: "18%",
-    hex: "#D1A242",
+    right: "82%",
+    top: "22%",
+    hex: "#FFAB00",
     label: "تشقق تمساحي · 64٪",
     main: false,
     delay: 0.7,
   },
   {
-    right: "12%",
+    right: "15%",
     top: "76%",
-    hex: "#599664",
+    hex: "#C0625D",
     label: "حفرة خطرة · 85٪",
     main: false,
     delay: 1.4,
   },
   {
-    right: "84%",
-    top: "82%",
-    hex: "#44729D",
+    right: "85%",
+    top: "72%",
+
+    hex: "#197FB0",
     label: "هبوط إسفلت · 52٪",
     main: false,
     delay: 2.1,
@@ -129,16 +130,28 @@ export default function Hero() {
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         const ease = "power3.out"
 
-        /* Orchestrated entrance — words rise one-by-one from clip masks */
+        /* Subtitle split into masked lines so it reveals line-by-line */
+        const subtitle = root.current!.querySelector(
+          ".hero-subtitle",
+        ) as HTMLElement
+        const split = new SplitText(subtitle, {
+          type: "lines",
+          mask: "lines",
+          linesClass: "hero-sub-line",
+        })
+
+        /* Orchestrated entrance — title words rise one-by-one from clip
+           masks; the subtitle rises line-by-line under them. */
         const tl = gsap.timeline({ defaults: { ease } })
         tl.from(
           ".hero-word",
           { yPercent: 115, duration: T.lineDur, stagger: 0.09 },
           T.line1,
         )
+        tl.set(subtitle, { opacity: 1 }, 0)
         tl.from(
-          ".hero-subtitle",
-          { y: 24, opacity: 0, duration: 0.8 },
+          split.lines,
+          { yPercent: 110, opacity: 0, duration: 0.9, stagger: 0.14 },
           T.subtitle,
         )
         tl.from(
@@ -206,8 +219,13 @@ export default function Hero() {
             contentX(nx * PARALLAX.content)
           }
           window.addEventListener("mousemove", onMove)
-          return () => window.removeEventListener("mousemove", onMove)
+          return () => {
+            window.removeEventListener("mousemove", onMove)
+            split.revert()
+          }
         }
+
+        return () => split.revert()
       })
     },
     { scope: root },
@@ -217,7 +235,7 @@ export default function Hero() {
     <section
       ref={root}
       id="top"
-      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 pt-[72px]"
+      className="sticky top-0 z-0 flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 pt-[72px]"
     >
       {/* City scene: map + live damage hotspots move as one layer */}
       <div className="hero-scene absolute inset-0">
@@ -236,7 +254,10 @@ export default function Hero() {
           style={{ fontSize: "clamp(38px, 7vw, 82px)", lineHeight: 1.16 }}
         >
           {HEADLINE.map((words, li) => (
-            <span key={li} className="flex flex-wrap justify-center gap-x-[0.28em]">
+            <span
+              key={li}
+              className="flex flex-wrap justify-center gap-x-[0.28em]"
+            >
               {words.map((word, wi) => {
                 const isClose = li === 1 && wi === 1 // "تُغلق"
                 return (

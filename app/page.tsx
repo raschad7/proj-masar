@@ -18,10 +18,12 @@ export default function Home() {
     <>
       <Nav />
       <main className="relative z-[1] bg-white">
-        <Hero />
-        <GeminiPath />
+        <div className="relative isolate">
+          <Hero />
+          <SectionBreak label="حياة بلاغ واحد" />
+          <GeminiPath />
+        </div>
         <PhoneSection />
-
         <SectionBreak label="الميزات" />
         <FeaturesSection />
         <SectionBreak label="كيف يعمل" />
@@ -35,6 +37,7 @@ export default function Home() {
         <SectionBreak label="من الميدان" />
         <GridShowcase />
         <CTASection />
+        <SectionBreak label="معرض الحركات" />
       </main>
       <Footer />
     </>
