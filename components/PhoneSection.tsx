@@ -17,43 +17,7 @@ const PhoneCanvas = dynamic(() => import("@/components/PhoneCanvas"), {
   ssr: false,
 })
 
-/* ── Tuning constants (all pacing in vh of scroll) ───────────────
-   The section = intro viewport (phone center, header above) + 3 tall
-   role rows. The phone travels center → right → left → right.
-   ROW_VH   : height of each role row — taller = slower journey
-   CROSS_VH : scroll consumed by each crossing
-   TRAVEL_X : how far the phone parks off-center (vw)                */
-const INTRO_VH = 100
-const ROW_VH = 170
-const CROSS_VH = 80
-const TRAVEL_X = 24
-
-/* crossing i (1..3) ends exactly when row i is centered in view */
-const crossEnd = (i: number) => INTRO_VH + (i - 1) * ROW_VH + ROW_VH / 2 - 50
-const TOTAL_VH = INTRO_VH + 3 * ROW_VH - 100
-
-/* Each crossing spins the phone a full 360° around its own Y axis
-   (plus the difference between parked angles), scrubbed to scroll —
-   scrolling back spins it back. The screen texture swaps at the
-   half-turn, while the back of the phone faces the viewer.
-   CSS rotateY(+) faces the viewer's right, so a phone parked on the
-   right (x > 0) settles at a NEGATIVE yaw, facing its copy card.
-   `ry` accumulates so each tween is one continuous rotation. */
-let runningYaw = 0
-const CROSSINGS = [1, 2, 3].map((i) => {
-  const x = i === 2 ? -TRAVEL_X : TRAVEL_X //  right → left → right
-  const dir = Math.sign(x)
-  const parked = -dir * 16
-  const prevParked = i === 1 ? 0 : dir * 16 //  opposite side last time
-  runningYaw += -dir * 360 + (parked - prevParked)
-  return {
-    at: crossEnd(i) - CROSS_VH,
-    to: i,
-    x,
-    ry: runningYaw,
-    bank: dir * 4, //  leans into the direction of travel
-  }
-})
+/* ── Phone Screens ─────────────────────────────────────────────── */
 
 const ROLES = [
   {
@@ -197,22 +161,22 @@ function RoleCard({
       src={role.char}
       alt=""
       aria-hidden
-      className="role-char w-[200px] shrink-0 md:w-[340px]"
+      className="role-char w-[180px] shrink-0 md:w-[320px] object-contain"
     />
   )
   const card = (
     <div
-      className="flex flex-1 flex-col justify-center p-6 backdrop-blur-md md:min-h-[300px] md:p-12"
+      className="flex flex-1 flex-col justify-center p-6 backdrop-blur-md min-h-[260px] md:min-h-[300px] md:p-10"
       style={{
         borderRadius: "var(--radius-card)",
         background: role.glass,
         boxShadow: "var(--shadow-soft)",
       }}
     >
-      <h3 className="text-display-3 font-display" style={{ color: role.hex }}>
+      <h3 className="text-display-3 font-display" style={{ color: role.hex, fontSize: 34, lineHeight: 1.2 }}>
         {role.title}
       </h3>
-      <p className="mt-6 text-[21px] leading-relaxed text-ink">{role.copy}</p>
+      <p className="mt-4 text-[22px] leading-relaxed text-ink font-medium">{role.copy}</p>
     </div>
   )
   /* The character stands beside the card on its OUTER edge (away from
@@ -304,7 +268,7 @@ export default function PhoneSection() {
         () => {
           /* Initial pose: brand screen showing, phone parked center a
              touch low, tipped slightly back in 3D space. */
-          gsap.set(".phone-center", { y: "7vh" })
+          gsap.set(".phone-center", { y: "12vh" })
           gsap.set(".phone-chip", { autoAlpha: 0 })
           gsap.set(".step-layer-1, .step-layer-2", { autoAlpha: 0 })
 
@@ -363,136 +327,100 @@ export default function PhoneSection() {
             repeat: -1,
           })
 
-          /* Master timeline — scrubbed across the whole section
-             (sticky stage does the pinning natively). All positions
-             and durations are in vh of scroll: the timeline's total
-             duration equals TOTAL_VH so 1 unit = 1vh, keeping the
-             choreography aligned with the tall rows. */
+          /* Pinned master timeline */
           const tl = gsap.timeline({
             scrollTrigger: {
-              trigger: root.current,
+              trigger: ".roles-desktop-pin",
+              pin: true,
               start: "top top",
-              end: "bottom bottom",
-              scrub: true,
-              invalidateOnRefresh: true,
+              end: "+=500%", // 5x screen height to fit the outro
+              scrub: 1, // smooth scrubbing
             },
           })
 
-          /* Header hands the stage to the journey */
-          tl.to(
-            ".roles-header",
-            { opacity: 0, y: -48, duration: 30, ease: "power2.in" },
-            CROSSINGS[0].at - 20,
-          )
-          tl.to(
-            ".phone-center",
-            { y: 0, duration: CROSS_VH, ease: "power2.inOut" },
-            CROSSINGS[0].at,
-          )
+          let currentRy = 0;
 
-          /* Overlay chips join the story as the journey starts */
-          tl.to(
-            ".phone-chip",
-            { autoAlpha: 1, duration: 24, ease: "power2.out" },
-            CROSSINGS[0].at,
-          )
+          // Intro -> Step 1 (Card 0)
+          tl.to(".roles-header", { opacity: 0, y: -40, duration: 1 }, 0)
+          tl.to(".phone-chip", { autoAlpha: 1, duration: 1 }, 0)
+          
+          currentRy += -360 - 16;
+          tl.to(".phone-travel", { x: 220, duration: 1.5, ease: "power2.inOut" }, 0)
+          tl.to(pose, { ry: currentRy, duration: 1.5, ease: "power2.inOut" }, 0)
+          tl.to(pose, { rx: 15, rz: 4, z: -110, duration: 0.75, ease: "power2.inOut" }, 0)
+          tl.to(pose, { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" }, 0.75)
+          tl.set(pose, { screen: 1 }, 0.75)
+          tl.to(".role-glow-0", { opacity: 1, duration: 0.75 }, 0.75)
+          tl.to(".step-layer-0", { autoAlpha: 1, yPercent: 0, duration: 0.5 }, 0.75)
+          tl.to(".role-card-wrapper-0", { opacity: 1, duration: 1 }, 0.5)
 
-          /* Crossings: the phone flies through 3D space — it recedes
-             (z), banks into the travel direction, and spins a full
-             turn around its own axis, settling angled toward the copy.
-             The screen texture swaps at the half-turn, while the back
-             of the phone faces the viewer. */
-          CROSSINGS.forEach(({ at, to, x, ry, bank }, ci) => {
-            tl.to(
-              ".phone-travel",
-              { x: `${x}vw`, duration: CROSS_VH, ease: "power2.inOut" },
-              at,
-            )
-            /* one continuous scrub-linked spin across the crossing */
-            tl.to(
-              pose,
-              { ry, duration: CROSS_VH, ease: "power2.inOut" },
-              at,
-            )
-            /* out: recede + pitch and bank into the motion */
-            tl.to(
-              pose,
-              {
-                rx: 15,
-                rz: bank,
-                z: -110,
-                duration: CROSS_VH * 0.5,
-                ease: "power2.inOut",
-              },
-              at,
-            )
-            /* settle: come forward and level out */
-            tl.to(
-              pose,
-              {
-                rx: 8,
-                rz: 0,
-                z: 0,
-                duration: CROSS_VH * 0.5,
-                ease: "power3.out",
-              },
-              at + CROSS_VH * 0.5,
-            )
-            /* texture swap, hidden at the half-turn (back showing) */
-            tl.set(pose, { screen: to }, at + CROSS_VH * 0.5)
-            /* ambient glow crossfades to the incoming role's tint */
-            if (ci > 0) {
-              tl.to(
-                `.role-glow-${ci - 1}`,
-                { opacity: 0, duration: CROSS_VH * 0.5 },
-                at,
-              )
-            }
-            tl.to(
-              `.role-glow-${ci}`,
-              { opacity: 1, duration: CROSS_VH * 0.5 },
-              at + CROSS_VH * 0.3,
-            )
-            /* step counter flips to the incoming role */
-            if (ci > 0) {
-              tl.to(
-                `.step-layer-${ci - 1}`,
-                { autoAlpha: 0, yPercent: -60, duration: CROSS_VH * 0.25 },
-                at + CROSS_VH * 0.35,
-              )
-              tl.fromTo(
-                `.step-layer-${ci}`,
-                { autoAlpha: 0, yPercent: 60 },
-                {
-                  autoAlpha: 1,
-                  yPercent: 0,
-                  duration: CROSS_VH * 0.25,
-                  immediateRender: false,
-                },
-                at + CROSS_VH * 0.5,
-              )
-            }
-          })
+          // PAUSE 1
+          tl.to({}, { duration: 1.5 })
 
-          /* pad the timeline out to the full scroll span */
-          tl.to({}, { duration: Math.max(0.001, TOTAL_VH - crossEnd(3)) })
+          // Step 1 -> Step 2 (Card 1)
+          const t2 = tl.duration()
+          tl.to(".role-card-wrapper-0", { opacity: 0, duration: 0.8 }, t2)
+          tl.to(".role-glow-0", { opacity: 0, duration: 0.75 }, t2)
+          tl.to(".step-layer-0", { autoAlpha: 0, yPercent: -60, duration: 0.5 }, t2)
+          
+          currentRy += 360 + 32;
+          tl.to(".phone-travel", { x: -220, duration: 1.5, ease: "power2.inOut" }, t2)
+          tl.to(pose, { ry: currentRy, duration: 1.5, ease: "power2.inOut" }, t2)
+          tl.to(pose, { rx: 15, rz: -4, z: -110, duration: 0.75, ease: "power2.inOut" }, t2)
+          tl.to(pose, { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" }, t2 + 0.75)
+          tl.set(pose, { screen: 2 }, t2 + 0.75)
+          tl.to(".role-glow-1", { opacity: 1, duration: 0.75 }, t2 + 0.75)
+          tl.fromTo(".step-layer-1", { autoAlpha: 0, yPercent: 60 }, { autoAlpha: 1, yPercent: 0, duration: 0.5 }, t2 + 0.75)
+          tl.to(".role-card-wrapper-1", { opacity: 1, duration: 1 }, t2 + 0.5)
 
-          /* Role copy reveals — driven by each row entering the
-             viewport (independent of the phone timeline). */
-          gsap.utils.toArray<HTMLElement>(".role-row").forEach((row) => {
-            gsap.from(row.querySelector(".role-card"), {
-              opacity: 0,
-              y: 70,
-              scale: 0.96,
-              duration: 0.8,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: row,
-                start: "top 45%",
-                toggleActions: "play none none reverse",
-              },
-            })
-          })
+          // PAUSE 2
+          tl.to({}, { duration: 1.5 })
+
+          // Step 2 -> Step 3 (Card 2)
+          const t3 = tl.duration()
+          tl.to(".role-card-wrapper-1", { opacity: 0, duration: 0.8 }, t3)
+          tl.to(".role-glow-1", { opacity: 0, duration: 0.75 }, t3)
+          tl.to(".step-layer-1", { autoAlpha: 0, yPercent: -60, duration: 0.5 }, t3)
+          
+          currentRy += -360 - 32;
+          tl.to(".phone-travel", { x: 220, duration: 1.5, ease: "power2.inOut" }, t3)
+          tl.to(pose, { ry: currentRy, duration: 1.5, ease: "power2.inOut" }, t3)
+          tl.to(pose, { rx: 15, rz: 4, z: -110, duration: 0.75, ease: "power2.inOut" }, t3)
+          tl.to(pose, { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" }, t3 + 0.75)
+          tl.set(pose, { screen: 3 }, t3 + 0.75)
+          tl.to(".role-glow-2", { opacity: 1, duration: 0.75 }, t3 + 0.75)
+          tl.fromTo(".step-layer-2", { autoAlpha: 0, yPercent: 60 }, { autoAlpha: 1, yPercent: 0, duration: 0.5 }, t3 + 0.75)
+          tl.to(".role-card-wrapper-2", { opacity: 1, duration: 1 }, t3 + 0.5)
+
+          // PAUSE 3 (Final Resting Phase)
+          tl.to({}, { duration: 1.5 })
+
+          // OUTRO PHASE (Step 3 -> Exit)
+          const tOutro = tl.duration()
+          // Fade out all cards and overlays
+          tl.to(".role-card-wrapper-2", { opacity: 0, duration: 0.8 }, tOutro)
+          tl.to(".role-glow-2", { opacity: 0, duration: 0.75 }, tOutro)
+          tl.to(".step-layer-2", { autoAlpha: 0, yPercent: -60, duration: 0.5 }, tOutro)
+          tl.to(".phone-chip", { autoAlpha: 0, duration: 0.8 }, tOutro)
+
+          // Center the phone, flip to show back, lay horizontally, and zoom in
+          currentRy += 180; // Turn to back
+          tl.to(".phone-travel", { x: 0, duration: 1.5, ease: "power2.inOut" }, tOutro)
+          tl.to(pose, { 
+            ry: currentRy, 
+            rx: 0, 
+            rz: -90, // Horizontal orientation
+            z: 400,  // Zoom in
+            duration: 1.5, 
+            ease: "power2.inOut" 
+          }, tOutro)
+
+          // Hold the zoomed horizontal back to show off the logo
+          tl.to({}, { duration: 1.2 })
+
+          // Exit off-screen to the left
+          const tExit = tl.duration()
+          tl.to(".phone-travel", { x: "-150vw", duration: 1.5, ease: "power3.in" }, tExit)
         },
       )
     },
@@ -501,70 +429,60 @@ export default function PhoneSection() {
 
   return (
     <section ref={root} id="roles" className="relative bg-white">
-      {/* ── Desktop: sticky phone stage + 3 scroll rows ── */}
-      <div className="roles-desktop hidden md:block">
-        {/* Sticky stage — pins the phone for the whole journey */}
-        <div className="pointer-events-none sticky top-0 z-20 h-screen">
-          <CityMapBg className="opacity-40" />
+      {/* ── Desktop: Pinned Scrollytelling ── */}
+      <div className="roles-desktop-pin hidden md:block h-screen relative overflow-hidden bg-white">
+        <CityMapBg className="opacity-40" />
 
-          {/* Header above the centered phone (intro state) */}
-          <div className="roles-header relative z-10 pt-28 text-center">
-            <h2 className="font-display text-display-1 text-ink">
-              ثلاثة أدوار، لوحة واحدة
-            </h2>
-            <p className="mt-3 text-body-2 text-subtext">
-              من يلتقط، من يوزّع، من يُصلح — كلهم على مسار واحد.
-            </p>
-          </div>
+        {/* Header */}
+        <div className="roles-header absolute top-0 left-0 right-0 z-10 pt-16 text-center">
+          <h2 className="font-display text-[44px] font-bold text-ink">
+            ثلاثة أدوار، لوحة واحدة
+          </h2>
+          <p className="mt-3 text-[18px] text-subtext">
+            من يلتقط، من يوزّع، من يُصلح — كلهم على مسار واحد.
+          </p>
+        </div>
 
-          {/* The traveler — nested layers so scrubbed transforms never
-              fight: rise (entry y) → travel (x) → float (idle bob) →
-              3d (yaw/pitch/bank/z). Chips ride along without rotating. */}
-          <div className="phone-center absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
-            <div className="phone-rise">
-              <div className="phone-travel relative">
-                {/* Role-tinted ambient glow, travels with the phone */}
-                {ROLES.map((role, i) => (
-                  <div
-                    key={i}
-                    aria-hidden
-                    className={`role-glow-${i} absolute -inset-24 -z-10 rounded-full opacity-0`}
-                    style={{
-                      background: `radial-gradient(closest-side, ${role.glass}, transparent)`,
-                    }}
-                  />
-                ))}
-                <div className="phone-float relative">
-                  {/* Phone-sized box; the WebGL canvas overhangs it so
-                      the body never clips while rotating. The camera
-                      distance renders the phone at exactly this size. */}
-                  <div className="relative aspect-[236/480] h-[min(480px,62vh)]">
-                    <div className="absolute -inset-x-[30%] -inset-y-[14%]">
-                      <PhoneCanvas pose={pose} fallback={<PhoneShellFallback />} />
-                    </div>
+        {/* Pinned Phone Traveler */}
+        <div className="phone-center absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2">
+          <div className="phone-rise">
+            <div className="phone-travel relative">
+              {ROLES.map((role, i) => (
+                <div
+                  key={i}
+                  aria-hidden
+                  className={`role-glow-${i} absolute -inset-24 -z-10 rounded-full opacity-0`}
+                  style={{
+                    background: `radial-gradient(closest-side, ${role.glass}, transparent)`,
+                  }}
+                />
+              ))}
+              <div className="phone-float relative">
+                <div className="relative aspect-[236/480] h-[min(480px,62vh)]">
+                  <div className="absolute -inset-x-[150%] -inset-y-[14%]">
+                    <PhoneCanvas pose={pose} fallback={<PhoneShellFallback />} />
                   </div>
-                  <PhoneChips />
                 </div>
+                <PhoneChips />
               </div>
             </div>
           </div>
         </div>
 
-        {/* 3 role rows — the page scrolls, the phone appears to descend */}
-        {ROLES.map((role, i) => (
-          <div
-            key={i}
-            className="role-row relative z-30"
-            style={{ height: `${ROW_VH}vh` }}
-          >
+        {/* Pinned absolute cards */}
+        {ROLES.map((role, i) => {
+          const isLeft = role.side === "left";
+          const cardX = isLeft ? "-320px" : "320px";
+          return (
             <div
-              className="absolute top-1/2 w-[min(820px,56vw)] -translate-y-1/2"
-              style={role.side === "left" ? { left: "2vw" } : { right: "2vw" }}
+              key={i}
+              className={`role-card-wrapper-${i} absolute top-1/2 left-1/2 -translate-y-1/2 w-full max-w-[650px] z-30 opacity-0 pointer-events-none`}
+              style={{ transform: `translate(calc(-50% + ${cardX}), -50%)` }}
             >
               <RoleCard role={role} index={i} />
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* ── Mobile / reduced-motion: static stack ── */}

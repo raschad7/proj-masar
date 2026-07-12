@@ -55,7 +55,7 @@ const C = {
 
 /* ── 2D screen painters (212×456 logical space, RTL) ──────────── */
 
-type Painter = (ctx: CanvasRenderingContext2D, font: string) => void
+type Painter = (ctx: CanvasRenderingContext2D, font: string, ext?: any) => void
 
 const setFont = (
   ctx: CanvasRenderingContext2D,
@@ -266,45 +266,36 @@ const drawCrew: Painter = (ctx, font) => {
   ctx.stroke()
 }
 
-/* Back cover details — visible while the phone spins. Transparent
-   background so the body's own white shows through. */
-const drawBack: Painter = (ctx, font) => {
-  //  camera island (top-right of the back = top-left as drawn,
-  //  since the back plane is rotated 180° around Y)
-  ctx.fillStyle = "#ECEDEF"
+/* Back cover details — visible while the phone spins. */
+const drawBack: Painter = (ctx, font, logoImg?: HTMLImageElement) => {
+  // Grey back cover
+  ctx.fillStyle = "#A3A7AD"
+  ctx.fillRect(0, 0, SCREEN_W, SCREEN_H)
+
+  // camera island (top-right of the back = top-left as drawn,
+  // since the back plane is rotated 180° around Y)
+  ctx.fillStyle = "#E4E6E9"
   ctx.beginPath()
   ctx.roundRect(16, 16, 62, 62, 18)
   ctx.fill()
   const lens = (lx: number, ly: number) => {
-    ctx.fillStyle = "#2A2E33"
+    ctx.fillStyle = "#1E2226"
     ctx.beginPath()
     ctx.arc(lx, ly, 11, 0, Math.PI * 2)
     ctx.fill()
-    ctx.fillStyle = "#4A5058"
+    ctx.fillStyle = "#383E46"
     ctx.beginPath()
     ctx.arc(lx, ly, 5, 0, Math.PI * 2)
     ctx.fill()
   }
   lens(35, 35)
   lens(59, 59)
-  //  brand mark
-  ctx.fillStyle = C.peacock
-  ctx.beginPath()
-  ctx.roundRect(SCREEN_W / 2 - 21, SCREEN_H / 2 - 21, 42, 42, 12)
-  ctx.fill()
-  ctx.strokeStyle = C.white
-  ctx.lineWidth = 4
-  ctx.lineCap = "round"
-  ctx.lineJoin = "round"
-  ctx.beginPath()
-  ctx.moveTo(SCREEN_W / 2 - 9, SCREEN_H / 2 + 5)
-  ctx.lineTo(SCREEN_W / 2, SCREEN_H / 2 - 6)
-  ctx.lineTo(SCREEN_W / 2 + 9, SCREEN_H / 2 + 5)
-  ctx.stroke()
-  ctx.fillStyle = C.subtext
-  ctx.textAlign = "center"
-  setFont(ctx, 700, 10, font)
-  ctx.fillText("مسار", SCREEN_W / 2, SCREEN_H - 24)
+
+  if (logoImg) {
+    const w = 120
+    const h = (logoImg.height / logoImg.width) * w
+    ctx.drawImage(logoImg, SCREEN_W / 2 - w / 2, SCREEN_H / 2 - h / 2, w, h)
+  }
 }
 
 /* ── Texture plumbing ───────────────────────────────────────────── */
@@ -364,12 +355,23 @@ function useScreenTextures() {
     document.fonts.ready.then(() => {
       if (!alive) return
       const font = resolveFont()
-      const all = [...made.screens, made.back]
-      all.forEach(({ tex, canvas, painter, withNotch }) => {
+      made.screens.forEach(({ tex, canvas, painter, withNotch }) => {
         paintTexture(canvas, painter, font, withNotch)
         tex.needsUpdate = true
       })
+      paintTexture(made.back.canvas, made.back.painter, font, made.back.withNotch)
+      made.back.tex.needsUpdate = true
     })
+
+    const img = new window.Image()
+    img.src = "/logo/Logo 6.svg"
+    img.onload = () => {
+      if (!alive) return
+      const font = resolveFont()
+      const boundPainter = (c: CanvasRenderingContext2D, f: string) => drawBack(c, f, img)
+      paintTexture(made.back.canvas, boundPainter as Painter, font, false)
+      made.back.tex.needsUpdate = true
+    }
     return () => {
       alive = false
       made.screens.forEach(({ tex }) => tex.dispose())

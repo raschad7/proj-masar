@@ -13,7 +13,7 @@ import { gsap, useGSAP } from "@/lib/gsap"
    PIN_DISTANCE : scroll consumed by the pinned horizontal gallery
    Timeline runs 0 → 3 (one unit per panel transition). The track's
    x is LINEAR (the user drives it); assembly beats are power3.     */
-const PIN_DISTANCE = "+=450%"
+const PIN_DISTANCE = "+=600%"
 const PANEL_COUNT = 4
 
 /* ── The 4 features ── */
@@ -342,16 +342,14 @@ export default function FeaturesSection() {
         () => {
           const track = trackRef.current!
 
-          /* Initial states: panels 1..3 disassembled (panel 0 assembles
-             on section entry, pre-pin, so it's never seen blank). */
-          for (let i = 1; i < PANEL_COUNT; i++) {
+          /* Hide all panels initially */
+          for (let i = 0; i < PANEL_COUNT; i++) {
             gsap.set(`.feat-${i} .feat-illo`, { opacity: 0, scale: 0.9 })
             gsap.set(`.feat-${i} .pop`, {
               scale: 0,
               opacity: 0,
               transformOrigin: "50% 50%",
             })
-            // not every illustration has stroke work (e.g. أولوية is all fills)
             const draws = gsap.utils.toArray(`.feat-${i} .draw`)
             if (draws.length) gsap.set(draws, { drawSVG: "0%" })
             gsap.set(`.feat-${i} .feat-word, .feat-${i} .feat-sub`, {
@@ -362,63 +360,54 @@ export default function FeaturesSection() {
           gsap.set(".feat-dot-fill", { opacity: 0 })
           gsap.set(".feat-dot-fill-0", { opacity: 1 })
 
-          /* Panel 0 assembles as the section scrolls into view */
-          const intro = gsap.timeline({
+          // Hide panel 0 card background and make it extremely small initially
+          gsap.set(".feat-0 .feat-card-bg", { scale: 0.3, borderRadius: "100px", opacity: 0 })
+
+          /* PHASE 0: Grow the first card as it enters the viewport (before pinning) */
+          gsap.to(".feat-0 .feat-card-bg", {
+            scale: 1,
+            borderRadius: "var(--radius-card)",
+            opacity: 1,
+            ease: "power2.out",
             scrollTrigger: {
               trigger: root.current,
-              start: "top 70%",
-              toggleActions: "play none none reverse",
-            },
-            defaults: { ease: "power3.out" },
+              start: "top 85%", // starts growing when section enters the bottom
+              end: "top top",   // finishes growing exactly when it pins
+              scrub: 1,
+            }
           })
-          intro
-            .from(".feat-0 .pop", {
-              scale: 0,
-              opacity: 0,
-              stagger: 0.06,
-              duration: 0.5,
-            })
-            .fromTo(
-              ".feat-0 .draw",
-              { drawSVG: "0%" },
-              { drawSVG: "100%", stagger: 0.08, duration: 0.5 },
-              0.2,
-            )
-            .from(
-              ".feat-0 .feat-word",
-              { y: 40, opacity: 0, duration: 0.5 },
-              0.25,
-            )
-            .from(
-              ".feat-0 .feat-sub",
-              { y: 30, opacity: 0, duration: 0.5 },
-              0.35,
-            )
 
-          /* Master timeline — pin + scrub, built as MOVE → HOLD segments
-             so each card slides to center then DWELLS (a pause in the
-             scroll) before the next one moves in. RTL: the track overflows
-             LEFT, so positive x brings later panels into view.            */
-          const MOVE = 1 //   scroll units to slide one panel to center
-          const HOLD = 1.1 //  dwell once centered — the reveal plays here
+          /* Master timeline — pin + scrub */
+          const MOVE = 1.5 
+          const HOLD = 1.5 
 
           const tl = gsap.timeline({
             scrollTrigger: {
               trigger: root.current,
               pin: true,
-              scrub: true,
+              scrub: 1, // Smooth scrubbing
               start: "top top",
               end: PIN_DISTANCE,
               invalidateOnRefresh: true,
             },
           })
 
+          /* PHASE 1: Animate Panel 0 elements in (plays right after pinning) */
+          const draws0 = gsap.utils.toArray(`.feat-0 .draw`)
+          tl.to(".feat-0 .feat-illo", { opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" })
+          tl.to(".feat-0 .pop", { scale: 1, opacity: 1, stagger: 0.05, duration: 0.5, ease: "back.out(1.7)" }, "-=0.2")
+          if (draws0.length) {
+              tl.to(draws0, { drawSVG: "100%", stagger: 0.08, duration: 0.6, ease: "power2.out" }, "-=0.4")
+          }
+          tl.to(".feat-0 .feat-word", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, "-=0.5")
+          tl.to(".feat-0 .feat-sub", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, "-=0.4")
+
+          /* DWELL on the first panel so the user can read it */
+          tl.to({}, { duration: HOLD })
+
           /* x that centers panel i (function → recomputed on refresh) */
           const stepX = (i: number) => () =>
             (track.scrollWidth - window.innerWidth) * (i / (PANEL_COUNT - 1))
-
-          /* dwell on the first (already-assembled) panel */
-          tl.to(track, { x: stepX(0), duration: HOLD })
 
           for (let i = 1; i < PANEL_COUNT; i++) {
             const at = tl.duration() // this move begins where we left off
@@ -430,12 +419,12 @@ export default function FeaturesSection() {
               at,
             )
 
-            /* previous panel eases back as we leave it */
+            /* previous panel card scales down and fades back as we leave it */
             tl.to(
-              `.feat-${i - 1} .feat-content`,
+              `.feat-${i - 1} .feat-card-bg`,
               {
-                opacity: 0.6,
-                scale: 0.97,
+                opacity: 0.4,
+                scale: 0.85,
                 duration: MOVE * 0.6,
                 ease: "power2.inOut",
               },
@@ -541,10 +530,10 @@ export default function FeaturesSection() {
               key={i}
               className={`feat-${i} flex h-full w-screen items-center justify-center px-[4vw] py-[9vh]`}
             >
-              {/* each feature is its own #F0F0F0 rounded card; the track
+              {/* each feature is its own rounded card; the track
                   slide makes the current card exit as the next enters */}
               <div
-                className="flex h-full w-full max-w-6xl items-center justify-center overflow-hidden px-[5vw]"
+                className="feat-card-bg flex h-full w-full max-w-6xl items-center justify-center overflow-hidden px-[5vw]"
                 style={{
                   background: "var(--seashell)",
                   borderRadius: "var(--radius-card)",

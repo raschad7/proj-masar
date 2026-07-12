@@ -24,7 +24,7 @@ export default function Home() {
           <GeminiPath />
         </div>
         <PhoneSection />
-        <SectionBreak label="الميزات" />
+        <SectionBreak label="الميزات" gap={10} />
         <FeaturesSection />
         <SectionBreak label="كيف يعمل" />
         <TechSection />
