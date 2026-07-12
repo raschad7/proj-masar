@@ -40,6 +40,7 @@ export default function Nav() {
   const ctaWrapRef = useRef<HTMLDivElement>(null)
   const ctaRef = useRef<HTMLButtonElement>(null)
   const [active, setActive] = useState(0)
+  const [inFooter, setInFooter] = useState(false)
   const lenis = useLenis()
 
   const scrollToId = (id: string) => {
@@ -75,6 +76,7 @@ export default function Nav() {
       /* ── magnetic vertical follow ── */
       let cur = 0
       let last = -1
+      let currentInFooter = false
       const apply = (f: number) => {
         if (markerRef.current) gsap.set(markerRef.current, { y: f * TRACK_H })
         if (fillRef.current) gsap.set(fillRef.current, { scaleY: f })
@@ -102,6 +104,14 @@ export default function Nav() {
         }
         cur += (targetFrac - cur) * (reduce ? 1 : 0.14)
         apply(cur)
+        
+        const footerSpacer = document.getElementById("footer-spacer")
+        const footerTop = footerSpacer ? footerSpacer.getBoundingClientRect().top + window.scrollY : docEnd
+        const isNowInFooter = window.scrollY + window.innerHeight > footerTop + 100
+        if (isNowInFooter !== currentInFooter) {
+          currentInFooter = isNowInFooter
+          setInFooter(isNowInFooter)
+        }
       }
       gsap.ticker.add(tick)
 
@@ -278,7 +288,7 @@ export default function Nav() {
             {/* traveled fill (top → down) */}
             <div
               ref={fillRef}
-              className={`absolute rounded-full transition-colors duration-300 ${active === 7 ? "bg-white group-hover:bg-gray-400" : ""}`}
+              className={`absolute rounded-full transition-colors duration-300 ${inFooter ? "bg-white group-hover:bg-gray-400" : ""}`}
               style={{
                 top: OFFSET,
                 height: TRACK_H,
@@ -286,20 +296,19 @@ export default function Nav() {
                 right: 15,
                 transformOrigin: "50% 0%",
                 transform: "scaleY(0)",
-                background: active === 7 ? undefined : "#34A8D8",
+                background: inFooter ? undefined : "#34A8D8",
               }}
             />
             {/* the marker — the report dot */}
             <div
               ref={markerRef}
-              className={`nav-marker absolute rounded-full shadow-[0_0_0_4px_var(--white)] transition-colors duration-300 ${active === 7 ? "bg-white group-hover:bg-gray-400" : "bg-ink"}`}
+              className={`nav-marker absolute rounded-full shadow-[0_0_0_4px_var(--white)] transition-colors duration-300 ${inFooter ? "bg-white group-hover:bg-gray-400" : "bg-ink"}`}
               style={{ top: 14, right: 9, width: 11, height: 11 }}
             />
 
             {/* section rows — labels reveal + go blue when the island opens */}
             {SECTIONS.map((s, i) => {
               const isActive = i === active
-              const inFooter = active === 7
               
               const labelColor = inFooter ? "text-white group-hover/row:text-gray-400" : (isActive ? "text-peacock" : "text-ink");
               const numColor = inFooter ? "text-white group-hover/row:text-gray-400" : (isActive ? "text-peacock" : "text-mutedtext group-hover/row:text-peacock");

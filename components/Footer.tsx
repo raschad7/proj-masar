@@ -253,16 +253,13 @@ export default function Footer() {
               ref={roadRef}
               className="ft-road"
               d={ROAD_D}
-              stroke={RESOLVED}
+              stroke="transparent"
               strokeWidth="2.5"
               strokeLinecap="round"
-              opacity="0.75"
-              style={{ filter: "drop-shadow(0 0 6px rgba(52,168,216,0.6))" }}
+              opacity="0"
             />
             <g className="ft-pin">
-              <circle className="ft-pin-breathe" cx="0" cy="0" r="9" fill={RESOLVED} opacity="0.3" />
-              <circle cx="0" cy="0" r="6" fill="#fff" />
-              <circle cx="0" cy="0" r="3" fill={RESOLVED} />
+              {/* circles removed per user request */}
             </g>
           </svg>
         </div>
@@ -354,7 +351,7 @@ export default function Footer() {
       </footer>
 
       {/* reveal spacer — height synced to the fixed footer on desktop */}
-      <div ref={spacer} aria-hidden />
+      <div ref={spacer} id="footer-spacer" aria-hidden />
     </>
   );
 }

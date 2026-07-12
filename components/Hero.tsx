@@ -185,7 +185,6 @@ export default function Hero() {
         })
         gsap.to(".hero-content", {
           yPercent: -28,
-          opacity: 0,
           ease: "none",
           scrollTrigger: {
             trigger: root.current,

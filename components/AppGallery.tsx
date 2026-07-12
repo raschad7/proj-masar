@@ -1,19 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
-import { useLenis } from "@/lib/lenis";
 import CityMapBg from "@/components/CityMapBg";
 
-/* ── App gallery — pinned, scroll-scrubbed screen reel ────────────
-   The section pins. As the user scrolls, the real app screenshots
-   scroll vertically THROUGH the phone (a filmstrip), one per beat,
-   and the matching screen name lights up. Clicking a name smooth-
-   scrolls to that beat. Mobile / reduced-motion: a static stack.
-
+/* ── App gallery — auto-playing screen reel ────────────
+   The section displays an auto-playing gallery of screenshots.
+   A progress bar shows the time remaining before switching.
    Screens live in /public/gallary/ (1..4.png).                      */
 
-const PIN_DISTANCE = "+=360%";
+const SLIDE_DURATION = 2600;
 
 type Screen = { name: string; desc: string; hex: string; img: string };
 
@@ -97,10 +93,16 @@ export default function AppGallery() {
   const root = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const screensRef = useRef<(HTMLDivElement | null)[]>([]);
-  const stRef = useRef<ScrollTrigger | null>(null);
   const mounted = useRef(false);
-  const lenis = useLenis();
   const [active, setActive] = useState(0);
+
+  /* Auto-play timer */
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setActive((prev) => (prev + 1) % N);
+    }, SLIDE_DURATION);
+    return () => clearTimeout(timer);
+  }, [active]);
 
   /* Slide carousel: each screen sits at xPercent = (i - active) * 100, so a
      change of `active` eases the next screen in while the current slides out.
@@ -123,26 +125,6 @@ export default function AppGallery() {
       mm.add(
         "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
         () => {
-          let last = 0;
-          /* pin the stage; scroll only drives WHICH screen is active. Snap so
-             the reel rests on a screen, giving each slide room to settle. */
-          const st = ScrollTrigger.create({
-            trigger: stageRef.current,
-            pin: stageRef.current,
-            start: "top top",
-            end: PIN_DISTANCE,
-            invalidateOnRefresh: true,
-            snap: { snapTo: 1 / (N - 1), duration: 0.4, ease: "power2.inOut" },
-            onUpdate: (self) => {
-              const i = Math.min(N - 1, Math.round(self.progress * (N - 1)));
-              if (i !== last) {
-                last = i;
-                setActive(i);
-              }
-            },
-          });
-          stRef.current = st;
-
           /* heading eases up a touch as the journey takes over */
           gsap.from(".gallery-reveal", {
             y: 34,
@@ -174,34 +156,34 @@ export default function AppGallery() {
     { scope: root }
   );
 
-  /* Clicking a name smooth-scrolls to that beat of the pinned reel */
+  /* Clicking a name immediately switches to that beat */
   const goTo = (i: number) => {
-    const st = stRef.current;
-    if (!st || !lenis) {
-      setActive(i);
-      return;
-    }
-    const y = st.start + (i / (N - 1)) * (st.end - st.start);
-    lenis.scrollTo(y, { duration: 1 });
+    setActive(i);
   };
 
   return (
     <section ref={root} id="gallery" className="relative bg-white">
-      {/* ── Desktop: pinned reel + synced screen list ── */}
+      <style>{`
+        @keyframes progress-fill {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
+      `}</style>
+      {/* ── Desktop: auto-playing screen list ── */}
       <div className="hidden md:block">
         <div
           ref={stageRef}
-          className="relative flex h-screen flex-col overflow-hidden px-6"
+          className="relative flex flex-col overflow-hidden px-6 py-24"
         >
           <CityMapBg className="opacity-30" />
 
           {/* compact heading */}
-          <div className="gallery-reveal relative z-10 pt-24 text-center">
+          <div className="gallery-reveal relative z-10 text-center mb-16">
             <h2 className="font-display text-display-2 text-ink">
               شاشةٌ لكل خطوة على المسار
             </h2>
             <p className="mt-2 text-body-3 text-subtext">
-              مرّر لترى البلاغ يتنقّل من الميدان إلى الخريطة إلى الإغلاق.
+              شاهد البلاغ يتنقّل من الميدان إلى الخريطة إلى الإغلاق.
             </p>
           </div>
 
@@ -217,7 +199,7 @@ export default function AppGallery() {
                       type="button"
                       onClick={() => goTo(i)}
                       aria-pressed={isActive}
-                      className="flex w-full items-center gap-4 rounded-[24px] p-5 text-right transition-all duration-300"
+                      className="flex w-full items-start gap-4 rounded-[24px] p-5 text-right transition-all duration-300"
                       style={{
                         background: isActive ? "var(--whitesmoke)" : "transparent",
                         boxShadow: isActive ? "var(--shadow-soft)" : "none",
@@ -239,12 +221,31 @@ export default function AppGallery() {
                             marginTop: isActive ? 6 : 0,
                           }}
                         >
-                          <p className="overflow-hidden text-[15px] leading-relaxed text-subtext">
-                            {s.desc}
-                          </p>
+                          <div className="overflow-hidden">
+                            <p className="text-[15px] leading-relaxed text-subtext">
+                              {s.desc}
+                            </p>
+                            
+                            {/* Loading bar */}
+                            <div className="mt-6 mb-2 w-full h-[10px] relative rounded-full bg-ink/5">
+                              <div
+                                className="absolute right-0 top-0 h-[10px] rounded-full"
+                                style={{
+                                  background: "#34A8D8",
+                                  animation: isActive ? `progress-fill ${SLIDE_DURATION}ms linear forwards` : "none",
+                                }}
+                              >
+                                <div className="absolute left-[-12px] top-1/2 -mt-[12px] w-[24px] h-[24px] flex items-center justify-center">
+                                  <svg width="17" height="19" viewBox="0 0 19 21" fill="none" style={{ transform: "rotate(-90deg)", display: "block" }}>
+                                    <path d="M11.0001 0.496532L0.142295 19.122C-0.379772 20.0175 0.637915 21.0181 1.52446 20.4808L9.46083 15.6717C9.81279 15.4584 10.2595 15.4825 10.5864 15.7325L16.9929 20.6301C17.7649 21.2203 18.84 20.4739 18.5569 19.5443L12.8206 0.708826C12.5664 -0.126008 11.4396 -0.257404 11.0001 0.496532Z" fill="#111717"></path>
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <span className="text-body-5 font-bold text-lighttext">
+                      <span className="mt-1 text-body-5 font-bold text-lighttext">
                         {["1", "2", "3", "4"][i]}
                       </span>
                     </button>
