@@ -289,11 +289,36 @@ export default function Hero() {
           <a
             href="#contact"
             data-cursor="invert"
-            className="pill flex items-center gap-2 bg-peacock px-8 py-4 text-body-3 font-bold text-white transition-colors hover:bg-horizon"
+            className="group flex items-center gap-[11px] rounded-[99px] bg-[#0E1312] px-[30px] py-[15px] text-[17px] font-[800] text-[#F2F0E8] transition-transform hover:scale-[1.03]"
             style={{ boxShadow: "var(--shadow-lift)" }}
           >
-            احجز عرضاً توضيحياً
-            <ChevronRight24Filled aria-hidden />
+            <span className="relative block h-[20px] w-[18px] overflow-hidden">
+              <svg
+                width="18"
+                height="20"
+                viewBox="0 0 19 21"
+                fill="none"
+                className="absolute inset-0 transition-transform duration-300 ease-out group-hover:-translate-y-[150%]"
+              >
+                <path
+                  d="M11.0001 0.496532L0.142295 19.122C-0.379772 20.0175 0.637915 21.0181 1.52446 20.4808L9.46083 15.6717C9.81279 15.4584 10.2595 15.4825 10.5864 15.7325L16.9929 20.6301C17.7649 21.2203 18.84 20.4739 18.5569 19.5443L12.8206 0.708826C12.5664 -0.126008 11.4396 -0.257404 11.0001 0.496532Z"
+                  fill="#34A8D9"
+                />
+              </svg>
+              <svg
+                width="18"
+                height="20"
+                viewBox="0 0 19 21"
+                fill="none"
+                className="absolute inset-0 translate-y-[150%] transition-transform duration-300 ease-out group-hover:translate-y-0"
+              >
+                <path
+                  d="M11.0001 0.496532L0.142295 19.122C-0.379772 20.0175 0.637915 21.0181 1.52446 20.4808L9.46083 15.6717C9.81279 15.4584 10.2595 15.4825 10.5864 15.7325L16.9929 20.6301C17.7649 21.2203 18.84 20.4739 18.5569 19.5443L12.8206 0.708826C12.5664 -0.126008 11.4396 -0.257404 11.0001 0.496532Z"
+                  fill="#34A8D9"
+                />
+              </svg>
+            </span>
+            <span>احجز عرضاً توضيحياً</span>
           </a>
           <a
             href="#path"

@@ -62,7 +62,7 @@ export const LOGOS: LogoItem[] = MUNICIPALITIES.map((m) => ({
       ) : (
         <CivicGlyph kind={m.glyph} />
       )}
-      <span className="whitespace-nowrap text-[20px] font-bold">{m.name}</span>
+      <span className="whitespace-nowrap text-[18px] font-bold">{m.name}</span>
     </div>
   ),
 }))
@@ -97,18 +97,18 @@ export default function TrustBar() {
   )
 
   return (
-    <section ref={root} className="bg-white py-50">
-      <p className="trust-reveal text-center text-[22px] font-medium text-subtext">
+    <section ref={root} className="bg-white py-60">
+      <p className="trust-reveal text-center text-[18px] font-medium text-subtext">
         تثق به بلديات فلسطين
       </p>
 
       {/* ── Desktop: LogoLoop seamless marquee (pause on hover) ── */}
-      <div className="trust-marquee trust-reveal mt-14 hidden h-[70px] md:block">
+      <div className="trust-marquee trust-reveal mt-14 hidden h-[50px] md:block">
         <LogoLoop
           logos={LOGOS}
           speed={60}
           direction="left"
-          logoHeight={80}
+          logoHeight={50}
           gap={80}
           pauseOnHover
           fadeOut
