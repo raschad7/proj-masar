@@ -18,7 +18,7 @@ type State = {
 const STATES: State[] = [
   {
     label: "يُرصد تلقائياً",
-    hex: "#44729D",
+    hex: "#16668E",
     loc: "شارع النصر · حي المخفية",
     time: "9:12",
     head: "تقود فقط… ومسار يرى",
@@ -26,7 +26,7 @@ const STATES: State[] = [
   },
   {
     label: "مُسنَد",
-    hex: "#D1A242",
+    hex: "#16668E",
     loc: "أولوية عالية · فريق 3",
     time: "9:13",
     head: "لكل بلاغٍ مالكٌ ووقت",
@@ -34,7 +34,7 @@ const STATES: State[] = [
   },
   {
     label: "قيد الإصلاح",
-    hex: "#44729D",
+    hex: "#16668E",
     loc: "الفريق في الموقع",
     time: "10:40",
     head: "الحالة مرئية لحظياً",
@@ -42,7 +42,7 @@ const STATES: State[] = [
   },
   {
     label: "أُغلق بدليل",
-    hex: "#599664",
+    hex: "#16668E",
     loc: "مُوثّق · جاهز للتدقيق",
     time: "11:25",
     head: "يُغلق بدليلٍ موثّق",
@@ -86,11 +86,12 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
 
       {/* 1 — Dashcam */}
       <div
-        className="absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="absolute inset-0 transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
         style={{ 
           opacity: activeIndex === 0 ? 1 : 0, 
-          transform: activeIndex === 0 ? "scale(1)" : "scale(1.05)",
-          zIndex: activeIndex === 0 ? 10 : 1 
+          transform: activeIndex === 0 ? "scale(1) translateY(0px)" : "scale(1.04) translateY(24px)",
+          filter: activeIndex === 0 ? "blur(0px)" : "blur(8px)",
+          zIndex: activeIndex === 0 ? 10 : 1
         }}
       >
         <video
@@ -108,12 +109,12 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
 
       {/* 2 — Dispatch Map */}
       <div
-        className="absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="absolute inset-0 transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
         style={{ 
           opacity: activeIndex === 1 ? 1 : 0, 
-          transform: activeIndex === 1 ? "scale(1)" : "scale(1.05)",
-          zIndex: activeIndex === 1 ? 10 : 1,
-          clipPath: activeIndex === 1 ? 'polygon(0 0, 100% 0, 100% 100%, 0 100%)' : 'polygon(0 100%, 100% 100%, 100% 100%, 0 100%)'
+          transform: activeIndex === 1 ? "scale(1) translateY(0px)" : "scale(1.04) translateY(24px)",
+          filter: activeIndex === 1 ? "blur(0px)" : "blur(8px)",
+          zIndex: activeIndex === 1 ? 10 : 1
         }}
       >
         <img
@@ -142,12 +143,12 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
 
       {/* 3 — In Repair */}
       <div
-        className="absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="absolute inset-0 transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
         style={{ 
           opacity: activeIndex === 2 ? 1 : 0, 
-          transform: activeIndex === 2 ? "scale(1)" : "scale(1.05)",
-          zIndex: activeIndex === 2 ? 10 : 1,
-          clipPath: activeIndex === 2 ? 'polygon(0 0, 100% 0, 100% 100%, 0 100%)' : 'polygon(0 0, 100% 0, 100% 0, 0 0)'
+          transform: activeIndex === 2 ? "scale(1) translateY(0px)" : "scale(1.04) translateY(24px)",
+          filter: activeIndex === 2 ? "blur(0px)" : "blur(8px)",
+          zIndex: activeIndex === 2 ? 10 : 1
         }}
       >
         <img
@@ -159,12 +160,12 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
 
       {/* 4 — Closed */}
       <div
-        className="absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        className="absolute inset-0 transition-all duration-[1500ms] ease-[cubic-bezier(0.25,1,0.5,1)]"
         style={{ 
           opacity: activeIndex === 3 ? 1 : 0, 
-          transform: activeIndex === 3 ? "scale(1)" : "scale(1.05)",
-          zIndex: activeIndex === 3 ? 10 : 1,
-          clipPath: activeIndex === 3 ? 'circle(150% at 50% 50%)' : 'circle(0% at 50% 50%)'
+          transform: activeIndex === 3 ? "scale(1) translateY(0px)" : "scale(1.04) translateY(24px)",
+          filter: activeIndex === 3 ? "blur(0px)" : "blur(8px)",
+          zIndex: activeIndex === 3 ? 10 : 1
         }}
       >
         <img
@@ -192,15 +193,10 @@ export default function GeminiPath() {
         trigger: root.current,
         pin: true,
         start: "top top",
-        end: "+=350%", // User scrolls 3.5x the screen height to go through the 4 states
-        snap: { 
-            snapTo: 1 / 3, 
-            duration: { min: 0.2, max: 0.5 }, 
-            ease: "power2.inOut" 
-        },
+        end: "+=400%", // User scrolls 4x the screen height to go through the 4 states smoothly
         onUpdate: (self) => {
-          // Map scroll progress (0 to 1) to the 4 states (0, 1, 2, 3)
-          const i = Math.min(3, Math.round(self.progress * 3));
+          // Map scroll progress (0 to 1) evenly to the 4 states (0, 1, 2, 3)
+          const i = Math.min(3, Math.floor(self.progress * 4));
           if (i !== last) {
             last = i;
             setActive(i);

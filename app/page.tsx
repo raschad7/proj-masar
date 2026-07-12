@@ -12,6 +12,7 @@ import Footer from "@/components/Footer"
 import CTASection from "@/components/CTASection"
 import ClaudeImpact from "@/components/ClaudeImpact"
 import GeminiPath from "@/components/GeminiPath"
+import AboutSection from "@/components/AboutSection"
 
 export default function Home() {
   return (
@@ -20,7 +21,7 @@ export default function Home() {
       <main className="relative z-[1] bg-white">
         <div className="relative isolate">
           <Hero />
-          <SectionBreak label="حياة بلاغ واحد" />
+          <AboutSection />
           <GeminiPath />
         </div>
         <PhoneSection />

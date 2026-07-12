@@ -13,14 +13,16 @@ import LogoArrow from "@/components/LogoArrow"
    hover/active. Logo + CTA float free and hide on scroll-down.        */
 
 const SECTIONS = [
-  { n: "01", label: "المسار", id: "path" },
-  { n: "02", label: "الأدوار", id: "roles" },
-  { n: "03", label: "الميزات", id: "features" },
-  { n: "04", label: "كيف يعمل", id: "tech" },
-  { n: "05", label: "التطبيق", id: "gallery" },
-  { n: "06", label: "الأثر", id: "impact-claude" },
-  { n: "07", label: "من الميدان", id: "grid-showcase" },
-  { n: "08", label: "تواصل", id: "contact" },
+  { n: "01", label: "الرئيسية", id: "top" },
+  { n: "02", label: "عن مسار", id: "about" },
+  { n: "03", label: "المسار", id: "path" },
+  { n: "04", label: "الأدوار", id: "roles" },
+  { n: "05", label: "الميزات", id: "features" },
+  { n: "06", label: "كيف يعمل", id: "tech" },
+  { n: "07", label: "التطبيق", id: "gallery" },
+  { n: "08", label: "الأثر", id: "impact-claude" },
+  { n: "09", label: "من الميدان", id: "grid-showcase" },
+  { n: "10", label: "تواصل", id: "contact" },
 ]
 const N = SECTIONS.length
 
@@ -39,8 +41,11 @@ export default function Nav() {
   const logoRef = useRef<HTMLDivElement>(null)
   const ctaWrapRef = useRef<HTMLDivElement>(null)
   const ctaRef = useRef<HTMLButtonElement>(null)
+  const centerWrapRef = useRef<HTMLDivElement>(null)
+  const menuBtnRef = useRef<HTMLButtonElement>(null)
   const [active, setActive] = useState(0)
   const [inFooter, setInFooter] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const lenis = useLenis()
 
   const scrollToId = (id: string) => {
@@ -146,7 +151,7 @@ export default function Nav() {
       /* ── scroll-direction hide/show for logo + CTA (standard) ── */
       let lastY = window.scrollY
       let hidden = false
-      const floaters = [logoRef.current, ctaWrapRef.current].filter(Boolean)
+      const floaters = [logoRef.current, ctaWrapRef.current, centerWrapRef.current].filter(Boolean)
       const setHidden = (h: boolean) => {
         hidden = h
         gsap.to(floaters, {
@@ -198,12 +203,37 @@ export default function Nav() {
         }
       }
 
+      /* ── magnetic Menu Btn ── */
+      let cleanupMenuBtn = () => {}
+      if (!reduce && menuBtnRef.current) {
+        const btn = menuBtnRef.current
+        const mx = gsap.quickTo(btn, "x", { duration: 0.4, ease: "power3" })
+        const my = gsap.quickTo(btn, "y", { duration: 0.4, ease: "power3" })
+        const onMove = (e: MouseEvent) => {
+          const r = btn.getBoundingClientRect()
+          // Increased multiplier to 0.65 for a stronger magnetic pull
+          mx((e.clientX - (r.left + r.width / 2)) * 0.65)
+          my((e.clientY - (r.top + r.height / 2)) * 0.65)
+        }
+        const onLeave = () => {
+          mx(0)
+          my(0)
+        }
+        btn.addEventListener("mousemove", onMove)
+        btn.addEventListener("mouseleave", onLeave)
+        cleanupMenuBtn = () => {
+          btn.removeEventListener("mousemove", onMove)
+          btn.removeEventListener("mouseleave", onLeave)
+        }
+      }
+
       return () => {
         gsap.ticker.remove(tick)
         window.removeEventListener("resize", measure)
         ScrollTrigger.removeEventListener("refresh", measure)
         window.removeEventListener("scroll", onScroll)
         cleanupCta()
+        cleanupMenuBtn()
       }
     },
     { scope: navRef },
@@ -270,6 +300,97 @@ export default function Nav() {
             />
           </span>
         </button>
+      </div>
+
+      {/* ── center floating menu button (magnetic) ── */}
+      <div ref={centerWrapRef} className="fixed left-1/2 top-6 z-50 -translate-x-1/2">
+        <div className="relative">
+          <button
+            ref={menuBtnRef}
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="relative h-12 w-12 transition-transform hover:scale-105 before:absolute before:-inset-8 before:rounded-full before:content-['']"
+            style={{ perspective: '1000px' }}
+            aria-label="القائمة"
+          >
+            <div 
+              className="relative h-full w-full rounded-full shadow-lg transition-transform duration-500"
+              style={{ 
+                transformStyle: 'preserve-3d', 
+                transform: menuOpen ? 'rotateY(180deg)' : 'rotateY(0deg)' 
+              }}
+            >
+              {/* Front (Hamburger) */}
+              <div 
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-[#34A8D9]"
+                style={{ backfaceVisibility: 'hidden' }}
+              >
+                <div className="flex flex-col gap-[4px]">
+                  <span className="h-[2px] w-5 rounded-full bg-white" />
+                  <span className="h-[2px] w-5 rounded-full bg-white" />
+                  <span className="h-[2px] w-5 rounded-full bg-white" />
+                </div>
+              </div>
+
+              {/* Back (X) */}
+              <div 
+                className="absolute inset-0 flex items-center justify-center rounded-full border border-black/5 bg-white text-[#34A8D9]"
+                style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+              >
+                <div className="relative flex h-5 w-5 items-center justify-center">
+                  <span className="absolute h-[2px] w-5 rotate-45 rounded-full bg-[#34A8D9]" />
+                  <span className="absolute h-[2px] w-5 -rotate-45 rounded-full bg-[#34A8D9]" />
+                </div>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Full Screen Menu Overlay (Utopai Light Style) ── */}
+      <div 
+        className={`fixed inset-0 z-40 flex items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${menuOpen ? 'opacity-100 pointer-events-auto bg-white/80 backdrop-blur-2xl' : 'opacity-0 pointer-events-none bg-white/0 backdrop-blur-none'}`}
+      >
+        <div className={`relative w-full max-w-[1000px] h-[70vh] max-h-[600px] transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${menuOpen ? 'scale-100' : 'scale-95'}`}>
+          <div className="grid h-full w-full grid-cols-2 grid-rows-2">
+            
+            {/* Box 1 - Home (RTL: Top Right) */}
+            <a href="/" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center border-b border-l border-black/15 overflow-hidden transition-colors hover:bg-black/5">
+              <img src="/gallary/pathPic.png" className="absolute inset-0 h-full w-full object-cover opacity-0 transition-all duration-700 group-hover:scale-105 group-hover:opacity-40" alt="" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <span className="font-display text-[32px] font-bold text-ink transition-all duration-500 group-hover:-translate-y-1 group-hover:text-[#34A8D9]">الرئيسية</span>
+                <span className="mt-2 text-[16px] text-subtext opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2">الواجهة الرئيسية والملخص</span>
+              </div>
+            </a>
+            
+            {/* Box 2 - Map (RTL: Top Left) */}
+            <a href="/map" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center border-b border-black/15 overflow-hidden transition-colors hover:bg-black/5">
+              <img src="/grid/Gemini_Generated_Image_v3jpk7v3jpk7v3jp.png" className="absolute inset-0 h-full w-full object-cover opacity-0 transition-all duration-700 group-hover:scale-105 group-hover:opacity-40" alt="" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <span className="font-display text-[32px] font-bold text-ink transition-all duration-500 group-hover:-translate-y-1 group-hover:text-[#34A8D9]">خريطة البلاغات</span>
+                <span className="mt-2 text-[16px] text-subtext opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2">تصفح جميع البلاغات جغرافياً</span>
+              </div>
+            </a>
+
+            {/* Box 3 - Tech / AI (RTL: Bottom Right) */}
+            <a href="/#tech" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center border-l border-black/15 overflow-hidden transition-colors hover:bg-black/5">
+              <img src="/media/detection-poster.jpg" className="absolute inset-0 h-full w-full object-cover opacity-0 transition-all duration-700 group-hover:scale-105 group-hover:opacity-40" alt="" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <span className="font-display text-[32px] font-bold text-ink transition-all duration-500 group-hover:-translate-y-1 group-hover:text-[#34A8D9]">النظام الذكي</span>
+                <span className="mt-2 text-[16px] text-subtext opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2">كيف تعمل تقنيات الذكاء الاصطناعي</span>
+              </div>
+            </a>
+
+            {/* Box 4 - Teams (RTL: Bottom Left) */}
+            <a href="/#roles" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden transition-colors hover:bg-black/5">
+              <img src="/grid/pexels-gaion-27937015.jpg" className="absolute inset-0 h-full w-full object-cover opacity-0 transition-all duration-700 group-hover:scale-105 group-hover:opacity-40" alt="" />
+              <div className="relative z-10 flex flex-col items-center text-center">
+                <span className="font-display text-[32px] font-bold text-ink transition-all duration-500 group-hover:-translate-y-1 group-hover:text-[#34A8D9]">الفرق الميدانية</span>
+                <span className="mt-2 text-[16px] text-subtext opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 translate-y-2">إدارة المهام وتوجيه الفرق</span>
+              </div>
+            </a>
+
+          </div>
+        </div>
       </div>
 
       {/* ── vertical progress island (right, centered) — expands on hover ── */}

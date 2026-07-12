@@ -4,6 +4,15 @@ import { useRef, useState } from "react"
 import { usePathname } from "next/navigation"
 import { gsap, MotionPathPlugin, useGSAP } from "@/lib/gsap"
 
+// Silence the harmless THREE.Clock deprecation warning from @react-three/fiber
+if (typeof window !== "undefined") {
+  const originalWarn = console.warn
+  console.warn = (...args) => {
+    if (typeof args[0] === "string" && args[0].includes("THREE.Clock: This module has been deprecated")) return
+    originalWarn.apply(console, args)
+  }
+}
+
 /* The three logo marks, as their raw path data (56×56 viewBox). */
 const MARKS = [
   "M16.8376 17.9785L5.97976 36.6039C5.45769 37.4995 6.47538 38.5 7.36193 37.9628L15.2983 33.1536C15.6502 32.9403 16.0969 32.9644 16.4239 33.2144L22.8304 38.112C23.6024 38.7022 24.6775 37.9558 24.3944 37.0263L18.6581 18.1908C18.4039 17.3559 17.2771 17.2245 16.8376 17.9785Z",

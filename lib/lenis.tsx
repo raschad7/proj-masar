@@ -35,6 +35,7 @@ export default function LenisProvider({
     document.fonts.ready.then(() => ScrollTrigger.refresh());
 
     setLenis(instance);
+    ;(window as unknown as { __lenis?: Lenis }).__lenis = instance;
 
     return () => {
       gsap.ticker.remove(raf);
