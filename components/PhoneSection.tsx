@@ -7,6 +7,15 @@ import {
   Map24Filled,
   CheckmarkCircle24Filled,
   Wrench24Filled,
+  WrenchScrewdriver24Filled,
+  Location24Filled,
+  Location24Regular,
+  Image24Regular,
+  Sparkle24Filled,
+  ArrowSortDownLines24Filled,
+  People24Regular,
+  TaskListSquareLtr24Filled,
+  type FluentIcon,
 } from "@fluentui/react-icons"
 import { gsap, useGSAP } from "@/lib/gsap"
 import CityMapBg from "@/components/CityMapBg"
@@ -19,30 +28,66 @@ const PhoneCanvas = dynamic(() => import("@/components/PhoneCanvas"), {
 
 /* ── Phone Screens ─────────────────────────────────────────────── */
 
-const ROLES = [
+/* Card background for the roles section — single source of truth */
+const CARD_BG = "#F0F0F0"
+
+type Step = { Icon: FluentIcon; label: string }
+
+const ROLES: Array<{
+  title: string
+  hex: string
+  glass: string
+  side: "left" | "right"
+  char: string
+  copy: string
+  num: string
+  Icon: FluentIcon
+  steps: Step[]
+}> = [
   {
     title: "المُبلِّغ / الماسح",
-    hex: "#0072DA",
-    glass: "rgba(0, 114, 218, 0.10)",
-    side: "left" as const, // phone RIGHT → copy LEFT
+    hex: "#44729D",
+    glass: "rgba(68, 114, 157, 0.10)",
+    side: "left", // phone RIGHT → copy LEFT
     char: "/chars/TheScanner.svg",
     copy: "المواطن أو الفريق الميداني يلتقط الطريق، فيصنّف مسار الضرر تلقائياً ويحدّد موقعه وخطورته.",
+    num: "01",
+    Icon: Camera24Filled,
+    steps: [
+      { Icon: Image24Regular, label: "التقاط صورة الطريق" },
+      { Icon: Location24Regular, label: "تحديد الموقع تلقائياً" },
+      { Icon: Sparkle24Filled, label: "إرسال للتحليل الذكي" },
+    ],
   },
   {
     title: "المشرف / الموزّع",
-    hex: "#FFAB00",
-    glass: "rgba(255, 171, 0, 0.12)",
-    side: "right" as const, // phone LEFT → copy RIGHT
+    hex: "#D1A242",
+    glass: "rgba(209, 162, 66, 0.12)",
+    side: "right", // phone LEFT → copy RIGHT
     char: "/chars/TheSupervisor.svg",
     copy: "يرى كل البلاغات على الخريطة، يرتّبها بالأولوية حسب الخطورة والموقع، ويوزّع الفرق.",
+    num: "02",
+    Icon: Map24Filled,
+    steps: [
+      { Icon: Map24Filled, label: "عرض البلاغات على الخريطة" },
+      { Icon: ArrowSortDownLines24Filled, label: "ترتيب حسب الأولوية" },
+      { Icon: People24Regular, label: "توزيع الفرق الميدانية" },
+    ],
   },
   {
     title: "فريق الإصلاح",
-    hex: "#16668E",
-    glass: "rgba(22, 102, 142, 0.10)",
-    side: "left" as const, // phone RIGHT → copy LEFT
+    hex: "#599664",
+    glass: "rgba(89, 150, 100, 0.10)",
+    side: "left", // phone RIGHT → copy LEFT
     char: "/chars/TheFixer.svg",
     copy: "يستقبل المهام، يُنجز على الأرض، ويوثّق بالصورة حتى إغلاق البلاغ.",
+    num: "03",
+    Icon: Wrench24Filled,
+    steps: [
+      { Icon: TaskListSquareLtr24Filled, label: "استلام المهمة الميدانية" },
+      { Icon: WrenchScrewdriver24Filled, label: "الإصلاح على الأرض" },
+      { Icon: CheckmarkCircle24Filled, label: "توثيق وإغلاق البلاغ" },
+    ],
   },
 ]
 
@@ -63,22 +108,60 @@ function BrandScreen() {
 
 function ScannerScreen() {
   return (
-    <div className="flex h-full flex-col bg-[#20242A] p-3">
-      <div className="relative flex-1 overflow-hidden rounded-2xl bg-[#3A4048]">
-        <div className="absolute inset-x-6 bottom-0 top-1/3 rounded-t-[60px] bg-[#4A5058]" />
+    <div className="flex h-full flex-col bg-[#15181D] p-3">
+      <div className="flex items-center justify-between px-1 pb-2 pt-1">
+        <span className="text-[13px] text-white/80">‹</span>
+        <span className="text-[11px] font-bold text-white">إبلاغ عن مشكلة</span>
+      </div>
+      {/* camera viewport */}
+      <div className="relative flex-1 overflow-hidden rounded-2xl bg-gradient-to-b from-[#575D66] to-[#3C424B]">
+        <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[8px] font-bold text-white">
+          <span className="h-1.5 w-1.5 rounded-full bg-positive" />
+          ٩٦٪ الدقة
+        </span>
+        {/* pothole */}
+        <span className="absolute left-1/2 top-1/2 h-9 w-16 -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[#111318]" />
+        {/* AI focus box */}
         <div
-          className="absolute left-1/2 top-1/2 h-16 w-24 -translate-x-1/2 -translate-y-1/2 rounded-lg"
-          style={{ boxShadow: "inset 0 0 0 3px #0072DA" }}
-        >
-          <span className="pill absolute -top-3 right-1 bg-informative px-2 py-0.5 text-[9px] font-bold text-white">
-            حفرة · خطورة عالية
-          </span>
+          className="absolute left-1/2 top-1/2 h-14 w-20 -translate-x-1/2 -translate-y-1/2 rounded-md"
+          style={{ boxShadow: "inset 0 0 0 2px #0072DA" }}
+        />
+        {/* overlay result card */}
+        <div className="absolute inset-x-2 bottom-2 rounded-xl bg-white p-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[9px] font-bold text-negative">عالية</span>
+            <span className="text-[9px] font-bold text-subtext">الخطورة</span>
+          </div>
+          <div className="mt-1 flex gap-0.5">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <span
+                key={i}
+                className={`h-1 flex-1 rounded-full ${i < 4 ? "bg-negative" : "bg-seashell"}`}
+              />
+            ))}
+          </div>
+          <div className="mt-1.5 flex items-center justify-end gap-1">
+            <span className="text-[9px] text-ink">الخليل، شارع الشهداء</span>
+            <Location24Filled
+              className="text-informative"
+              style={{ width: 11, height: 11 }}
+            />
+          </div>
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-center">
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-informative text-white">
-          <Camera24Filled />
+      {/* control bar */}
+      <div className="mt-2.5 flex items-center justify-between px-3">
+        <Image24Regular
+          className="text-white/75"
+          style={{ width: 20, height: 20 }}
+        />
+        <span className="flex h-11 w-11 items-center justify-center rounded-full ring-2 ring-white">
+          <span className="h-8 w-8 rounded-full bg-informative" />
         </span>
+        <Camera24Filled
+          className="text-white/75"
+          style={{ width: 20, height: 20 }}
+        />
       </div>
     </div>
   )
@@ -161,22 +244,47 @@ function RoleCard({
       src={role.char}
       alt=""
       aria-hidden
-      className="role-char w-[180px] shrink-0 md:w-[320px] object-contain"
+      className="role-char w-[170px] shrink-0 md:w-[310px] object-contain"
     />
   )
+  const { Icon } = role
   const card = (
     <div
-      className="flex flex-1 flex-col justify-center p-6 backdrop-blur-md min-h-[260px] md:min-h-[300px] md:p-10"
-      style={{
-        borderRadius: "var(--radius-card)",
-        background: role.glass,
-        boxShadow: "var(--shadow-soft)",
-      }}
+      className="relative flex flex-1 flex-col rounded-[32px] p-8 md:p-10"
+      style={{ background: "#F0F0F0" }}
     >
-      <h3 className="text-display-3 font-display" style={{ color: role.hex, fontSize: 34, lineHeight: 1.2 }}>
-        {role.title}
-      </h3>
-      <p className="mt-4 text-[22px] leading-relaxed text-ink font-medium">{role.copy}</p>
+      {/* Title row: Icon on right (in RTL), Text on left */}
+      <div className="flex items-center justify-center gap-3">
+        <Icon style={{ width: 36, height: 36, color: role.hex }} />
+        <h3
+          className="font-display font-bold leading-tight"
+          style={{ fontSize: 32, color: role.hex }}
+        >
+          {role.title}
+        </h3>
+      </div>
+
+      {/* Description */}
+      <p className="mt-4 text-center text-[15px] leading-relaxed text-subtext max-w-[90%] mx-auto">
+        {role.copy}
+      </p>
+
+      {/* Steps List */}
+      <div className="mt-10 flex flex-col gap-6 mx-auto w-fit">
+        {role.steps.map(({ Icon: StepIcon, label }) => (
+          <div key={label} className="flex items-center gap-4">
+            {/* Plain Icon without square */}
+            <span
+              className="flex h-10 w-10 shrink-0 items-center justify-center"
+              style={{ color: role.hex }}
+            >
+              <StepIcon style={{ width: 24, height: 24 }} />
+            </span>
+            {/* Text */}
+            <span className="text-[16px] font-medium text-ink">{label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
   /* The character stands beside the card on its OUTER edge (away from
@@ -196,10 +304,10 @@ function RoleCard({
 function PhoneShellFallback() {
   return (
     <div className="absolute inset-x-[18.75%] inset-y-[10.9375%]">
-      <div className="h-full w-full rounded-[36px] bg-white p-3">
-        <div className="relative h-full w-full overflow-hidden rounded-[26px] bg-whitesmoke">
+      <div className="h-full w-full rounded-[40px] bg-[#111318] p-1.5 shadow-[var(--shadow-soft)]">
+        <div className="relative h-full w-full overflow-hidden rounded-[34px] bg-whitesmoke">
           <BrandScreen />
-          <span className="absolute left-1/2 top-2 h-1.5 w-16 -translate-x-1/2 rounded-full bg-seashell" />
+          <span className="absolute left-1/2 top-2.5 h-5 w-[68px] -translate-x-1/2 rounded-full bg-[#050506]" />
         </div>
       </div>
     </div>
@@ -217,12 +325,7 @@ function PhoneChips() {
       <div
         aria-hidden
         className="phone-chip chip-cta pill absolute -left-28 bottom-24 z-30 flex items-center gap-2 bg-white/80 px-4 py-2 backdrop-blur-md"
-      >
-        <span className="rec-blink h-2 w-2 rounded-full bg-positive" />
-        <span className="text-body-5 font-bold text-ink">
-          متاح الآن للبلديات
-        </span>
-      </div>
+      ></div>
       <div
         aria-hidden
         className="phone-chip chip-step pill absolute -right-14 top-12 z-30 h-9 w-[88px] bg-white/80 backdrop-blur-md"
@@ -271,6 +374,19 @@ export default function PhoneSection() {
           gsap.set(".phone-center", { y: "12vh" })
           gsap.set(".phone-chip", { autoAlpha: 0 })
           gsap.set(".step-layer-1, .step-layer-2", { autoAlpha: 0 })
+
+          /* Role card+character groups: centered via xPercent/yPercent,
+             pushed to their side with x, and parked just below their
+             resting spot (y) so each rises from below on entry. */
+          ROLES.forEach((role, i) => {
+            gsap.set(`.role-card-wrapper-${i}`, {
+              xPercent: -50,
+              yPercent: -50,
+              x: role.side === "left" ? -300 : 300,
+              y: 70,
+              autoAlpha: 0,
+            })
+          })
 
           /* Entry hand-off: the phone peeks over the tail of The Path
              and tips upright as it settles into center (pre-sticky). */
@@ -338,59 +454,145 @@ export default function PhoneSection() {
             },
           })
 
-          let currentRy = 0;
+          let currentRy = 0
 
-          // Intro -> Step 1 (Card 0)
-          tl.to(".roles-header", { opacity: 0, y: -40, duration: 1 }, 0)
+          // Intro -> Step 1 (Card 0). The header stays put the whole
+          // time and only leaves during the outro.
           tl.to(".phone-chip", { autoAlpha: 1, duration: 1 }, 0)
-          
-          currentRy += -360 - 16;
-          tl.to(".phone-travel", { x: 220, duration: 1.5, ease: "power2.inOut" }, 0)
+
+          currentRy += -360 - 16
+          tl.to(
+            ".phone-travel",
+            { x: 220, duration: 1.5, ease: "power2.inOut" },
+            0,
+          )
           tl.to(pose, { ry: currentRy, duration: 1.5, ease: "power2.inOut" }, 0)
-          tl.to(pose, { rx: 15, rz: 4, z: -110, duration: 0.75, ease: "power2.inOut" }, 0)
-          tl.to(pose, { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" }, 0.75)
+          tl.to(
+            pose,
+            { rx: 15, rz: 4, z: -110, duration: 0.75, ease: "power2.inOut" },
+            0,
+          )
+          tl.to(
+            pose,
+            { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" },
+            0.75,
+          )
           tl.set(pose, { screen: 1 }, 0.75)
           tl.to(".role-glow-0", { opacity: 1, duration: 0.75 }, 0.75)
-          tl.to(".step-layer-0", { autoAlpha: 1, yPercent: 0, duration: 0.5 }, 0.75)
-          tl.to(".role-card-wrapper-0", { opacity: 1, duration: 1 }, 0.5)
+          tl.to(
+            ".step-layer-0",
+            { autoAlpha: 1, yPercent: 0, duration: 0.5 },
+            0.75,
+          )
+          tl.to(
+            ".role-card-wrapper-0",
+            { y: 0, autoAlpha: 1, duration: 1, ease: "power2.out" },
+            0.5,
+          )
 
           // PAUSE 1
           tl.to({}, { duration: 1.5 })
 
           // Step 1 -> Step 2 (Card 1)
           const t2 = tl.duration()
-          tl.to(".role-card-wrapper-0", { opacity: 0, duration: 0.8 }, t2)
+          tl.to(
+            ".role-card-wrapper-0",
+            { y: -70, autoAlpha: 0, duration: 0.8, ease: "power2.in" },
+            t2,
+          )
           tl.to(".role-glow-0", { opacity: 0, duration: 0.75 }, t2)
-          tl.to(".step-layer-0", { autoAlpha: 0, yPercent: -60, duration: 0.5 }, t2)
-          
-          currentRy += 360 + 32;
-          tl.to(".phone-travel", { x: -220, duration: 1.5, ease: "power2.inOut" }, t2)
-          tl.to(pose, { ry: currentRy, duration: 1.5, ease: "power2.inOut" }, t2)
-          tl.to(pose, { rx: 15, rz: -4, z: -110, duration: 0.75, ease: "power2.inOut" }, t2)
-          tl.to(pose, { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" }, t2 + 0.75)
+          tl.to(
+            ".step-layer-0",
+            { autoAlpha: 0, yPercent: -60, duration: 0.5 },
+            t2,
+          )
+
+          currentRy += 360 + 32
+          tl.to(
+            ".phone-travel",
+            { x: -220, duration: 1.5, ease: "power2.inOut" },
+            t2,
+          )
+          tl.to(
+            pose,
+            { ry: currentRy, duration: 1.5, ease: "power2.inOut" },
+            t2,
+          )
+          tl.to(
+            pose,
+            { rx: 15, rz: -4, z: -110, duration: 0.75, ease: "power2.inOut" },
+            t2,
+          )
+          tl.to(
+            pose,
+            { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" },
+            t2 + 0.75,
+          )
           tl.set(pose, { screen: 2 }, t2 + 0.75)
           tl.to(".role-glow-1", { opacity: 1, duration: 0.75 }, t2 + 0.75)
-          tl.fromTo(".step-layer-1", { autoAlpha: 0, yPercent: 60 }, { autoAlpha: 1, yPercent: 0, duration: 0.5 }, t2 + 0.75)
-          tl.to(".role-card-wrapper-1", { opacity: 1, duration: 1 }, t2 + 0.5)
+          tl.fromTo(
+            ".step-layer-1",
+            { autoAlpha: 0, yPercent: 60 },
+            { autoAlpha: 1, yPercent: 0, duration: 0.5 },
+            t2 + 0.75,
+          )
+          tl.to(
+            ".role-card-wrapper-1",
+            { y: 0, autoAlpha: 1, duration: 1, ease: "power2.out" },
+            t2 + 0.5,
+          )
 
           // PAUSE 2
           tl.to({}, { duration: 1.5 })
 
           // Step 2 -> Step 3 (Card 2)
           const t3 = tl.duration()
-          tl.to(".role-card-wrapper-1", { opacity: 0, duration: 0.8 }, t3)
+          tl.to(
+            ".role-card-wrapper-1",
+            { y: -70, autoAlpha: 0, duration: 0.8, ease: "power2.in" },
+            t3,
+          )
           tl.to(".role-glow-1", { opacity: 0, duration: 0.75 }, t3)
-          tl.to(".step-layer-1", { autoAlpha: 0, yPercent: -60, duration: 0.5 }, t3)
-          
-          currentRy += -360 - 32;
-          tl.to(".phone-travel", { x: 220, duration: 1.5, ease: "power2.inOut" }, t3)
-          tl.to(pose, { ry: currentRy, duration: 1.5, ease: "power2.inOut" }, t3)
-          tl.to(pose, { rx: 15, rz: 4, z: -110, duration: 0.75, ease: "power2.inOut" }, t3)
-          tl.to(pose, { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" }, t3 + 0.75)
+          tl.to(
+            ".step-layer-1",
+            { autoAlpha: 0, yPercent: -60, duration: 0.5 },
+            t3,
+          )
+
+          currentRy += -360 - 32
+          tl.to(
+            ".phone-travel",
+            { x: 220, duration: 1.5, ease: "power2.inOut" },
+            t3,
+          )
+          tl.to(
+            pose,
+            { ry: currentRy, duration: 1.5, ease: "power2.inOut" },
+            t3,
+          )
+          tl.to(
+            pose,
+            { rx: 15, rz: 4, z: -110, duration: 0.75, ease: "power2.inOut" },
+            t3,
+          )
+          tl.to(
+            pose,
+            { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" },
+            t3 + 0.75,
+          )
           tl.set(pose, { screen: 3 }, t3 + 0.75)
           tl.to(".role-glow-2", { opacity: 1, duration: 0.75 }, t3 + 0.75)
-          tl.fromTo(".step-layer-2", { autoAlpha: 0, yPercent: 60 }, { autoAlpha: 1, yPercent: 0, duration: 0.5 }, t3 + 0.75)
-          tl.to(".role-card-wrapper-2", { opacity: 1, duration: 1 }, t3 + 0.5)
+          tl.fromTo(
+            ".step-layer-2",
+            { autoAlpha: 0, yPercent: 60 },
+            { autoAlpha: 1, yPercent: 0, duration: 0.5 },
+            t3 + 0.75,
+          )
+          tl.to(
+            ".role-card-wrapper-2",
+            { y: 0, autoAlpha: 1, duration: 1, ease: "power2.out" },
+            t3 + 0.5,
+          )
 
           // PAUSE 3 (Final Resting Phase)
           tl.to({}, { duration: 1.5 })
@@ -398,29 +600,50 @@ export default function PhoneSection() {
           // OUTRO PHASE (Step 3 -> Exit)
           const tOutro = tl.duration()
           // Fade out all cards and overlays
-          tl.to(".role-card-wrapper-2", { opacity: 0, duration: 0.8 }, tOutro)
+          tl.to(
+            ".role-card-wrapper-2",
+            { y: -70, autoAlpha: 0, duration: 0.8, ease: "power2.in" },
+            tOutro,
+          )
           tl.to(".role-glow-2", { opacity: 0, duration: 0.75 }, tOutro)
-          tl.to(".step-layer-2", { autoAlpha: 0, yPercent: -60, duration: 0.5 }, tOutro)
+          tl.to(
+            ".step-layer-2",
+            { autoAlpha: 0, yPercent: -60, duration: 0.5 },
+            tOutro,
+          )
           tl.to(".phone-chip", { autoAlpha: 0, duration: 0.8 }, tOutro)
+          tl.to(".roles-header", { autoAlpha: 0, y: -40, duration: 1 }, tOutro)
 
           // Center the phone, flip to show back, lay horizontally, and zoom in
-          currentRy += 180; // Turn to back
-          tl.to(".phone-travel", { x: 0, duration: 1.5, ease: "power2.inOut" }, tOutro)
-          tl.to(pose, { 
-            ry: currentRy, 
-            rx: 0, 
-            rz: -90, // Horizontal orientation
-            z: 400,  // Zoom in
-            duration: 1.5, 
-            ease: "power2.inOut" 
-          }, tOutro)
+          currentRy += 180 // Turn to back
+          tl.to(
+            ".phone-travel",
+            { x: 0, duration: 1.5, ease: "power2.inOut" },
+            tOutro,
+          )
+          tl.to(
+            pose,
+            {
+              ry: currentRy,
+              rx: 0,
+              rz: -90, // Horizontal orientation
+              z: 400, // Zoom in
+              duration: 1.5,
+              ease: "power2.inOut",
+            },
+            tOutro,
+          )
 
           // Hold the zoomed horizontal back to show off the logo
           tl.to({}, { duration: 1.2 })
 
           // Exit off-screen to the left
           const tExit = tl.duration()
-          tl.to(".phone-travel", { x: "-150vw", duration: 1.5, ease: "power3.in" }, tExit)
+          tl.to(
+            ".phone-travel",
+            { x: "-150vw", duration: 1.5, ease: "power3.in" },
+            tExit,
+          )
         },
       )
     },
@@ -433,13 +656,13 @@ export default function PhoneSection() {
       <div className="roles-desktop-pin hidden md:block h-screen relative overflow-hidden bg-white">
         <CityMapBg className="opacity-40" />
 
-        {/* Header */}
-        <div className="roles-header absolute top-0 left-0 right-0 z-10 pt-16 text-center">
-          <h2 className="font-display text-[44px] font-bold text-ink">
-            ثلاثة أدوار، لوحة واحدة
+        {/* Header — persists through the whole scroll, fades on outro */}
+        <div className="roles-header absolute top-0 left-0 right-0 z-10 pt-10 text-center">
+          <h2 className="mt-1.5 font-display text-[34px] font-bold leading-[1.15] text-ink">
+            كل دورٍ مهم، ولكل دورٍ مسؤولياته
           </h2>
-          <p className="mt-3 text-[18px] text-subtext">
-            من يلتقط، من يوزّع، من يُصلح — كلهم على مسار واحد.
+          <p className="mx-auto mt-2 max-w-[460px] text-[15px] leading-relaxed text-subtext">
+            من يلتقط، من يوزّع، من يُصلح — ثلاثة أدوار تعمل على مسارٍ واحد.
           </p>
         </div>
 
@@ -460,7 +683,10 @@ export default function PhoneSection() {
               <div className="phone-float relative">
                 <div className="relative aspect-[236/480] h-[min(480px,62vh)]">
                   <div className="absolute -inset-x-[150%] -inset-y-[14%]">
-                    <PhoneCanvas pose={pose} fallback={<PhoneShellFallback />} />
+                    <PhoneCanvas
+                      pose={pose}
+                      fallback={<PhoneShellFallback />}
+                    />
                   </div>
                 </div>
                 <PhoneChips />
@@ -469,20 +695,16 @@ export default function PhoneSection() {
           </div>
         </div>
 
-        {/* Pinned absolute cards */}
-        {ROLES.map((role, i) => {
-          const isLeft = role.side === "left";
-          const cardX = isLeft ? "-320px" : "320px";
-          return (
-            <div
-              key={i}
-              className={`role-card-wrapper-${i} absolute top-1/2 left-1/2 -translate-y-1/2 w-full max-w-[650px] z-30 opacity-0 pointer-events-none`}
-              style={{ transform: `translate(calc(-50% + ${cardX}), -50%)` }}
-            >
-              <RoleCard role={role} index={i} />
-            </div>
-          )
-        })}
+        {/* Pinned absolute cards — position + slide owned by GSAP
+            (xPercent/yPercent centering, x = side offset, y = slide) */}
+        {ROLES.map((role, i) => (
+          <div
+            key={i}
+            className={`role-card-wrapper-${i} absolute top-[calc(50%_+_11vh)] left-1/2 w-full max-w-[640px] z-30 opacity-0 pointer-events-none`}
+          >
+            <RoleCard role={role} index={i} />
+          </div>
+        ))}
       </div>
 
       {/* ── Mobile / reduced-motion: static stack ── */}
@@ -501,11 +723,12 @@ export default function PhoneSection() {
             <div key={i} className="flex flex-col items-center gap-8">
               <RoleCard role={role} index={i} />
               <div
-                className="h-[400px] w-[200px] rounded-[32px] bg-white p-2.5"
+                className="relative h-[400px] w-[200px] rounded-[36px] bg-[#111318] p-1.5"
                 style={{ boxShadow: "var(--shadow-soft)" }}
               >
-                <div className="h-full w-full overflow-hidden rounded-[24px]">
+                <div className="relative h-full w-full overflow-hidden rounded-[30px]">
                   <Screen />
+                  <span className="absolute left-1/2 top-2.5 z-10 h-5 w-[64px] -translate-x-1/2 rounded-full bg-[#050506]" />
                 </div>
               </div>
             </div>

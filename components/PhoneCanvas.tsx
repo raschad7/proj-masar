@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, type ReactNode } from "react"
 import * as THREE from "three"
 import { Canvas, useFrame } from "@react-three/fiber"
+import { Environment, Lightformer } from "@react-three/drei"
 
 /* ── True-3D phone ──────────────────────────────────────────────
    Scene units are CSS pixels: the body is a 236×480×26 extruded
@@ -20,11 +21,12 @@ import { Canvas, useFrame } from "@react-three/fiber"
 const BODY_W = 236
 const BODY_H = 480
 const BODY_D = 26
-const BODY_R = 36
+const BODY_R = 40
 const BEVEL = 3
-const SCREEN_W = 212
-const SCREEN_H = 456
-const SCREEN_R = 26
+//  thin, uniform 6px bezel on every side (was 12px) for a modern look
+const SCREEN_W = 224
+const SCREEN_H = 468
+const SCREEN_R = 34
 const CAMERA_Z = 1146
 const TEX_SCALE = 2 //  texture backing resolution multiplier
 
@@ -66,10 +68,20 @@ const setFont = (
   ctx.font = `${weight} ${px}px ${font}`
 }
 
-const notch = (ctx: CanvasRenderingContext2D) => {
-  ctx.fillStyle = C.seashell
+//  pill-shaped Dynamic Island, floating just below the top edge
+const dynamicIsland = (ctx: CanvasRenderingContext2D) => {
+  const w = 82
+  const h = 24
+  const x = SCREEN_W / 2 - w / 2
+  const y = 11
+  ctx.fillStyle = "#050506"
   ctx.beginPath()
-  ctx.roundRect(SCREEN_W / 2 - 32, 8, 64, 6, 3)
+  ctx.roundRect(x, y, w, h, h / 2)
+  ctx.fill()
+  //  hint of the front camera at the right of the island
+  ctx.fillStyle = "#1B2430"
+  ctx.beginPath()
+  ctx.arc(x + w - 15, y + h / 2, 4.5, 0, Math.PI * 2)
   ctx.fill()
 }
 
@@ -109,59 +121,190 @@ const drawBrand: Painter = (ctx, font) => {
 }
 
 const drawScanner: Painter = (ctx, font) => {
-  ctx.fillStyle = "#20242A"
+  const cx = SCREEN_W / 2
+  //  dark reporting UI
+  ctx.fillStyle = "#15181D"
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H)
+
+  //  header: back chevron + title
+  ctx.strokeStyle = C.white
+  ctx.lineWidth = 2
+  ctx.lineCap = "round"
+  ctx.beginPath()
+  ctx.moveTo(24, 48)
+  ctx.lineTo(18, 53)
+  ctx.lineTo(24, 58)
+  ctx.stroke()
+  ctx.fillStyle = C.white
+  ctx.textAlign = "right"
+  setFont(ctx, 700, 13, font)
+  ctx.fillText("إبلاغ عن مشكلة", SCREEN_W - 16, 58)
+
   //  camera viewport
   const vx = 12
-  const vy = 22
+  const vy = 70
   const vw = SCREEN_W - 24
-  const vh = SCREEN_H - 100
+  const vh = 250
   ctx.save()
   ctx.beginPath()
-  ctx.roundRect(vx, vy, vw, vh, 16)
+  ctx.roundRect(vx, vy, vw, vh, 18)
   ctx.clip()
-  ctx.fillStyle = "#3A4048"
+  //  asphalt
+  const road = ctx.createLinearGradient(0, vy, 0, vy + vh)
+  road.addColorStop(0, "#575D66")
+  road.addColorStop(1, "#3C424B")
+  ctx.fillStyle = road
   ctx.fillRect(vx, vy, vw, vh)
-  //  road receding from the bottom third
-  ctx.fillStyle = "#4A5058"
+  //  faint lane markings
+  ctx.strokeStyle = "rgba(255,255,255,0.10)"
+  ctx.lineWidth = 6
+  ctx.setLineDash([16, 14])
   ctx.beginPath()
-  ctx.roundRect(vx + 22, vy + vh / 3, vw - 44, vh, 52)
+  ctx.moveTo(cx - 46, vy + vh)
+  ctx.lineTo(cx - 20, vy + 40)
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.moveTo(cx + 46, vy + vh)
+  ctx.lineTo(cx + 20, vy + 40)
+  ctx.stroke()
+  ctx.setLineDash([])
+  //  pothole — irregular dark blob with a lighter rim
+  const pcy = vy + vh * 0.54
+  ctx.fillStyle = "#20242A"
+  ctx.beginPath()
+  ctx.ellipse(cx, pcy, 42, 27, -0.15, 0, Math.PI * 2)
   ctx.fill()
-  ctx.restore()
-  //  AI focus box on the pothole
-  const fw = 96
-  const fh = 64
-  const fx = SCREEN_W / 2 - fw / 2
-  const fy = vy + vh / 2 - fh / 2
-  ctx.strokeStyle = C.informative
+  ctx.fillStyle = "#111318"
+  ctx.beginPath()
+  ctx.ellipse(cx + 3, pcy + 3, 30, 18, -0.15, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.strokeStyle = "rgba(0,0,0,0.35)"
   ctx.lineWidth = 3
   ctx.beginPath()
-  ctx.roundRect(fx, fy, fw, fh, 8)
+  ctx.ellipse(cx, pcy, 42, 27, -0.15, 0, Math.PI * 2)
   ctx.stroke()
-  //  classification pill
-  setFont(ctx, 700, 9, font)
-  const label = "حفرة · خطورة عالية"
-  const tw = ctx.measureText(label).width
-  ctx.fillStyle = C.informative
+  ctx.restore()
+
+  //  AI focus corner brackets around the pothole
+  const fw = 112
+  const fh = 84
+  const fx = cx - fw / 2
+  const fy = pcy - fh / 2
+  const seg = 16
+  ctx.strokeStyle = C.informative
+  ctx.lineWidth = 3
+  ctx.lineCap = "round"
+  const corner = (x: number, y: number, dx: number, dy: number) => {
+    ctx.beginPath()
+    ctx.moveTo(x + dx * seg, y)
+    ctx.lineTo(x, y)
+    ctx.lineTo(x, y + dy * seg)
+    ctx.stroke()
+  }
+  corner(fx, fy, 1, 1)
+  corner(fx + fw, fy, -1, 1)
+  corner(fx, fy + fh, 1, -1)
+  corner(fx + fw, fy + fh, -1, -1)
+
+  //  accuracy chip (top-right inside the viewport)
+  setFont(ctx, 700, 10, font)
+  const acc = "٩٦٪ الدقة"
+  const aw = ctx.measureText(acc).width + 24
+  ctx.fillStyle = "rgba(10,12,16,0.62)"
   ctx.beginPath()
-  ctx.roundRect(fx + fw - tw - 16, fy - 20, tw + 16, 16, 8)
+  ctx.roundRect(vx + vw - aw - 8, vy + 8, aw, 20, 10)
+  ctx.fill()
+  ctx.fillStyle = C.positive
+  ctx.beginPath()
+  ctx.arc(vx + vw - 16, vy + 18, 3, 0, Math.PI * 2)
   ctx.fill()
   ctx.fillStyle = C.white
   ctx.textAlign = "right"
-  ctx.fillText(label, fx + fw - 8, fy - 8)
-  //  shutter button with camera glyph
-  const cy = SCREEN_H - 40
+  ctx.fillText(acc, vx + vw - 24, vy + 22)
+
+  //  overlay result card (severity + location), overlapping the viewport
+  const cardX = 20
+  const cardW = SCREEN_W - 40
+  const cardY = 248
+  const cardH = 96
+  ctx.fillStyle = C.white
+  ctx.beginPath()
+  ctx.roundRect(cardX, cardY, cardW, cardH, 18)
+  ctx.fill()
+  //  severity label + value
+  ctx.fillStyle = C.subtext
+  ctx.textAlign = "right"
+  setFont(ctx, 700, 10, font)
+  ctx.fillText("الخطورة", cardX + cardW - 16, cardY + 24)
+  ctx.fillStyle = C.negative
+  ctx.textAlign = "left"
+  setFont(ctx, 700, 11, font)
+  ctx.fillText("عالية", cardX + 16, cardY + 24)
+  //  segmented severity meter (4/5 filled = high)
+  const segs = 5
+  const gap = 4
+  const barX = cardX + 16
+  const barW = cardW - 32
+  const sw = (barW - gap * (segs - 1)) / segs
+  for (let i = 0; i < segs; i++) {
+    ctx.fillStyle = i < 4 ? C.negative : "#E6E7EA"
+    ctx.beginPath()
+    ctx.roundRect(barX + i * (sw + gap), cardY + 34, sw, 6, 3)
+    ctx.fill()
+  }
+  //  location row with a pin
+  const py = cardY + 68
   ctx.fillStyle = C.informative
   ctx.beginPath()
-  ctx.arc(SCREEN_W / 2, cy, 24, 0, Math.PI * 2)
+  ctx.arc(cardX + cardW - 20, py - 3, 5, Math.PI, 0)
+  ctx.lineTo(cardX + cardW - 20, py + 6)
+  ctx.closePath()
   ctx.fill()
-  ctx.strokeStyle = C.white
+  ctx.fillStyle = C.white
+  ctx.beginPath()
+  ctx.arc(cardX + cardW - 20, py - 3, 2, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = C.ink
+  ctx.textAlign = "right"
+  setFont(ctx, 400, 11, font)
+  ctx.fillText("الخليل، شارع الشهداء", cardX + cardW - 32, py + 4)
+
+  //  bottom control bar: gallery · shutter · camera
+  const by = SCREEN_H - 52
+  //  gallery (left)
+  ctx.strokeStyle = "rgba(255,255,255,0.75)"
   ctx.lineWidth = 2
   ctx.beginPath()
-  ctx.roundRect(SCREEN_W / 2 - 11, cy - 7, 22, 15, 4)
+  ctx.roundRect(38, by - 13, 26, 26, 7)
+  ctx.stroke()
+  ctx.fillStyle = "rgba(255,255,255,0.75)"
+  ctx.beginPath()
+  ctx.arc(46, by - 5, 3, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.moveTo(42, by + 10)
+  ctx.lineTo(50, by)
+  ctx.lineTo(60, by + 10)
+  ctx.closePath()
+  ctx.fill()
+  //  shutter (center)
+  ctx.strokeStyle = C.white
+  ctx.lineWidth = 3
+  ctx.beginPath()
+  ctx.arc(cx, by, 23, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.fillStyle = C.informative
+  ctx.beginPath()
+  ctx.arc(cx, by, 17, 0, Math.PI * 2)
+  ctx.fill()
+  //  camera glyph (right)
+  ctx.strokeStyle = "rgba(255,255,255,0.75)"
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  ctx.roundRect(SCREEN_W - 64, by - 9, 26, 20, 5)
   ctx.stroke()
   ctx.beginPath()
-  ctx.arc(SCREEN_W / 2, cy + 1, 4.5, 0, Math.PI * 2)
+  ctx.arc(SCREEN_W - 51, by + 1, 5, 0, Math.PI * 2)
   ctx.stroke()
 }
 
@@ -268,33 +411,46 @@ const drawCrew: Painter = (ctx, font) => {
 
 /* Back cover details — visible while the phone spins. */
 const drawBack: Painter = (ctx, font, logoImg?: HTMLImageElement) => {
-  // Grey back cover
-  ctx.fillStyle = "#A3A7AD"
+  // Space-gray matte-glass back cover with a soft top-down sheen
+  const grad = ctx.createLinearGradient(0, 0, SCREEN_W, SCREEN_H)
+  grad.addColorStop(0, "#3A3E45")
+  grad.addColorStop(0.5, "#2B2E34")
+  grad.addColorStop(1, "#1F2226")
+  ctx.fillStyle = grad
   ctx.fillRect(0, 0, SCREEN_W, SCREEN_H)
 
   // camera island (top-right of the back = top-left as drawn,
   // since the back plane is rotated 180° around Y)
-  ctx.fillStyle = "#E4E6E9"
+  ctx.fillStyle = "#15171B"
   ctx.beginPath()
-  ctx.roundRect(16, 16, 62, 62, 18)
+  ctx.roundRect(16, 16, 66, 66, 20)
   ctx.fill()
   const lens = (lx: number, ly: number) => {
-    ctx.fillStyle = "#1E2226"
+    ctx.fillStyle = "#0B0D10"
     ctx.beginPath()
-    ctx.arc(lx, ly, 11, 0, Math.PI * 2)
+    ctx.arc(lx, ly, 12, 0, Math.PI * 2)
     ctx.fill()
-    ctx.fillStyle = "#383E46"
+    ctx.fillStyle = "#2E3846"
     ctx.beginPath()
-    ctx.arc(lx, ly, 5, 0, Math.PI * 2)
+    ctx.arc(lx, ly, 6, 0, Math.PI * 2)
+    ctx.fill()
+    //  glass glint
+    ctx.fillStyle = "rgba(255,255,255,0.35)"
+    ctx.beginPath()
+    ctx.arc(lx - 3, ly - 3, 2, 0, Math.PI * 2)
     ctx.fill()
   }
-  lens(35, 35)
-  lens(59, 59)
+  lens(37, 37)
+  lens(63, 63)
 
   if (logoImg) {
-    const w = 120
+    //  crisp white masar mark, centered (engraved-brand look)
+    const w = 104
     const h = (logoImg.height / logoImg.width) * w
+    ctx.save()
+    ctx.globalAlpha = 0.9
     ctx.drawImage(logoImg, SCREEN_W / 2 - w / 2, SCREEN_H / 2 - h / 2, w, h)
+    ctx.restore()
   }
 }
 
@@ -324,7 +480,7 @@ function paintTexture(
   ctx.roundRect(0, 0, SCREEN_W, SCREEN_H, SCREEN_R)
   ctx.clip()
   painter(ctx, font)
-  if (withNotch) notch(ctx)
+  if (withNotch) dynamicIsland(ctx)
   ctx.restore()
 }
 
@@ -364,7 +520,7 @@ function useScreenTextures() {
     })
 
     const img = new window.Image()
-    img.src = "/logo/Logo 6.svg"
+    img.src = "/logo/mark-white.svg"
     img.onload = () => {
       if (!alive) return
       const font = resolveFont()
@@ -424,20 +580,24 @@ function PhoneBody({ pose }: { pose: PhonePose }) {
 
   const bodyMaterials = useMemo(
     () => [
-      //  index 0: front/back faces — near-white with a clearcoat so a
-      //  highlight sweeps across the shell during the spin
+      //  index 0: front/back faces — near-black ceramic shield with a
+      //  glossy clearcoat, so the bezel around the screen reads as a
+      //  thin dark frame and a highlight sweeps the glass during spins
       new THREE.MeshPhysicalMaterial({
-        color: "#f6f7f8",
-        roughness: 0.4,
-        clearcoat: 0.6,
-        clearcoatRoughness: 0.35,
+        color: "#111318",
+        metalness: 0.2,
+        roughness: 0.22,
+        clearcoat: 1,
+        clearcoatRoughness: 0.12,
       }),
-      //  index 1: side walls — a shade darker so thickness reads
+      //  index 1: side rails — polished, reflective space-gray aluminum
       new THREE.MeshPhysicalMaterial({
-        color: "#dfe2e6",
-        roughness: 0.28,
-        clearcoat: 0.8,
-        clearcoatRoughness: 0.25,
+        color: "#52565E",
+        metalness: 0.95,
+        roughness: 0.24,
+        clearcoat: 1,
+        clearcoatRoughness: 0.18,
+        envMapIntensity: 1.4,
       }),
     ],
     [],
@@ -495,13 +655,41 @@ export default function PhoneCanvas({
       fallback={fallback}
       camera={{ fov: 30, position: [0, 0, CAMERA_Z], near: 100, far: 4000 }}
     >
-      <ambientLight intensity={1.05} />
-      <directionalLight position={[250, 320, 500]} intensity={0.9} />
+      <ambientLight intensity={0.85} />
+      <directionalLight position={[250, 320, 500]} intensity={1.1} />
       <directionalLight
         position={[-350, -150, 250]}
-        intensity={0.4}
+        intensity={0.5}
         color="#dfe9f0"
       />
+      {/* Self-contained studio environment (no network HDR) so the
+          space-gray aluminum rails pick up soft, directional reflections */}
+      <Environment resolution={256}>
+        <Lightformer
+          intensity={2.2}
+          position={[0, 4, 3]}
+          scale={[10, 4, 1]}
+          color="#ffffff"
+        />
+        <Lightformer
+          intensity={1.1}
+          position={[-5, 1, 2]}
+          scale={[3, 8, 1]}
+          color="#cdd8e2"
+        />
+        <Lightformer
+          intensity={1.1}
+          position={[5, -1, 2]}
+          scale={[3, 8, 1]}
+          color="#ffffff"
+        />
+        <Lightformer
+          intensity={0.6}
+          position={[0, -4, 2]}
+          scale={[10, 3, 1]}
+          color="#8b93a0"
+        />
+      </Environment>
       <PhoneBody pose={pose} />
     </Canvas>
   )

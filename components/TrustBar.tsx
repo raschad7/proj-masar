@@ -120,7 +120,7 @@ export default function TrustBar() {
       {/* ── Mobile / reduced-motion: static wrapped grid ── */}
       <div className="trust-grid mt-14 flex flex-wrap items-center justify-center gap-x-14 gap-y-10 px-6 md:hidden">
         {LOGOS.map((l, i) => (
-          <div key={`grid-${i}`}>{l.node}</div>
+          <div key={`grid-${i}`}>{"node" in l ? l.node : null}</div>
         ))}
       </div>
     </section>

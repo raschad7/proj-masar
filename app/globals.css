@@ -449,3 +449,21 @@ body {
   inset: 0;
   min-height: 0;
 }
+
+/* ── Map Fullscreen Cursor Fix ── */
+html.map-fullscreen-active.has-custom-cursor .z-\[9998\],
+html.map-fullscreen-active.has-custom-cursor .z-\[9999\] {
+  display: none !important;
+}
+
+html.map-fullscreen-active.has-custom-cursor,
+html.map-fullscreen-active.has-custom-cursor * {
+  cursor: auto !important;
+}
+
+html.map-fullscreen-active.has-custom-cursor button,
+html.map-fullscreen-active.has-custom-cursor a,
+html.map-fullscreen-active.has-custom-cursor button *,
+html.map-fullscreen-active.has-custom-cursor a * {
+  cursor: pointer !important;
+}

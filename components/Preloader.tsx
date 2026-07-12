@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { usePathname } from "next/navigation"
 import { gsap, MotionPathPlugin, useGSAP } from "@/lib/gsap"
 
 /* The three logo marks, as their raw path data (56×56 viewBox). */
@@ -23,9 +24,11 @@ const rand = (min: number, max: number) => min + Math.random() * (max - min)
 export default function Preloader() {
   const root = useRef<HTMLDivElement>(null)
   const [done, setDone] = useState(false)
+  const pathname = usePathname()
 
   useGSAP(
     () => {
+      if (pathname === "/map") return
       /* Every reload should begin at the top so the intro plays in full —
          stop the browser from restoring the previous scroll position. */
       if ("scrollRestoration" in history) history.scrollRestoration = "manual"
@@ -230,6 +233,7 @@ export default function Preloader() {
     { scope: root },
   )
 
+  if (pathname === "/map") return null
   if (done) return null
 
   return (
