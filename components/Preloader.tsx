@@ -38,8 +38,31 @@ export default function Preloader() {
   useGSAP(
     () => {
       if (pathname === "/map") return
-      /* Every reload should begin at the top so the intro plays in full —
-         stop the browser from restoring the previous scroll position. */
+
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches
+
+      /* The full choreography plays once per browser session — the intro
+         covers the page and directly delays LCP, so repeat navigations get
+         a quick veil-lift instead. (try/catch: sessionStorage can throw in
+         some privacy modes.) */
+      let seen = false
+      try {
+        seen = sessionStorage.getItem("masar-intro") === "1"
+        sessionStorage.setItem("masar-intro", "1")
+      } catch {}
+
+      if (seen || reduced) {
+        /* quick veil lift — no scroll hijack, no overflow lock */
+        gsap
+          .timeline({ delay: 0.05, onComplete: () => setDone(true) })
+          .to(root.current, { opacity: 0, duration: 0.35, ease: "power2.out" })
+        return
+      }
+
+      /* Every first-visit reload should begin at the top so the intro plays
+         in full — stop the browser from restoring the previous scroll. */
       if ("scrollRestoration" in history) history.scrollRestoration = "manual"
       window.scrollTo(0, 0)
 
@@ -57,17 +80,6 @@ export default function Preloader() {
       const finish = () => {
         document.body.style.overflow = prev
         setDone(true)
-      }
-
-      const reduced = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches
-
-      if (reduced) {
-        gsap
-          .timeline({ delay: 0.5, onComplete: finish })
-          .to(root.current, { opacity: 0, duration: 0.5, ease: "power2.out" })
-        return
       }
 
       /* Screen-space targets: the real hero hotspots (fallback to spread
@@ -94,11 +106,12 @@ export default function Preloader() {
         onComplete: finish,
       })
 
-      /* 1 — logo pops in */
+      /* 1 — logo pops in  (timings tuned tight: the whole intro must fit
+         ~1.8s — it covers the page, so every extra beat is paid in LCP) */
       tl.fromTo(
         ".pl-tile",
         { scale: 0.6, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.55, ease: "back.out(1.7)" },
+        { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(1.7)" },
       )
       tl.fromTo(
         ".pl-mark",
@@ -106,11 +119,11 @@ export default function Preloader() {
         {
           scale: 1,
           opacity: 1,
-          duration: 0.45,
-          stagger: 0.08,
+          duration: 0.3,
+          stagger: 0.05,
           ease: "back.out(2)",
         },
-        "-=0.25",
+        "-=0.18",
       )
 
       /* 2 — blue tile expands to cover the viewport */
@@ -119,9 +132,9 @@ export default function Preloader() {
       tl.to(".pl-tile", {
         scale: coverScale,
         borderRadius: 0,
-        duration: 0.7,
+        duration: 0.45,
         ease: "power4.inOut",
-        delay: 0.25,
+        delay: 0.05,
       })
 
       /* 3 — marks roam: a wide scatter, a swoop, then home in. Two random
@@ -134,7 +147,7 @@ export default function Preloader() {
         tl.to(
           `.pl-mark-${i}`,
           {
-            duration: rand(1.7, 2.0),
+            duration: rand(0.75, 0.9),
             ease: "power1.inOut",
             rotate: rand(-380, 380),
             motionPath: {
@@ -146,7 +159,7 @@ export default function Preloader() {
               curviness: rand(1.6, 2.4),
             },
           },
-          i === 0 ? ">-0.1" : "<+0.08",
+          i === 0 ? ">-0.08" : "<+0.05",
         )
       })
 
@@ -161,10 +174,10 @@ export default function Preloader() {
       })
 
       /* small settle "click" as each mark reaches its hotspot… */
-      tl.add("land", ">-0.15")
+      tl.add("land", ">-0.1")
       tl.to(
         ".pl-mark",
-        { scale: 1.25, duration: 0.16, ease: "power2.out", stagger: 0.05 },
+        { scale: 1.25, duration: 0.12, ease: "power2.out", stagger: 0.04 },
         "land",
       )
       /* …and a radar-style pulse blooms out of the landing point */
@@ -173,9 +186,9 @@ export default function Preloader() {
         {
           scale: 1,
           opacity: 0.9,
-          duration: 0.18,
+          duration: 0.14,
           ease: "power2.out",
-          stagger: 0.05,
+          stagger: 0.04,
         },
         "land",
       )
@@ -184,11 +197,11 @@ export default function Preloader() {
         {
           scale: 2.6,
           opacity: 0,
-          duration: 0.7,
+          duration: 0.5,
           ease: "power2.out",
-          stagger: 0.05,
+          stagger: 0.04,
         },
-        "land+=0.18",
+        "land+=0.14",
       )
 
       /* 4 — the blue implodes into the primary hotspot: everything converges
@@ -203,9 +216,9 @@ export default function Preloader() {
         {
           scale: 0.3,
           opacity: 0,
-          duration: 0.45,
+          duration: 0.3,
           ease: "power2.in",
-          stagger: 0.04,
+          stagger: 0.03,
         },
         ">-0.02",
       )
@@ -213,10 +226,10 @@ export default function Preloader() {
         root.current,
         {
           clipPath: `circle(0% at ${collapseX}% ${collapseY}%)`,
-          duration: 0.85,
+          duration: 0.6,
           ease: "power3.inOut",
         },
-        "<+0.12",
+        "<+0.08",
       )
 
       /* Hero lift-in — as the mask opens, the hero settles from a subtle
@@ -231,11 +244,11 @@ export default function Preloader() {
           {
             scale: 1,
             filter: "blur(0px)",
-            duration: 1,
+            duration: 0.8,
             ease: "power3.out",
             clearProps: "scale,filter",
           },
-          "<+0.1",
+          "<+0.08",
         )
       }
     },

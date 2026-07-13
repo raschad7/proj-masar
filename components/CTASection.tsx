@@ -1,62 +1,43 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { ChevronLeft24Filled } from "@fluentui/react-icons"
-import { gsap, useGSAP, ScrollTrigger, SplitText } from "@/lib/gsap"
+import { useRef } from "react"
+import { gsap, useGSAP, SplitText } from "@/lib/gsap"
 
-/* Final payoff CTA: a large ASCII rendering of the masar mark covers
-   the left, the ask sits on the right. The mark is sampled from the
-   logo onto a character grid at runtime, then "decoded" into place on
-   scroll while the headline splits in word by word. Peacock palette. */
-
-const COLS = 85
-const NOISE = "01<>/\\|=+*#%مسار"
-
-const HARDCODED_ASCII = `                             @@                                      @@
-                           @@@@@@                                  @@@@@@
-                          @@@@@@@@      @@@@@@            @@@@@@@ @@@@@@@@
-                         @@@@@@@@@@  @@@@@@@@@@@@      @@@@@@@@@@@@@@@@@@@@
-                        @@@@@@@@@@@@ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-                       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-                      @@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@
-                     @@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@
-                    @@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@
-                   @@@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@
-                  @@@@@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@@@
-                 @@@@@@@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@@@  @@@@@@@@@@@@@@@@@@@@@@@
-                @@@@@@@@@@@@@@@@@@@@@@@@@@@@  @@@@@@@@@  @@@@@@@@@@@@@@@@@@@@@@@@@
-               @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  @@@@@@@  @@@@@@@@@@@@@@@@@@@@@@@@@@@
-              @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  @@@@@  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-             @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  @@@  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-            @@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@@@@  @  @@@@@@@@@@@@@@@@@  @@@@@@@@@@@@@@
-           @@@@@@@@@@@@@@@@      @@@@@@@@@@@@@@@@   @@@@@@@@@@@@@@@@      @@@@@@@@@@@@@
-          @@@@@@@@@@@@@@@          @@@@@@@@@@@@@@@ @@@@@@@@@@@@@@@          @@@@@@@@@@@@
-         @@@@@@@@@@@@@               @@@@@@@@@@@@@ @@@@@@@@@@@@@               @@@@@@@@@@
-        @@@@@                          @@@@@@@@@@@ @@@@@@@@@@@                    @@@@@@@
-                                          @@@@@@@@ @@@@@@@@
-                                            @@@@@@ @@@@@@
-                                              @@@@ @@@@
-                                                @@ @@
-                                                  @`
+/* Final payoff CTA: a big solid-white مسار mark bleeds off the far-left
+   edge of the card. It drifts vertically slower than the page as the card
+   passes — a quiet parallax that gives the panel depth without ever calling
+   attention to itself. Scrubbed to scroll. The ask sits on the right. */
 
 export default function CTASection() {
   const root = useRef<HTMLElement>(null)
-  const preRef = useRef<HTMLPreElement>(null)
 
   useGSAP(
     () => {
-      if (!preRef.current) return
-      const pre = preRef.current
-      const final = HARDCODED_ASCII
-
       const mm = gsap.matchMedia()
+
+      //  slow vertical parallax — the mark lags the page as the card passes
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.fromTo(
+          ".cta-mark",
+          { yPercent: -14 },
+          {
+            yPercent: 14,
+            ease: "none",
+            scrollTrigger: {
+              trigger: root.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          },
+        )
+
         //  headline splits into words that rise from behind a mask
         const split = new SplitText(".cta-heading", {
           type: "lines,words",
           linesClass: "overflow-hidden py-[0.1em]",
         })
-        
+
         gsap.from(split.words, {
           yPercent: 120,
           opacity: 0,
@@ -93,57 +74,6 @@ export default function CTASection() {
           },
         })
 
-        //  ascii "decode": scramble that resolves left → right
-        const proxy = { p: 0 }
-        
-        // Start empty so it's not visible before scrolling down
-        pre.textContent = ""
-
-        gsap.to(proxy, {
-          p: 1,
-          duration: 2.5,
-          ease: "power2.inOut",
-          scrollTrigger: {
-            trigger: root.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse",
-          },
-          onUpdate: () => {
-            const p = proxy.p
-            
-            // Hide completely if reversed to the start
-            if (p <= 0.01) {
-              pre.textContent = ""
-              return
-            }
-
-            let out = ""
-            let col = 0
-            for (let i = 0; i < final.length; i++) {
-              const ch = final[i]
-              if (ch === "\n") {
-                out += "\n"
-                col = 0
-                continue
-              }
-              if (ch === " ") {
-                out += " "
-                col++
-                continue
-              }
-              //  cells resolve as the wavefront sweeps rightward
-              const threshold = (col / COLS) * 0.85
-              out +=
-                p > threshold ? ch : NOISE[(Math.random() * NOISE.length) | 0]
-              col++
-            }
-            pre.textContent = out
-          },
-          onComplete: () => {
-            pre.textContent = final
-          },
-        })
-
         return () => {
           split.revert()
         }
@@ -159,27 +89,27 @@ export default function CTASection() {
         className="relative mx-auto flex max-w-[1200px] items-center overflow-hidden bg-peacock px-8 py-14 md:px-14 md:py-16"
         style={{ borderRadius: "var(--radius-card)" }}
       >
-        {/* ASCII mark — covers the left, fades toward the copy */}
+        {/* مسار mark — oversized, bleeds off the left, draws in on scroll */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-0 hidden w-[54%] md:block"
+          className="pointer-events-none absolute inset-y-0 left-0 hidden w-[75%] items-center justify-start overflow-hidden md:flex"
           style={{
             maskImage:
-              "linear-gradient(to left, transparent 2%, black 34%, black 100%)",
+              "linear-gradient(to left, transparent 0%, black 26%, black 100%)",
             WebkitMaskImage:
-              "linear-gradient(to left, transparent 2%, black 34%, black 100%)",
+              "linear-gradient(to left, transparent 0%, black 26%, black 100%)",
           }}
         >
-          <pre
-            ref={preRef}
-            className="cta-ascii absolute left-[-3%] top-1/2 -translate-y-1/2 select-none font-mono text-white/90"
-            style={{
-              fontSize: "clamp(6px, 1.15vw, 12px)",
-              lineHeight: 1,
-              letterSpacing: "0.06em",
-              whiteSpace: "pre",
-            }}
-          />
+          <svg
+            viewBox="5.5 16.5 45 23"
+            className="cta-mark h-[118%] w-auto -translate-x-[30%] text-white"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M16.8376 17.9785L5.97976 36.6039C5.45769 37.4995 6.47538 38.5 7.36193 37.9628L15.2983 33.1536C15.6502 32.9403 16.0969 32.9644 16.4239 33.2144L22.8304 38.112C23.6024 38.7022 24.6775 37.9558 24.3944 37.0263L18.6581 18.1908C18.4039 17.3559 17.2771 17.2245 16.8376 17.9785Z" />
+            <path d="M38.7624 17.9785L49.6202 36.6039C50.1423 37.4995 49.1246 38.5 48.238 37.9628L40.3017 33.1536C39.9497 32.9403 39.503 32.9644 39.1761 33.2144L32.7696 38.112C31.9976 38.7022 30.9225 37.9558 31.2056 37.0263L36.9419 18.1908C37.1961 17.3559 38.3229 17.2245 38.7624 17.9785Z" />
+            <path d="M26.8471 38.0051L21.2015 20.2617C20.9429 19.4492 21.7545 18.7067 22.5409 19.0362L27.4135 21.078C27.6608 21.1817 27.9393 21.1817 28.1865 21.078L33.0592 19.0362C33.8455 18.7067 34.6571 19.4492 34.3986 20.2617L28.7529 38.0051C28.4573 38.9342 27.1427 38.9342 26.8471 38.0051Z" />
+          </svg>
         </div>
 
         {/* Copy — right side, RTL */}

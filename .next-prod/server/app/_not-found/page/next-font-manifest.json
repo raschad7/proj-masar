@@ -1,0 +1,14 @@
+{
+  "pages": {},
+  "app": {
+    "[project]/app/_not-found/page": [
+      "static/media/Almarai_Light-s.p.293jrtee6yk5r.woff2",
+      "static/media/Almarai_Regular-s.p.0dcfva69n6f9-.woff2",
+      "static/media/Almarai_Bold-s.p.3fj2e6krv70k0.woff2",
+      "static/media/Almarai_ExtraBold-s.p.3r1u-izr84ulr.woff2",
+      "static/media/KORubbama_Black-s.p.2k_if_8z_eoi2.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pagesUsingSizeAdjust": false
+}

@@ -87,8 +87,8 @@ function Hotspot({ spot }: { spot: (typeof HOTSPOTS)[number] }) {
             className="radar-ring absolute inset-0 rounded-full"
             style={{
               background: spot.hex,
-              opacity: 0.4,
-              animationDelay: `${spot.delay + i}s`,
+              opacity: 0.15,
+              animationDelay: `${spot.delay + i * 1.5}s`,
             }}
           />
         ))}
@@ -96,7 +96,7 @@ function Hotspot({ spot }: { spot: (typeof HOTSPOTS)[number] }) {
         {spot.main && (
           <span
             className="radar-core absolute inset-0 rounded-full"
-            style={{ background: spot.hex, opacity: 0.25 }}
+            style={{ background: spot.hex, opacity: 0.1 }}
           />
         )}
         {/* the damage glyph marks every point */}

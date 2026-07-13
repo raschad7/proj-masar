@@ -90,7 +90,6 @@ function TicketMedia({ active }: { active: number }) {
           loop
           playsInline
         >
-          <source src="/media/detection.webm" type="video/webm" />
           <source src="/media/detection.mp4" type="video/mp4" />
         </video>
         {/* detection box */}

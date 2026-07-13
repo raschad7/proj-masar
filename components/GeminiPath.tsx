@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { CheckmarkCircle24Filled } from "@fluentui/react-icons";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 
@@ -102,7 +103,8 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
           loop
           playsInline
         >
-          <source src="/media/detection.webm" type="video/webm" />
+          {/* mp4 only — H.264 is universally supported; the webm was larger
+              and redundant. */}
           <source src="/media/detection.mp4" type="video/mp4" />
         </video>
       </div>
@@ -117,10 +119,12 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
           zIndex: activeIndex === 1 ? 10 : 1
         }}
       >
-        <img
+        <Image
           src="/grid/Gemini_Generated_Image_v3jpk7v3jpk7v3jp.png"
           alt=""
-          className={`h-full w-full object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 1 ? 'scale-110' : 'scale-100'}`}
+          fill
+          sizes="100vw"
+          className={`object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 1 ? 'scale-110' : 'scale-100'}`}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
         
@@ -151,10 +155,12 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
           zIndex: activeIndex === 2 ? 10 : 1
         }}
       >
-        <img
+        <Image
           src="/grid/pexels-gaion-27937015.jpg"
           alt=""
-          className={`h-full w-full object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 2 ? 'scale-110' : 'scale-100'}`}
+          fill
+          sizes="100vw"
+          className={`object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 2 ? 'scale-110' : 'scale-100'}`}
         />
       </div>
 
@@ -168,10 +174,12 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
           zIndex: activeIndex === 3 ? 10 : 1
         }}
       >
-        <img
+        <Image
           src="/gallary/pathPic.png"
           alt="قبل وبعد الإصلاح"
-          className={`h-full w-full object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 3 ? 'scale-110' : 'scale-100'}`}
+          fill
+          sizes="100vw"
+          className={`object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 3 ? 'scale-110' : 'scale-100'}`}
         />
         <div className="absolute inset-0 bg-black/20" />
       </div>

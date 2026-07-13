@@ -1,11 +1,11 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { ArrowLeft20Filled } from "@fluentui/react-icons"
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap"
 import { useLenis } from "@/lib/lenis"
-import LogoArrow from "@/components/LogoArrow"
 
 /* ── The nav IS the مسار — now vertical ───────────────────────────
    A floating island on the right: a vertical path whose marker (the
@@ -20,26 +20,16 @@ const SECTIONS = [
   { n: "04", label: "الأدوار", id: "roles" },
   { n: "05", label: "الميزات", id: "features" },
   { n: "06", label: "كيف يعمل", id: "tech" },
-  { n: "07", label: "التطبيق", id: "gallery" },
-  { n: "08", label: "الأثر", id: "impact-claude" },
-  { n: "09", label: "تواصل", id: "contact" },
-  { n: "10", label: "من الميدان", id: "grid-showcase" },
+  { n: "07", label: "الأثر", id: "impact-claude" },
+  { n: "08", label: "تواصل", id: "contact" },
+  { n: "09", label: "من الميدان", id: "grid-showcase" },
 ]
 const N = SECTIONS.length
-
-/* vertical geometry (px) — rows are STEP tall, dot centered in each */
-const STEP = 42
-const OFFSET = STEP / 2 // 21 → dot0 sits at the first row's center
-const TRACK_H = (N - 1) * STEP // 210
-const ROWS_H = N * STEP // 252
-const yOf = (i: number) => OFFSET + i * STEP
 
 export default function Nav() {
   const pathname = usePathname()
   const navRef = useRef<HTMLElement>(null)
   const islandRef = useRef<HTMLDivElement>(null)
-  const fillRef = useRef<HTMLDivElement>(null)
-  const markerRef = useRef<HTMLDivElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
   const ctaWrapRef = useRef<HTMLDivElement>(null)
   const ctaRef = useRef<HTMLButtonElement>(null)
@@ -47,6 +37,7 @@ export default function Nav() {
   const menuBtnRef = useRef<HTMLButtonElement>(null)
   const [active, setActive] = useState(0)
   const [inFooter, setInFooter] = useState(false)
+  const [inAbout, setInAbout] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const lenis = useLenis()
 
@@ -111,14 +102,8 @@ export default function Nav() {
       window.addEventListener("resize", measure)
       ScrollTrigger.addEventListener("refresh", measure)
 
-      /* ── magnetic vertical follow ── */
-      let cur = 0
+      /* ── active-section tracking (drives which tick is lit) ── */
       let last = -1
-      let currentInFooter = false
-      const apply = (f: number) => {
-        if (markerRef.current) gsap.set(markerRef.current, { y: f * TRACK_H })
-        if (fillRef.current) gsap.set(fillRef.current, { scaleY: f })
-      }
       const tick = () => {
         const y = window.scrollY + window.innerHeight * 0.4
         let p = 0
@@ -134,24 +119,45 @@ export default function Nav() {
           )
           p = Math.min(N - 1, i + local)
         }
-        const targetFrac = p / (N - 1)
         const idx = Math.round(p)
         if (idx !== last) {
           last = idx
           setActive(idx)
         }
-        cur += (targetFrac - cur) * (reduce ? 1 : 0.14)
-        apply(cur)
-        
-        const footerSpacer = document.getElementById("footer-spacer")
-        const footerTop = footerSpacer ? footerSpacer.getBoundingClientRect().top + window.scrollY : docEnd
-        const isNowInFooter = window.scrollY + window.innerHeight > footerTop + 100
-        if (isNowInFooter !== currentInFooter) {
-          currentInFooter = isNowInFooter
-          setInFooter(isNowInFooter)
-        }
+
       }
       gsap.ticker.add(tick)
+
+      /* ── footer / about state via IntersectionObserver ──────────────
+         These used to be getBoundingClientRect() reads inside the ticker —
+         two forced synchronous layouts EVERY FRAME, interleaved with GSAP's
+         transform writes (classic layout thrash; Lighthouse flags it as
+         "forced reflow"). IO delivers the same booleans asynchronously with
+         zero main-thread layout cost, and stays correct under ScrollTrigger
+         pinning because it tracks the element's real on-screen rect. */
+      const observers: IntersectionObserver[] = []
+      const footerEl = document.getElementById("footer-spacer")
+      if (footerEl) {
+        const io = new IntersectionObserver(
+          ([e]) => setInFooter(e.isIntersecting),
+          /* fires once the spacer's top clears 100px above the viewport
+             bottom — same threshold as the old scrollY math */
+          { rootMargin: "0px 0px -100px 0px" },
+        )
+        io.observe(footerEl)
+        observers.push(io)
+      }
+      const aboutEl = document.getElementById("about")
+      if (aboutEl) {
+        /* the ruler sits at the viewport's vertical center — go white while
+           the dark About section covers that center line */
+        const io = new IntersectionObserver(
+          ([e]) => setInAbout(e.isIntersecting),
+          { rootMargin: "-50% 0px -50% 0px" },
+        )
+        io.observe(aboutEl)
+        observers.push(io)
+      }
 
       /* ── island draws in on first scroll ── */
       const playReveal = () => {
@@ -168,15 +174,9 @@ export default function Nav() {
             0,
           )
           .from(
-            ".nav-line-base",
-            { scaleY: 0, transformOrigin: "50% 0%", duration: 0.6 },
-            0.05,
-          )
-          .from(".nav-tick", { scale: 0, stagger: 0.05, duration: 0.3 }, 0.15)
-          .from(
-            ".nav-marker",
-            { scale: 0, duration: 0.35, ease: "back.out(2)" },
-            0.4,
+            ".nav-tick",
+            { scaleX: 0, transformOrigin: "100% 50%", stagger: 0.04, duration: 0.4 },
+            0.1,
           )
       }
       let revealed = false
@@ -262,6 +262,7 @@ export default function Nav() {
 
       return () => {
         gsap.ticker.remove(tick)
+        observers.forEach((o) => o.disconnect())
         window.removeEventListener("resize", measure)
         ScrollTrigger.removeEventListener("refresh", measure)
         window.removeEventListener("scroll", onScroll)
@@ -383,13 +384,13 @@ export default function Nav() {
       <div 
         className={`fixed inset-0 z-40 flex items-center justify-center transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${menuOpen ? 'opacity-100 pointer-events-auto bg-white/60 backdrop-blur-xl' : 'opacity-0 pointer-events-none bg-white/0 backdrop-blur-none'}`}
       >
-        {/* Container is smaller than full page */}
-        <div className={`relative w-[90vw] max-w-[700px] h-[50vh] max-h-[400px] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${menuOpen ? 'scale-100 translate-y-0 opacity-100' : 'scale-90 translate-y-8 opacity-0'}`}>
-          <div className="grid h-full w-full grid-cols-2 grid-rows-2 gap-8 relative">
+        {/* Container is expanded to accommodate 3 columns */}
+        <div className={`relative w-[90vw] max-w-[1000px] h-[60vh] max-h-[500px] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${menuOpen ? 'scale-100 translate-y-0 opacity-100' : 'scale-90 translate-y-8 opacity-0'}`}>
+          <div className="grid h-full w-full grid-cols-2 md:grid-cols-3 grid-rows-3 md:grid-rows-2 gap-4 md:gap-8 relative">
             
             {/* Box 1 - Home (RTL: Top Right) */}
             <a href="/" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
-              <img src="/gallary/pathPic.png" className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              <Image src="/gallary/pathPic.png" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
               
               {/* Permanent Corner Brackets (All 4 Corners) */}
               <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
@@ -397,54 +398,82 @@ export default function Nav() {
               <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-3xl border-b-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-3xl border-b-[1px] border-r-[1px] border-black/15 pointer-events-none" />
 
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <span className="font-display text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">الرئيسية</span>
-                <span className="mt-2 text-[14px] font-medium text-black">الواجهة الرئيسية والملخص</span>
+              <div className="relative z-10 flex flex-col items-center text-center px-2">
+                <span className="font-display text-[22px] md:text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">الرئيسية</span>
+                <span className="mt-1 md:mt-2 text-[12px] md:text-[14px] font-medium text-black">الواجهة الرئيسية</span>
               </div>
             </a>
             
-            {/* Box 2 - Map (RTL: Top Left) */}
+            {/* Box 2 - Map */}
             <a href="/map" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
-              <img src="/grid/Gemini_Generated_Image_v3jpk7v3jpk7v3jp.png" className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              <Image src="/grid/Gemini_Generated_Image_v3jpk7v3jpk7v3jp.png" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
               
               <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute top-0 right-0 h-8 w-8 rounded-tr-3xl border-t-[1px] border-r-[1px] border-black/15 pointer-events-none" />
               <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-3xl border-b-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-3xl border-b-[1px] border-r-[1px] border-black/15 pointer-events-none" />
 
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <span className="font-display text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">خريطة البلاغات</span>
-                <span className="mt-2 text-[14px] font-medium text-black">تصفح جميع البلاغات جغرافياً</span>
+              <div className="relative z-10 flex flex-col items-center text-center px-2">
+                <span className="font-display text-[22px] md:text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">خريطة البلاغات</span>
+                <span className="mt-1 md:mt-2 text-[12px] md:text-[14px] font-medium text-black">تصفح جغرافياً</span>
               </div>
             </a>
 
-            {/* Box 3 - Tech / AI (RTL: Bottom Right) */}
+            {/* Box 3 - Gallery (New) */}
+            <a href="/gallery" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
+              <Image src="/media/detection-poster.jpg" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              
+              <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
+              <div className="absolute top-0 right-0 h-8 w-8 rounded-tr-3xl border-t-[1px] border-r-[1px] border-black/15 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-3xl border-b-[1px] border-l-[1px] border-black/15 pointer-events-none" />
+              <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-3xl border-b-[1px] border-r-[1px] border-black/15 pointer-events-none" />
+
+              <div className="relative z-10 flex flex-col items-center text-center px-2">
+                <span className="font-display text-[22px] md:text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">التطبيق</span>
+                <span className="mt-1 md:mt-2 text-[12px] md:text-[14px] font-medium text-black">معرض التطبيق</span>
+              </div>
+            </a>
+
+            {/* Box 4 - Tech / AI */}
             <a href="/#tech" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
-              <img src="/media/detection-poster.jpg" className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              <Image src="/media/detection-poster.jpg" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
               
               <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute top-0 right-0 h-8 w-8 rounded-tr-3xl border-t-[1px] border-r-[1px] border-black/15 pointer-events-none" />
               <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-3xl border-b-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-3xl border-b-[1px] border-r-[1px] border-black/15 pointer-events-none" />
 
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <span className="font-display text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">النظام الذكي</span>
-                <span className="mt-2 text-[14px] font-medium text-black">كيف تعمل تقنيات الذكاء الاصطناعي</span>
+              <div className="relative z-10 flex flex-col items-center text-center px-2">
+                <span className="font-display text-[22px] md:text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">النظام الذكي</span>
+                <span className="mt-1 md:mt-2 text-[12px] md:text-[14px] font-medium text-black">تقنيات الرصد</span>
               </div>
             </a>
 
-            {/* Box 4 - Teams (RTL: Bottom Left) */}
+            {/* Box 5 - Teams */}
             <a href="/#roles" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
-              <img src="/grid/pexels-gaion-27937015.jpg" className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              <Image src="/grid/pexels-gaion-27937015.jpg" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
               
               <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute top-0 right-0 h-8 w-8 rounded-tr-3xl border-t-[1px] border-r-[1px] border-black/15 pointer-events-none" />
               <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-3xl border-b-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-3xl border-b-[1px] border-r-[1px] border-black/15 pointer-events-none" />
 
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <span className="font-display text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">الفرق الميدانية</span>
-                <span className="mt-2 text-[14px] font-medium text-black">إدارة المهام وتوجيه الفرق</span>
+              <div className="relative z-10 flex flex-col items-center text-center px-2">
+                <span className="font-display text-[22px] md:text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">الفرق الميدانية</span>
+                <span className="mt-1 md:mt-2 text-[12px] md:text-[14px] font-medium text-black">إدارة المهام</span>
+              </div>
+            </a>
+
+            {/* Box 6 - Contact */}
+            <a href="/#contact" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors bg-[#111717]/5 hover:bg-[#111717]/10">
+              <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
+              <div className="absolute top-0 right-0 h-8 w-8 rounded-tr-3xl border-t-[1px] border-r-[1px] border-black/15 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-3xl border-b-[1px] border-l-[1px] border-black/15 pointer-events-none" />
+              <div className="absolute bottom-0 right-0 h-8 w-8 rounded-br-3xl border-b-[1px] border-r-[1px] border-black/15 pointer-events-none" />
+
+              <div className="relative z-10 flex flex-col items-center text-center px-2">
+                <span className="font-display text-[22px] md:text-[26px] font-bold text-ink transition-all duration-300 group-hover:-translate-y-1">تواصل معنا</span>
+                <span className="mt-1 md:mt-2 text-[12px] md:text-[14px] font-medium text-black">اطلب عرضاً توضيحياً</span>
               </div>
             </a>
 
@@ -452,78 +481,47 @@ export default function Nav() {
         </div>
       </div>
 
-      {/* ── vertical progress island (right, centered) — expands on hover ── */}
-      {pathname !== "/map" && (
-        <div className="fixed right-5 top-1/2 z-40 hidden -translate-y-1/2 md:block ">
+      {/* ── the ruler (right edge, centered) — only the active tick extends ── */}
+      {pathname !== "/map" && pathname !== "/gallery" && (
+        <div className="fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 md:block">
           <div
             ref={islandRef}
-            className="nav-island group relative w-[64px] overflow-hidden rounded-[32px] py-3 transition-[width] duration-300 ease-out hover:w-[140px]"
+            className="relative flex flex-col items-end gap-3.5 pr-3"
             style={{ opacity: 0, visibility: "hidden" }}
           >
-            <div className="relative" style={{ height: ROWS_H }}>
-              {/* base track */}
-              <div
-                className="nav-line-base absolute rounded-full bg-seashell"
-                style={{ top: OFFSET, height: TRACK_H, width: 2, right: 15 }}
-              />
-              {/* traveled fill (top → down) */}
-              <div
-                ref={fillRef}
-                className={`absolute rounded-full transition-colors duration-300 ${inFooter ? "bg-white group-hover:bg-gray-400" : ""}`}
-                style={{
-                  top: OFFSET,
-                  height: TRACK_H,
-                  width: 2,
-                  right: 15,
-                  transformOrigin: "50% 0%",
-                  transform: "scaleY(0)",
-                  background: inFooter ? undefined : "#34A8D8",
-                }}
-              />
-              {/* the marker — the report dot */}
-              <div
-                ref={markerRef}
-                className={`nav-marker absolute rounded-full shadow-[0_0_0_4px_var(--white)] transition-colors duration-300 ${inFooter ? "bg-white group-hover:bg-gray-400" : "bg-ink"}`}
-                style={{ top: 14, right: 9, width: 11, height: 11 }}
-              />
+            {SECTIONS.map((s, i) => {
+              const isActive = i === active
 
-              {/* section rows — labels reveal + go blue when the island opens */}
-              {SECTIONS.map((s, i) => {
-                const isActive = i === active
-                
-                const labelColor = inFooter ? "text-white group-hover/row:text-gray-400" : (isActive ? "text-peacock" : "text-ink");
-                const numColor = inFooter ? "text-white group-hover/row:text-gray-400" : (isActive ? "text-peacock" : "text-mutedtext group-hover/row:text-peacock");
-                const tickColor = inFooter ? "text-white group-hover/row:text-gray-400" : (isActive ? "text-peacock" : "text-mutedtext group-hover/row:text-peacock");
-                const tickFill = inFooter ? "currentColor" : (isActive ? "var(--peacock)" : "currentColor");
+              const onDark = inFooter || inAbout
+              const labelColor = onDark ? "text-white" : "text-peacock"
+              const barColor = onDark
+                ? isActive
+                  ? "bg-white"
+                  : "bg-white/40 group-hover/tick:bg-white/80"
+                : isActive
+                  ? "bg-peacock"
+                  : "bg-mutedtext/50 group-hover/tick:bg-peacock"
 
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => scrollToId(s.id)}
-                    aria-label={s.label}
-                    aria-current={isActive ? "true" : undefined}
-                    className="group/row relative flex w-full items-center justify-end gap-2.5 pr-12"
-                    style={{ height: STEP }}
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => scrollToId(s.id)}
+                  aria-label={s.label}
+                  aria-current={isActive ? "true" : undefined}
+                  className="group/tick relative flex h-5 items-center justify-end gap-3"
+                >
+                  <span
+                    className={`pointer-events-none whitespace-nowrap text-[12px] font-bold opacity-0 translate-x-2 transition-all duration-300 ease-out group-hover/tick:translate-x-0 group-hover/tick:opacity-100 ${labelColor}`}
                   >
-                    <span
-                      className={`whitespace-nowrap text-[13px] font-bold opacity-0 transition-colors duration-200 group-hover:opacity-100 group-hover/row:-translate-x-0.5 ${labelColor}`}
-                    >
-                      {s.label}
-                    </span>
-                    <span
-                      className={`text-[10px] font-bold tracking-widest transition-colors duration-300 ${numColor}`}
-                    >
-                      {s.n}
-                    </span>
-                    <LogoArrow
-                      color={tickFill}
-                      className={`nav-tick h-3.5 w-3 shrink-0 transition-colors duration-300 ${tickColor}`}
-                    />
-                  </button>
-                )
-              })}
-            </div>
+                    {s.label}
+                  </span>
+                  <span
+                    className={`nav-tick h-[2px] w-6 shrink-0 rounded-full transition-colors duration-300 ${barColor}`}
+                  />
+                </button>
+              )
+            })}
           </div>
         </div>
       )}

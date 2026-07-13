@@ -234,33 +234,33 @@ body {
 @keyframes radar-ping {
   0% {
     transform: scale(1);
-    opacity: 0.7;
+    opacity: 0.15;
   }
   100% {
-    transform: scale(7);
+    transform: scale(4.5);
     opacity: 0;
   }
 }
 .radar-ring {
-  animation: radar-ping 3s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
+  animation: radar-ping 4.5s cubic-bezier(0.2, 0.7, 0.2, 1) infinite;
 }
 .radar-ring:nth-child(2) {
-  animation-delay: 1s;
+  animation-delay: 1.5s;
 }
 .radar-ring:nth-child(3) {
-  animation-delay: 2s;
+  animation-delay: 3s;
 }
 @keyframes core-glow {
   0%,
   100% {
-    box-shadow: 0 0 12px 3px rgba(0, 114, 218, 0.45);
+    box-shadow: 0 0 8px 2px rgba(0, 114, 218, 0.15);
   }
   50% {
-    box-shadow: 0 0 20px 7px rgba(0, 114, 218, 0.65);
+    box-shadow: 0 0 14px 4px rgba(0, 114, 218, 0.25);
   }
 }
 .radar-core {
-  animation: core-glow 2.4s ease-in-out infinite;
+  animation: core-glow 4s ease-in-out infinite;
 }
 
 /* ── Live "REC"/on-site status dot blink ── */

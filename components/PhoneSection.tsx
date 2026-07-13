@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import dynamic from "next/dynamic"
 import {
   Camera24Filled,
@@ -362,6 +362,28 @@ export default function PhoneSection() {
     screen: 0,
   }))
 
+  /* Defer the WebGL canvas (three.js + drei ≈ 260KB of JS plus GL context
+     setup) until the section is within a viewport of arriving. Mounting it
+     on hydration was the page's single biggest main-thread cost — it ran
+     while the user was still reading the hero. The static shell fallback
+     fills the frame until then, so nothing visibly changes. */
+  const [canvasReady, setCanvasReady] = useState(false)
+  useEffect(() => {
+    const el = root.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setCanvasReady(true)
+          io.disconnect()
+        }
+      },
+      { rootMargin: "100% 0px" }, // one viewport early — loads before arrival
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   useGSAP(
     () => {
       const mm = gsap.matchMedia()
@@ -683,10 +705,14 @@ export default function PhoneSection() {
               <div className="phone-float relative">
                 <div className="relative aspect-[236/480] h-[min(480px,62vh)]">
                   <div className="absolute -inset-x-[150%] -inset-y-[14%]">
-                    <PhoneCanvas
-                      pose={pose}
-                      fallback={<PhoneShellFallback />}
-                    />
+                    {canvasReady ? (
+                      <PhoneCanvas
+                        pose={pose}
+                        fallback={<PhoneShellFallback />}
+                      />
+                    ) : (
+                      <PhoneShellFallback />
+                    )}
                   </div>
                 </div>
                 <PhoneChips />

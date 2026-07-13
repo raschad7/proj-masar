@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef } from "react"
+import Image from "next/image"
 import { gsap, useGSAP } from "@/lib/gsap"
 import LogoLoop, { type LogoItem } from "@/components/LogoLoop"
 
@@ -51,11 +52,12 @@ export const LOGOS: LogoItem[] = MUNICIPALITIES.map((m) => ({
   node: (
     <div className="trust-logo group flex shrink-0 items-center gap-4 text-mutedtext transition-all duration-300 hover:-translate-y-1 hover:text-ink">
       {"img" in m ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={m.img}
           alt=""
           aria-hidden
+          width={140}
+          height={80}
           className="h-20 w-auto object-contain opacity-50 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
           style={{ maxWidth: 140 }}
         />
@@ -97,7 +99,7 @@ export default function TrustBar() {
   )
 
   return (
-    <section ref={root} className="bg-white py-60">
+    <section ref={root} className="bg-white py-10">
       <p className="trust-reveal text-center text-[18px] font-medium text-subtext">
         تثق به بلديات فلسطين
       </p>

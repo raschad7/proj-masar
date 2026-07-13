@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef } from "react"
+import Image from "next/image"
 import { ChevronLeft24Filled } from "@fluentui/react-icons"
 import { gsap, useGSAP } from "@/lib/gsap"
 import CityMapBg from "@/components/CityMapBg"
@@ -271,11 +272,12 @@ export default function ClaudeImpact() {
               >
                 {/* real photo — swaps with each figure */}
                 <div className="cip-photo relative h-[min(50vh,360px)] w-[min(88vw,420px)] lg:h-[min(50vh,420px)] lg:w-[min(88vw,480px)] shrink-0 overflow-hidden rounded-[32px]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={s.photo}
                     alt={s.title}
-                    className={`cip-photo-img-${i} h-full w-full object-cover`}
+                    fill
+                    sizes="(max-width: 480px) 88vw, 480px"
+                    className={`cip-photo-img-${i} object-cover`}
                   />
                 </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import CityMapBg from "@/components/CityMapBg";
 
@@ -42,7 +43,6 @@ const SCREENS: Screen[] = [
 
 const N = SCREENS.length;
 
-/* eslint-disable @next/next/no-img-element */
 function PhoneReel({
   screensRef,
 }: {
@@ -63,10 +63,12 @@ function PhoneReel({
             }}
             className="absolute inset-0 will-change-transform"
           >
-            <img
+            <Image
               src={s.img}
               alt={s.name}
-              className="h-full w-full object-cover object-top"
+              fill
+              sizes="(max-width: 768px) 60vw, 280px"
+              className="object-cover object-top"
             />
           </div>
         ))}
@@ -82,8 +84,8 @@ function StaticPhone({ img, alt }: { img: string; alt: string }) {
       className="relative shrink-0 rounded-[38px] bg-ink p-2"
       style={{ width: 220, aspectRatio: "1206 / 2622", boxShadow: "var(--shadow-lift)" }}
     >
-      <div className="h-full w-full overflow-hidden rounded-[30px] bg-whitesmoke">
-        <img src={img} alt={alt} className="h-full w-full object-cover object-top" />
+      <div className="relative h-full w-full overflow-hidden rounded-[30px] bg-whitesmoke">
+        <Image src={img} alt={alt} fill sizes="220px" className="object-cover object-top" />
       </div>
     </div>
   );

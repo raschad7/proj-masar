@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef } from "react"
-import { gsap, useGSAP } from "@/lib/gsap"
+import { gsap, useGSAP, ScrollTrigger } from "@/lib/gsap"
 import LogoArrow from "@/components/LogoArrow"
 
 /* AboutSection — "تعريف مسار" as a crosshair blueprint on solid brand blue.
@@ -137,6 +137,24 @@ export default function AboutSection() {
           },
         })
 
+        // Pin the section when it reaches the top to "pause" the scroll smoothly
+        // By adding a subtle scrubbed scale, it feels like an intentional, smooth cinematic pause
+        // rather than a frozen scroll. We also remove anticipatePin which can sometimes cause jitter with Lenis.
+        const pinTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: root.current,
+            start: "top top",
+            end: "+=1000",
+            pin: true,
+            scrub: 1,
+          }
+        })
+        
+        pinTl.to(".ab-inner", {
+          scale: 1.03,
+          ease: "none"
+        })
+
         tl.to(".ab-head .ab-word", {
           yPercent: 0,
           duration: 0.9,
@@ -214,7 +232,7 @@ export default function AboutSection() {
       data-cursor="invert"
       className="ab-section relative z-10 flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#16668E] px-6 py-8 text-white"
     >
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col justify-center">
+      <div className="ab-inner relative z-10 mx-auto flex w-full max-w-6xl flex-col justify-center">
         {/* Eyebrow */}
         <p className="text-center text-body-5 font-bold tracking-widest text-white/70">
           تعريف مسار

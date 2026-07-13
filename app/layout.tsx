@@ -5,21 +5,23 @@ import CursorFollower from "@/components/CursorFollower";
 import Preloader from "@/components/Preloader";
 import "./globals.css";
 
-/* Body — Almarai, local files (300/400/700/800) */
+/* Body — Almarai, local files (300/400/700/800).
+   WOFF2 (converted from the TTF sources kept beside them) — ~68% smaller,
+   and fonts are render-blocking so this directly moves FCP/LCP. */
 const almarai = localFont({
   variable: "--font-almarai",
   src: [
-    { path: "./fonts/Almarai/Almarai-Light.ttf", weight: "300" },
-    { path: "./fonts/Almarai/Almarai-Regular.ttf", weight: "400" },
-    { path: "./fonts/Almarai/Almarai-Bold.ttf", weight: "700" },
-    { path: "./fonts/Almarai/Almarai-ExtraBold.ttf", weight: "800" },
+    { path: "./fonts/Almarai/Almarai-Light.woff2", weight: "300" },
+    { path: "./fonts/Almarai/Almarai-Regular.woff2", weight: "400" },
+    { path: "./fonts/Almarai/Almarai-Bold.woff2", weight: "700" },
+    { path: "./fonts/Almarai/Almarai-ExtraBold.woff2", weight: "800" },
   ],
 });
 
 /* Display — Rubbama (single Black cut, declared as the regular weight) */
 const rubbama = localFont({
   variable: "--font-rubbama",
-  src: [{ path: "./fonts/Rubbama/KORubbama-Black.ttf", weight: "400" }],
+  src: [{ path: "./fonts/Rubbama/KORubbama-Black.woff2", weight: "400" }],
 });
 
 export const metadata: Metadata = {

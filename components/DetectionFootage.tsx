@@ -19,14 +19,14 @@ export default function DetectionFootage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
 
-  // Kick playback on mount as a belt-and-suspenders backup to the
-  // autoPlay attribute (some engines reject the attribute but honour a
-  // muted programmatic play()).
+  // Keep it muted so browsers allow inline autoplay, but DON'T call play()
+  // on mount — that would force the full clip to download on page load even
+  // though this block lives far down the page. Playback is started lazily by
+  // the ScrollTrigger below (onEnter) once the user scrolls it into view.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
-    v.play().then(() => setPaused(false)).catch(() => {});
   }, []);
 
   useGSAP(
@@ -118,7 +118,7 @@ export default function DetectionFootage() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="none"
             onClick={toggle}
             onCanPlay={() => {
               const v = videoRef.current;
@@ -128,10 +128,10 @@ export default function DetectionFootage() {
               }
             }}
           >
-            {/* mp4 first — it compressed smaller than the vp9 for this
-                noisy field capture, and every target browser plays it */}
+            {/* mp4 only — H.264 plays in every target browser and this clip
+                compressed smaller as mp4 than as vp9/webm, so the extra webm
+                source was pure dead weight. */}
             <source src="/media/detection.mp4" type="video/mp4" />
-            <source src="/media/detection.webm" type="video/webm" />
           </video>
 
           {/* illustrated echo — fades out to reveal the real thing.
