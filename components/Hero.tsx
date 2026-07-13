@@ -36,9 +36,10 @@ const HOTSPOTS = [
     right: "18%",
     top: "24%",
     hex: "#0072DA",
-    label: "حفرة عميقة · 70٪",
+    label: "شَقّ طولي · 70٪",
     main: true,
     delay: 0,
+    icon: "/glyphs/long.svg",
   },
   {
     right: "82%",
@@ -47,6 +48,7 @@ const HOTSPOTS = [
     label: "تشقق تمساحي · 64٪",
     main: false,
     delay: 0.7,
+    icon: "/glyphs/gator.svg",
   },
   {
     right: "15%",
@@ -55,6 +57,7 @@ const HOTSPOTS = [
     label: "حفرة خطرة · 85٪",
     main: false,
     delay: 1.4,
+    icon: "/glyphs/pothole.svg",
   },
   {
     right: "85%",
@@ -64,6 +67,7 @@ const HOTSPOTS = [
     label: "هبوط إسفلت · 52٪",
     main: false,
     delay: 2.1,
+    icon: "/glyphs/other.svg",
   },
 ]
 
@@ -76,7 +80,7 @@ function Hotspot({ spot }: { spot: (typeof HOTSPOTS)[number] }) {
       style={{ right: spot.right, top: spot.top }}
       aria-label={spot.label}
     >
-      <span className="dot-wrap relative block h-6 w-6">
+      <span className="dot-wrap relative block h-7 w-7">
         {rings.map((i) => (
           <span
             key={i}
@@ -95,10 +99,20 @@ function Hotspot({ spot }: { spot: (typeof HOTSPOTS)[number] }) {
             style={{ background: spot.hex, opacity: 0.25 }}
           />
         )}
-        {/* the مسار arrow marks every damage point */}
-        <LogoArrow
-          color={spot.hex}
+        {/* the damage glyph marks every point */}
+        <span
           className="absolute inset-0 h-full w-full"
+          style={{
+            backgroundColor: spot.hex,
+            maskImage: `url(${spot.icon})`,
+            WebkitMaskImage: `url(${spot.icon})`,
+            maskSize: "contain",
+            WebkitMaskSize: "contain",
+            maskRepeat: "no-repeat",
+            WebkitMaskRepeat: "no-repeat",
+            maskPosition: "center",
+            WebkitMaskPosition: "center",
+          }}
         />
         {/* focus-lock ring */}
         <span

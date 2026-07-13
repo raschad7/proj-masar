@@ -131,25 +131,26 @@ function IlloDetect() {
   )
 }
 
-/* One brand arrow dropped onto the map at (x,y), sized to the old pin.
-   Nested <svg> lets us reuse the logo path in the illustration's space. */
-const ARROW_PATH =
-  "M26.8471 38.0051L21.2015 20.2617C20.9429 19.4492 21.7545 18.7067 22.5409 19.0362L27.4135 21.078C27.6608 21.1817 27.9393 21.1817 28.1865 21.078L33.0592 19.0362C33.8455 18.7067 34.6571 19.4492 34.3986 20.2617L28.7529 38.0051C28.4573 38.9342 27.1427 38.9342 26.8471 38.0051Z"
-
-function MapArrow({ x, y, fill }: { x: number; y: number; fill: string }) {
-  const w = 30
-  const h = 34
+function MapGlyph({ x, y, fill, icon }: { x: number; y: number; fill: string; icon: string }) {
+  const size = 32
   return (
-    <svg
-      className="pop"
-      x={x - w / 2}
-      y={y - h / 2}
-      width={w}
-      height={h}
-      viewBox="18 17 20 23"
-    >
-      <path d={ARROW_PATH} fill={fill} />
-    </svg>
+    <foreignObject x={x - size / 2} y={y - size / 2} width={size} height={size} className="pop">
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: fill,
+          maskImage: `url(${icon})`,
+          WebkitMaskImage: `url(${icon})`,
+          maskSize: "contain",
+          WebkitMaskSize: "contain",
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+          maskPosition: "center",
+          WebkitMaskPosition: "center",
+        }}
+      />
+    </foreignObject>
   )
 }
 
@@ -188,11 +189,11 @@ function IlloMap() {
         strokeWidth="14"
         strokeLinecap="round"
       />
-      {/* report pins — the مسار arrow marks each one */}
-      <MapArrow x={120} y={80} fill="#0072DA" />
-      <MapArrow x={250} y={150} fill="var(--notice)" />
-      <MapArrow x={300} y={70} fill="var(--negative)" />
-      <MapArrow x={200} y={235} fill="var(--positive)" />
+      {/* report pins — the damage glyphs mark each one */}
+      <MapGlyph x={120} y={80} fill="#44729D" icon="/glyphs/long.svg" />
+      <MapGlyph x={250} y={150} fill="#44729D" icon="/glyphs/gator.svg" />
+      <MapGlyph x={300} y={70} fill="#44729D" icon="/glyphs/pothole.svg" />
+      <MapGlyph x={200} y={235} fill="#44729D" icon="/glyphs/other.svg" />
     </svg>
   )
 }

@@ -134,6 +134,9 @@
       box-shadow: 0 4px 14px rgba(14, 19, 18, .10) !important;
     }
     .maplibregl-ctrl-attrib.maplibregl-compact { border-radius: 10px; }
+    /* nudge the +/- zoom cluster in from the corner so it clears the
+       card's rounded edge / framing brackets */
+    .maplibregl-ctrl-top-left .maplibregl-ctrl { margin: 76px 0 0 20px; }
   </style>
 </head>
 <body>

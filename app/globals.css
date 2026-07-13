@@ -450,6 +450,74 @@ body {
   min-height: 0;
 }
 
+/* ── Map viewer — signature "focus-lock + live scan" open sequence ──
+   Plays once each time the map expands to fullscreen. Echoes the hero
+   radar / camera-focus theme: brackets close in, one peacock line
+   sweeps the field, overlays settle in behind it. */
+
+/* corner brackets snap inward from just outside their corner */
+@keyframes map-bracket-in {
+  0%   { opacity: 0; transform: scale(1.6); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.map-bracket {
+  animation: map-bracket-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.15s;
+}
+
+/* a single soft band + crisp line sweeps top → bottom, once */
+@keyframes map-scan-sweep {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateY(400%); opacity: 0; }
+}
+.map-scan {
+  height: 30%;
+  background: linear-gradient(
+    to bottom,
+    rgba(52, 168, 216, 0) 0%,
+    rgba(52, 168, 216, 0.10) 55%,
+    rgba(52, 168, 216, 0.24) 100%
+  );
+  border-bottom: 2px solid rgba(52, 168, 216, 0.85);
+  box-shadow: 0 6px 26px 2px rgba(52, 168, 216, 0.45);
+  animation: map-scan-sweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* iframe loading placeholder */
+@keyframes map-shimmer {
+  0%   { background-position: 150% 0; }
+  100% { background-position: -150% 0; }
+}
+.map-shimmer {
+  background: linear-gradient(
+    100deg,
+    var(--whitesmoke) 30%,
+    var(--seashell) 48%,
+    var(--whitesmoke) 66%
+  );
+  background-size: 220% 100%;
+  animation: map-shimmer 1.5s ease-in-out infinite;
+}
+
+/* overlay controls settle in behind the scan */
+@keyframes map-overlay-in {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.map-overlay-in {
+  animation: map-overlay-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-bracket,
+  .map-overlay-in { animation: none; opacity: 1; transform: none; }
+  .map-scan { display: none; }
+  .map-shimmer { animation: none; }
+}
+
 /* ── Map Fullscreen Cursor Fix ── */
 html.map-fullscreen-active.has-custom-cursor .z-\[9998\],
 html.map-fullscreen-active.has-custom-cursor .z-\[9999\] {
