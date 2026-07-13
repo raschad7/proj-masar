@@ -22,8 +22,8 @@ const SECTIONS = [
   { n: "06", label: "كيف يعمل", id: "tech" },
   { n: "07", label: "التطبيق", id: "gallery" },
   { n: "08", label: "الأثر", id: "impact-claude" },
-  { n: "09", label: "من الميدان", id: "grid-showcase" },
-  { n: "10", label: "تواصل", id: "contact" },
+  { n: "09", label: "تواصل", id: "contact" },
+  { n: "10", label: "من الميدان", id: "grid-showcase" },
 ]
 const N = SECTIONS.length
 
@@ -74,10 +74,16 @@ export default function Nav() {
   }, [menuOpen])
 
   const scrollToId = (id: string) => {
+    if (id === "top") {
+      if (lenis) lenis.scrollTo(0, { duration: 1.1 })
+      else window.scrollTo({ top: 0, behavior: "smooth" })
+      return
+    }
     const el = document.getElementById(id)
     if (!el) return
-    if (lenis) lenis.scrollTo(el, { offset: -80, duration: 1.1 })
-    else el.scrollIntoView({ behavior: "smooth" })
+    const target = el.closest('.pin-spacer') || el
+    if (lenis) lenis.scrollTo(target, { offset: -80, duration: 1.1 })
+    else target.scrollIntoView({ behavior: "smooth" })
   }
   const toTop = () =>
     lenis ? lenis.scrollTo(0, { duration: 1 }) : window.scrollTo({ top: 0 })
@@ -94,7 +100,9 @@ export default function Nav() {
       const measure = () => {
         tops = SECTIONS.map((s) => {
           const el = document.getElementById(s.id)
-          return el ? el.getBoundingClientRect().top + window.scrollY : 0
+          if (!el) return 0
+          const target = el.closest('.pin-spacer') || el
+          return target.getBoundingClientRect().top + window.scrollY
         })
         docEnd = document.documentElement.scrollHeight
       }

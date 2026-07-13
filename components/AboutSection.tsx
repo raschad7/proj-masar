@@ -87,19 +87,19 @@ function Reticle() {
     <>
       <span
         aria-hidden
-        className={`${base} left-4 top-4 -translate-x-2 -translate-y-2 border-l-2 border-t-2 group-hover:translate-x-0 group-hover:translate-y-0`}
+        className={`${base} left-4 top-4 -translate-x-2 -translate-y-2 rounded-tl-xl border-l-2 border-t-2 group-hover:translate-x-0 group-hover:translate-y-0`}
       />
       <span
         aria-hidden
-        className={`${base} right-4 top-4 translate-x-2 -translate-y-2 border-r-2 border-t-2 group-hover:translate-x-0 group-hover:translate-y-0`}
+        className={`${base} right-4 top-4 translate-x-2 -translate-y-2 rounded-tr-xl border-r-2 border-t-2 group-hover:translate-x-0 group-hover:translate-y-0`}
       />
       <span
         aria-hidden
-        className={`${base} bottom-4 left-4 -translate-x-2 translate-y-2 border-b-2 border-l-2 group-hover:translate-x-0 group-hover:translate-y-0`}
+        className={`${base} bottom-4 left-4 -translate-x-2 translate-y-2 rounded-bl-xl border-b-2 border-l-2 group-hover:translate-x-0 group-hover:translate-y-0`}
       />
       <span
         aria-hidden
-        className={`${base} bottom-4 right-4 translate-x-2 translate-y-2 border-b-2 border-r-2 group-hover:translate-x-0 group-hover:translate-y-0`}
+        className={`${base} bottom-4 right-4 translate-x-2 translate-y-2 rounded-br-xl border-b-2 border-r-2 group-hover:translate-x-0 group-hover:translate-y-0`}
       />
     </>
   )
