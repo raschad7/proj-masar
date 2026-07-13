@@ -35,9 +35,11 @@ export default function Home() {
         <ClaudeImpact />
         <TrustBar />
 
-        <SectionBreak label="من الميدان" />
-        <GridShowcase />
+        <SectionBreak />
         <CTASection />
+        <SectionBreak />
+        <GridShowcase />
+
         <SectionBreak label="معرض الحركات" />
       </main>
       <Footer />
