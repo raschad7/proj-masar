@@ -35,7 +35,7 @@ const HOTSPOTS = [
   {
     right: "18%",
     top: "24%",
-    hex: "#0072DA",
+    hex: "#16668E",
     label: "شَقّ طولي · 70٪",
     main: true,
     delay: 0,
@@ -44,7 +44,7 @@ const HOTSPOTS = [
   {
     right: "82%",
     top: "22%",
-    hex: "#FFAB00",
+    hex: "#197FB0",
     label: "تشقق تمساحي · 64٪",
     main: false,
     delay: 0.7,
@@ -53,7 +53,7 @@ const HOTSPOTS = [
   {
     right: "15%",
     top: "76%",
-    hex: "#C0625D",
+    hex: "#34A8D8",
     label: "حفرة خطرة · 85٪",
     main: false,
     delay: 1.4,
@@ -63,7 +63,7 @@ const HOTSPOTS = [
     right: "85%",
     top: "72%",
 
-    hex: "#197FB0",
+    hex: "#16668E",
     label: "هبوط إسفلت · 52٪",
     main: false,
     delay: 2.1,

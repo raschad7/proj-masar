@@ -112,13 +112,14 @@ export default function DetectionFootage() {
         <div className="relative overflow-hidden rounded-3xl">
           <video
             ref={videoRef}
-            className="block aspect-video w-full object-cover"
+            className="block aspect-video w-full object-cover cursor-pointer"
             poster="/media/detection-poster.jpg"
             autoPlay
             muted
             loop
             playsInline
             preload="auto"
+            onClick={toggle}
             onCanPlay={() => {
               const v = videoRef.current;
               if (v) {

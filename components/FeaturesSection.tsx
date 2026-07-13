@@ -22,28 +22,28 @@ const FEATURES = [
     word: "كشف تلقائي",
     num: "ميزة 01",
     Icon: Scan24Filled,
-    hex: "#0072DA",
+    hex: "#16668E",
     sub: "كشف تلقائي للأضرار — يتعرّف على الحفر والتشقّقات من الصورة ويقدّر خطورتها.",
   },
   {
     word: "خريطة حية",
     num: "ميزة 02",
     Icon: Map24Filled,
-    hex: "#34A8D8",
+    hex: "#16668E",
     sub: "خريطة موحّدة حيّة — كل البلاغات على خريطة واحدة، لحظياً.",
   },
   {
     word: "ترتيب حسب الاولوية",
     num: "ميزة 03",
     Icon: ArrowSort24Filled,
-    hex: "#FFAB00",
+    hex: "#16668E",
     sub: "أولوية ذكية — ترتيب حسب الخطورة والموقع والكثافة.",
   },
   {
     word: "توثيق منظم",
     num: "ميزة 04",
     Icon: ImageMultiple24Filled,
-    hex: "#088A20",
+    hex: "#16668E",
     sub: "دليل مصوّر قبل/بعد — توثيق كل إصلاح للمساءلة.",
   },
 ]
@@ -96,7 +96,7 @@ function IlloDetect() {
       <path
         className="draw"
         d="M128 168 h-24 a12 12 0 0 0 -12 12 v24"
-        stroke="#0072DA"
+        stroke="#16668E"
         strokeWidth="9"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -104,7 +104,7 @@ function IlloDetect() {
       <path
         className="draw"
         d="M272 168 h24 a12 12 0 0 1 12 12 v24"
-        stroke="#0072DA"
+        stroke="#16668E"
         strokeWidth="9"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -112,7 +112,7 @@ function IlloDetect() {
       <path
         className="draw"
         d="M128 262 h-24 a12 12 0 0 1 -12 -12 v-24"
-        stroke="#0072DA"
+        stroke="#16668E"
         strokeWidth="9"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -120,13 +120,13 @@ function IlloDetect() {
       <path
         className="draw"
         d="M272 262 h24 a12 12 0 0 0 12 -12 v-24"
-        stroke="#0072DA"
+        stroke="#16668E"
         strokeWidth="9"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       {/* severity signal */}
-      <circle className="pop" cx="308" cy="132" r="12" fill="var(--notice)" />
+      <circle className="pop" cx="308" cy="132" r="12" fill="#16668E" />
     </svg>
   )
 }
@@ -209,7 +209,7 @@ function IlloPriority() {
         width="260"
         height="56"
         rx="28"
-        fill="var(--negative)"
+        fill="#16668E"
       />
       <circle className="pop" cx="106" cy="80" r="10" fill="var(--white)" />
       <rect
@@ -219,7 +219,7 @@ function IlloPriority() {
         width="210"
         height="56"
         rx="28"
-        fill="var(--notice)"
+        fill="#197FB0"
       />
       <circle className="pop" cx="131" cy="156" r="10" fill="var(--white)" />
       <rect
@@ -229,7 +229,7 @@ function IlloPriority() {
         width="160"
         height="56"
         rx="28"
-        fill="var(--sports-teal)"
+        fill="#34A8D8"
       />
       <circle className="pop" cx="156" cy="232" r="10" fill="var(--white)" />
     </svg>
@@ -261,7 +261,7 @@ function IlloEvidence() {
       <path
         className="pop"
         d="M55 92 a32 32 0 0 1 32 -32 h113 v180 h-113 a32 32 0 0 1 -32 -32 z"
-        fill="var(--positive)"
+        fill="#16668E"
       />
       <path
         className="draw"

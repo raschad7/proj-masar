@@ -75,7 +75,7 @@ export default function TechSection() {
 
           /* ── Beat 2 · يرى — THE HERO BEAT.
              Bounding boxes connect (machine-vision feel).
-             Pothole box leads, crack box follows. Hold to settle. ── */
+             Draw both together. ── */
           step(1, 1)
           tl.to(
             ".tb-pothole .tech-rect",
@@ -85,7 +85,7 @@ export default function TechSection() {
           tl.to(
             ".tb-crack .tech-rect",
             { drawSVG: "100%", duration: 0.4, ease: "power2.inOut" },
-            1.4,
+            1.1,
           )
 
           /* ── Beat 3 · يصنّف — label chips pop + confidence fills ── */
@@ -109,14 +109,14 @@ export default function TechSection() {
 
           /* ── Beat 4 · يوطّن — coords flash, map slides in, pin drops ── */
           step(3, 3)
-          tl.to(".tech-coords", { opacity: 1, y: 0, duration: 0.15 }, 3.05)
+          tl.to(".tech-coords", { opacity: 1, y: 0, duration: 0.1 }, 3.02)
           tl.to(
             ".tech-map",
-            { yPercent: 0, duration: 0.35, ease: "power3.out" },
-            3.2,
+            { yPercent: 0, duration: 0.25, ease: "power3.out" },
+            3.05,
           )
-          tl.to(".tech-coords", { opacity: 0, duration: 0.15 }, 3.65)
-          tl.to(".tech-pin", { opacity: 1, duration: 0.04 }, 3.5)
+          tl.to(".tech-coords", { opacity: 0, duration: 0.1 }, 3.4)
+          tl.to(".tech-pin", { opacity: 1, duration: 0.04 }, 3.25)
           tl.from(
             ".tech-pin",
             {
@@ -128,11 +128,11 @@ export default function TechSection() {
                 ],
                 curviness: 1.4,
               },
-              duration: 0.4,
+              duration: 0.25,
               ease: "power2.in",
               immediateRender: false,
             },
-            3.5,
+            3.25,
           )
           tl.fromTo(
             ".tech-pin-ring",
@@ -140,10 +140,10 @@ export default function TechSection() {
             {
               scale: 2.4,
               opacity: 0,
-              duration: 0.3,
+              duration: 0.2,
               transformOrigin: "50% 50%",
             },
-            3.9,
+            3.5,
           )
 
           /* ── Beat 5 · يزامن — the report joins the live city ── */

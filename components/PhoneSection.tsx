@@ -46,8 +46,8 @@ const ROLES: Array<{
 }> = [
   {
     title: "المُبلِّغ / الماسح",
-    hex: "#44729D",
-    glass: "rgba(68, 114, 157, 0.10)",
+    hex: "#16668E",
+    glass: "rgba(22, 102, 142, 0.10)",
     side: "left", // phone RIGHT → copy LEFT
     char: "/chars/TheScanner.svg",
     copy: "المواطن أو الفريق الميداني يلتقط الطريق، فيصنّف مسار الضرر تلقائياً ويحدّد موقعه وخطورته.",
@@ -61,8 +61,8 @@ const ROLES: Array<{
   },
   {
     title: "المشرف / الموزّع",
-    hex: "#D1A242",
-    glass: "rgba(209, 162, 66, 0.12)",
+    hex: "#197FB0",
+    glass: "rgba(25, 127, 176, 0.12)",
     side: "right", // phone LEFT → copy RIGHT
     char: "/chars/TheSupervisor.svg",
     copy: "يرى كل البلاغات على الخريطة، يرتّبها بالأولوية حسب الخطورة والموقع، ويوزّع الفرق.",
@@ -76,8 +76,8 @@ const ROLES: Array<{
   },
   {
     title: "فريق الإصلاح",
-    hex: "#599664",
-    glass: "rgba(89, 150, 100, 0.10)",
+    hex: "#34A8D8",
+    glass: "rgba(52, 168, 216, 0.10)",
     side: "left", // phone RIGHT → copy LEFT
     char: "/chars/TheFixer.svg",
     copy: "يستقبل المهام، يُنجز على الأرض، ويوثّق بالصورة حتى إغلاق البلاغ.",

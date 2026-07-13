@@ -31,7 +31,7 @@ export default function Home() {
         <TechSection />
         <SectionBreak label="التطبيق" />
         <AppGallery />
-        <SectionBreak label="الأثر" />
+        <SectionBreak />
         <ClaudeImpact />
         <TrustBar />
 
