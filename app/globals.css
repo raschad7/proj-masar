@@ -535,3 +535,34 @@ html.map-fullscreen-active.has-custom-cursor button *,
 html.map-fullscreen-active.has-custom-cursor a * {
   cursor: pointer !important;
 }
+
+/* ── Video Cursor Icon ──
+   Large floating play/pause glyph shown by CursorFollower when
+   hovering over [data-cursor-video] elements. No circle — just
+   a bold white SVG icon with a cinematic drop shadow. */
+.video-cursor-icon {
+  transform: scale(0.5);
+}
+.video-cursor-icon svg {
+  filter: none;
+}
+
+/* ── Footage Paused Overlay ──
+   Dark vignette that fades in when the video is paused,
+   giving a cinematic "dimmed" feel. Animated by GSAP. */
+.footage-paused-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.25) 0%,
+    rgba(0, 0, 0, 0.50) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+.footage-paused-overlay.is-active {
+  opacity: 1;
+}

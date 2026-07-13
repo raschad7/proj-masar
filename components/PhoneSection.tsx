@@ -254,34 +254,31 @@ function RoleCard({
       style={{ background: "#F0F0F0" }}
     >
       {/* Title row: Icon on right (in RTL), Text on left */}
-      <div className="flex items-center justify-center gap-3">
-        <Icon style={{ width: 36, height: 36, color: role.hex }} />
+      <div className="flex items-center justify-center gap-3 text-black">
+        <Icon style={{ width: 36, height: 36 }} />
         <h3
           className="font-display font-bold leading-tight"
-          style={{ fontSize: 32, color: role.hex }}
+          style={{ fontSize: 32 }}
         >
           {role.title}
         </h3>
       </div>
 
       {/* Description */}
-      <p className="mt-4 text-center text-[15px] leading-relaxed text-subtext max-w-[90%] mx-auto">
+      <p className="mt-4 text-center text-[15px] leading-relaxed text-black max-w-[90%] mx-auto">
         {role.copy}
       </p>
 
       {/* Steps List */}
       <div className="mt-10 flex flex-col gap-6 mx-auto w-fit">
         {role.steps.map(({ Icon: StepIcon, label }) => (
-          <div key={label} className="flex items-center gap-4">
+          <div key={label} className="flex items-center gap-4 text-black">
             {/* Plain Icon without square */}
-            <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center"
-              style={{ color: role.hex }}
-            >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center">
               <StepIcon style={{ width: 24, height: 24 }} />
             </span>
             {/* Text */}
-            <span className="text-[16px] font-medium text-ink">{label}</span>
+            <span className="text-[16px] font-medium">{label}</span>
           </div>
         ))}
       </div>
@@ -404,7 +401,7 @@ export default function PhoneSection() {
             gsap.set(`.role-card-wrapper-${i}`, {
               xPercent: -50,
               yPercent: -50,
-              x: role.side === "left" ? -300 : 300,
+              x: role.side === "left" ? -380 : 380,
               y: 70,
               autoAlpha: 0,
             })
@@ -471,7 +468,7 @@ export default function PhoneSection() {
               trigger: ".roles-desktop-pin",
               pin: true,
               start: "top top",
-              end: "+=500%", // 5x screen height to fit the outro
+              end: "+=350%", // 3.5x screen height to fit the 3 steps
               scrub: 1, // smooth scrubbing
             },
           })
@@ -485,18 +482,18 @@ export default function PhoneSection() {
           currentRy += -360 - 16
           tl.to(
             ".phone-travel",
-            { x: 220, duration: 1.5, ease: "power2.inOut" },
+            { x: 320, duration: 1.5, ease: "power3.inOut" },
             0,
           )
-          tl.to(pose, { ry: currentRy, duration: 1.5, ease: "power2.inOut" }, 0)
+          tl.to(pose, { ry: currentRy, duration: 1.5, ease: "power3.inOut" }, 0)
           tl.to(
             pose,
-            { rx: 15, rz: 4, z: -110, duration: 0.75, ease: "power2.inOut" },
+            { rx: 35, rz: 15, z: -350, duration: 0.75, ease: "power3.inOut" },
             0,
           )
           tl.to(
             pose,
-            { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" },
+            { rx: 8, rz: 0, z: 100, duration: 0.75, ease: "power3.out" },
             0.75,
           )
           tl.set(pose, { screen: 1 }, 0.75)
@@ -532,22 +529,22 @@ export default function PhoneSection() {
           currentRy += 360 + 32
           tl.to(
             ".phone-travel",
-            { x: -220, duration: 1.5, ease: "power2.inOut" },
+            { x: -320, duration: 1.5, ease: "power3.inOut" },
             t2,
           )
           tl.to(
             pose,
-            { ry: currentRy, duration: 1.5, ease: "power2.inOut" },
+            { ry: currentRy, duration: 1.5, ease: "power3.inOut" },
             t2,
           )
           tl.to(
             pose,
-            { rx: 15, rz: -4, z: -110, duration: 0.75, ease: "power2.inOut" },
+            { rx: 35, rz: -15, z: -350, duration: 0.75, ease: "power3.inOut" },
             t2,
           )
           tl.to(
             pose,
-            { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" },
+            { rx: 8, rz: 0, z: 100, duration: 0.75, ease: "power3.out" },
             t2 + 0.75,
           )
           tl.set(pose, { screen: 2 }, t2 + 0.75)
@@ -584,22 +581,22 @@ export default function PhoneSection() {
           currentRy += -360 - 32
           tl.to(
             ".phone-travel",
-            { x: 220, duration: 1.5, ease: "power2.inOut" },
+            { x: 320, duration: 1.5, ease: "power3.inOut" },
             t3,
           )
           tl.to(
             pose,
-            { ry: currentRy, duration: 1.5, ease: "power2.inOut" },
+            { ry: currentRy, duration: 1.5, ease: "power3.inOut" },
             t3,
           )
           tl.to(
             pose,
-            { rx: 15, rz: 4, z: -110, duration: 0.75, ease: "power2.inOut" },
+            { rx: 35, rz: 15, z: -350, duration: 0.75, ease: "power3.inOut" },
             t3,
           )
           tl.to(
             pose,
-            { rx: 8, rz: 0, z: 0, duration: 0.75, ease: "power3.out" },
+            { rx: 8, rz: 0, z: 100, duration: 0.75, ease: "power3.out" },
             t3 + 0.75,
           )
           tl.set(pose, { screen: 3 }, t3 + 0.75)
@@ -618,54 +615,6 @@ export default function PhoneSection() {
 
           // PAUSE 3 (Final Resting Phase)
           tl.to({}, { duration: 1.5 })
-
-          // OUTRO PHASE (Step 3 -> Exit)
-          const tOutro = tl.duration()
-          // Fade out all cards and overlays
-          tl.to(
-            ".role-card-wrapper-2",
-            { y: -70, autoAlpha: 0, duration: 0.8, ease: "power2.in" },
-            tOutro,
-          )
-          tl.to(".role-glow-2", { opacity: 0, duration: 0.75 }, tOutro)
-          tl.to(
-            ".step-layer-2",
-            { autoAlpha: 0, yPercent: -60, duration: 0.5 },
-            tOutro,
-          )
-          tl.to(".phone-chip", { autoAlpha: 0, duration: 0.8 }, tOutro)
-          tl.to(".roles-header", { autoAlpha: 0, y: -40, duration: 1 }, tOutro)
-
-          // Center the phone, flip to show back, lay horizontally, and zoom in
-          currentRy += 180 // Turn to back
-          tl.to(
-            ".phone-travel",
-            { x: 0, duration: 1.5, ease: "power2.inOut" },
-            tOutro,
-          )
-          tl.to(
-            pose,
-            {
-              ry: currentRy,
-              rx: 0,
-              rz: -90, // Horizontal orientation
-              z: 400, // Zoom in
-              duration: 1.5,
-              ease: "power2.inOut",
-            },
-            tOutro,
-          )
-
-          // Hold the zoomed horizontal back to show off the logo
-          tl.to({}, { duration: 1.2 })
-
-          // Exit off-screen to the left
-          const tExit = tl.duration()
-          tl.to(
-            ".phone-travel",
-            { x: "-150vw", duration: 1.5, ease: "power3.in" },
-            tExit,
-          )
         },
       )
     },
@@ -703,7 +652,7 @@ export default function PhoneSection() {
                 />
               ))}
               <div className="phone-float relative">
-                <div className="relative aspect-[236/480] h-[min(480px,62vh)]">
+                <div className="relative aspect-[236/480] h-[min(490px,70vh)]">
                   <div className="absolute -inset-x-[150%] -inset-y-[14%]">
                     {canvasReady ? (
                       <PhoneCanvas

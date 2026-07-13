@@ -261,25 +261,29 @@ export default function GeminiPath() {
         <div className="hidden md:flex h-screen min-h-[600px] items-center relative">
             
             {/* Left Side (RTL Right): Text Morphing Container */}
-            <div className="w-1/2 pr-[90px] lg:pr-[140px] relative grid">
+            <div className="w-1/2 pr-[90px] lg:pr-[140px] flex flex-col justify-center">
+                <div className="mb-8">
+                   <h2 className="font-display text-[24px] text-mutedtext">حياةُ بلاغٍ واحد</h2>
+                </div>
                 
-                {STATES.map((s, i) => (
-                    <div key={i} className={`text-state text-state-${i} col-start-1 row-start-1 flex-col justify-center`} style={{ display: i === 0 ? 'flex' : 'none' }}>
-                        
-                        {/* Title of Phase (Label) */}
-                        <div className="fade-up-elem mb-6 flex items-center gap-4">
-                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white font-bold text-[18px]" style={{ background: s.hex }}>
-                                {i + 1}
-                            </span>
-                            <h3 className="font-display text-[32px] font-bold" style={{ color: s.hex }}>
-                                {s.label}
-                            </h3>
-                        </div>
+                <div className="relative grid">
+                    {STATES.map((s, i) => (
+                        <div key={i} className={`text-state text-state-${i} col-start-1 row-start-1 flex-col justify-center`} style={{ display: i === 0 ? 'flex' : 'none' }}>
+                            
+                            {/* Title of Phase (Label) */}
+                            <div className="fade-up-elem mb-6 flex items-center gap-4">
+                                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white font-bold text-[18px]" style={{ background: s.hex }}>
+                                    {i + 1}
+                                </span>
+                                <h3 className="font-display text-[44px] font-bold text-ink">
+                                    {s.label}
+                                </h3>
+                            </div>
 
-                        {/* Split Text Heading */}
-                        <h4 className="font-display text-[44px] text-ink leading-tight mb-6">
-                            <SplitText text={s.head} />
-                        </h4>
+                            {/* Split Text Heading */}
+                            <h4 className="font-display text-[32px] text-ink leading-tight mb-6">
+                                <SplitText text={s.head} />
+                            </h4>
                         
                         <p className="fade-up-elem text-[20px] text-subtext leading-relaxed max-w-lg">
                             {s.line}
@@ -295,8 +299,9 @@ export default function GeminiPath() {
                     </div>
                 ))}
             </div>
+        </div>
 
-            {/* Right Side (RTL Left): Morphing Media Container */}
+        {/* Right Side (RTL Left): Morphing Media Container */}
             <div className="w-1/2 pl-6 lg:pl-12">
                 <StickyMedia activeIndex={active} />
             </div>
@@ -321,12 +326,12 @@ export default function GeminiPath() {
                             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white font-bold text-[15px]" style={{ background: s.hex }}>
                                 {i + 1}
                             </span>
-                            <h3 className="font-display text-[28px] font-bold" style={{ color: s.hex }}>
+                            <h3 className="font-display text-[32px] font-bold text-ink">
                                 {s.label}
                             </h3>
                         </div>
 
-                        <h4 className="font-display text-[32px] text-ink leading-tight mb-4">{s.head}</h4>
+                        <h4 className="font-display text-[24px] text-ink leading-tight mb-4">{s.head}</h4>
                         <p className="text-[18px] text-subtext leading-relaxed mb-6">{s.line}</p>
                         
                         <div className="pt-6 border-t-2 border-black/5">

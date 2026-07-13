@@ -4,10 +4,10 @@ import PhoneSection from "@/components/PhoneSection"
 import SectionBreak from "@/components/SectionBreak"
 import FeaturesSection from "@/components/FeaturesSection"
 import TechSection from "@/components/TechSection"
+import DetectionFootage from "@/components/DetectionFootage"
 
-import TrustBar from "@/components/TrustBar"
+import CombinedCTA from "@/components/CombinedCTA"
 import Footer from "@/components/Footer"
-import CTASection from "@/components/CTASection"
 import ClaudeImpact from "@/components/ClaudeImpact"
 import GeminiPath from "@/components/GeminiPath"
 import AboutSection from "@/components/AboutSection"
@@ -27,12 +27,19 @@ export default function Home() {
         <FeaturesSection />
         <SectionBreak label="كيف يعمل" />
         <TechSection />
+        
+        {/* ── Climax: the real thing ── */}
+        <div className="pt-10 text-center relative z-10 bg-white">
+          <h3 className="font-display text-display-3 text-ink">
+            …وهذا هو فعلياً على الأرض
+          </h3>
+        </div>
+        <DetectionFootage />
+        
         <SectionBreak />
         <ClaudeImpact />
         <SectionBreak />
-        <TrustBar />
-        <CTASection />
-        <SectionBreak />
+        <CombinedCTA />
       </main>
       <Footer />
     </>

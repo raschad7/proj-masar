@@ -2,7 +2,6 @@
 
 import { useRef } from "react"
 import { gsap, useGSAP } from "@/lib/gsap"
-import DetectionFootage from "@/components/DetectionFootage"
 
 /* ── Tuning constants ────────────────────────────────────────────
    PIN_DISTANCE : scroll consumed by the pinned analysis
@@ -488,14 +487,6 @@ export default function TechSection() {
           ))}
         </div>
       </div>
-
-      {/* ── Climax: the real thing (normal-scroll tail, never scrubbed) ── */}
-      <div className="pt-10 text-center">
-        <h3 className="font-display text-display-3 text-ink">
-          …وهذا هو فعلياً على الأرض
-        </h3>
-      </div>
-      <DetectionFootage />
     </section>
   )
 }

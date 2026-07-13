@@ -14,9 +14,9 @@ const MUNICIPALITIES: Array<
   { name: "بلدية الخليل", img: "/trust/images.png" },
   { name: "بلدية رام الله", img: "/trust/4.png" },
   { name: "بلدية نابلس", img: "/trust/Nablus_Logo.png" },
-  { name: "بلدية بيت لحم", glyph: "gate" },
-  { name: "بلدية جنين", glyph: "building" },
-  { name: "بلدية طولكرم", glyph: "shield" },
+  { name: "بلدية بيت لحم", img: "/trust/bethlahem.png" },
+  { name: "بلدية جنين", img: "/trust/jeneen.png" },
+  { name: "بلدية طولكرم", img: "/trust/Tulkarm.png" },
 ]
 
 /* Minimal flat civic glyphs — same kit of parts as the section art */

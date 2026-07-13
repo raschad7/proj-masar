@@ -1,42 +1,64 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Play24Filled, Pause24Filled } from "@fluentui/react-icons";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 
 /**
  * The climax of the Tech section: real field footage of the model
- * detecting road damage. Sits in the normal-scroll tail (never
- * scrubbed). Autoplays muted+inline; an illustrated "echo" of the same
- * road frame crossfades away as the block enters view — same frame,
- * now real. Pauses when scrolled out of view (battery/perf).
+ * detecting road damage.
  *
- * TODO: confirm whether footage already has boxes burned in, or if
- *       we overlay our own.
+ * - Autoplays muted+inline when scrolled into view (preload="auto").
+ * - Pins on scroll for a cinematic pause, then releases.
+ * - Custom cursor morphs into a play/pause circle on hover
+ *   (handled by CursorFollower via `data-cursor-video`).
+ * - No caption, no corner button — the cursor IS the control.
  */
 export default function DetectionFootage() {
   const root = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [paused, setPaused] = useState(false);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  // Start false — video is idle until ScrollTrigger fires play()
+  const [playing, setPlaying] = useState(false);
 
-  // Keep it muted so browsers allow inline autoplay, but DON'T call play()
-  // on mount — that would force the full clip to download on page load even
-  // though this block lives far down the page. Playback is started lazily by
-  // the ScrollTrigger below (onEnter) once the user scrolls it into view.
+  // Sync React state with the actual video element events
+  // so the cursor icon always reflects reality.
+  const syncState = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    setPlaying(!v.paused);
+  }, []);
+
+  // Keep it muted so browsers allow inline autoplay
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     v.muted = true;
   }, []);
 
+  // Propagate playing state to the DOM for CursorFollower,
+  // and animate the dark overlay on pause/play.
+  useEffect(() => {
+    const el = frameRef.current;
+    const overlay = overlayRef.current;
+    if (!el) return;
+    el.dataset.cursorVideoState = playing ? "playing" : "paused";
+
+    if (overlay) {
+      gsap.to(overlay, {
+        opacity: playing ? 0 : 1,
+        duration: 0.15,
+        ease: "power3.out",
+      });
+    }
+  }, [playing]);
+
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
 
-      // The echo only exists as a motion flourish. Its resting DOM state
-      // is fully transparent, so if this branch never runs (reduced
-      // motion) the real video is simply visible — never covered.
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // Entrance: slide up + fade
         gsap.from(".footage-frame", {
           y: 80,
           opacity: 0,
@@ -49,8 +71,7 @@ export default function DetectionFootage() {
           },
         });
 
-        // cover, then reveal: opaque on approach, fades once the frame
-        // is well into view (once:true so it can never re-cover the video)
+        // Cover → reveal: illustrated echo fades out
         gsap.set(".footage-echo", { opacity: 1 });
         gsap.to(".footage-echo", {
           opacity: 0,
@@ -63,30 +84,38 @@ export default function DetectionFootage() {
           },
         });
 
-        gsap.from(".footage-caption", {
-          opacity: 0,
-          y: 20,
-          duration: 0.7,
-          ease: "power3.out",
+        // Scroll-pause: pin with a subtle scrubbed scale to feel alive
+        const pinTl = gsap.timeline({
           scrollTrigger: {
             trigger: root.current,
-            start: "top 55%",
-            toggleActions: "play none none reverse",
+            start: "top top",
+            end: "+=80%",
+            pin: true,
+            scrub: 1,
           },
+        });
+        pinTl.to(".footage-frame", {
+          scale: 1.02,
+          ease: "none",
         });
       });
 
-      // Pause when off-screen regardless of motion preference
-      const st = ScrollTrigger.create({
+      // Play/pause based on viewport visibility (any motion pref)
+      ScrollTrigger.create({
         trigger: root.current,
         start: "top bottom",
         end: "bottom top",
-        onEnter: () => videoRef.current?.play().catch(() => {}),
-        onEnterBack: () => videoRef.current?.play().catch(() => {}),
+        onEnter: () => {
+          const v = videoRef.current;
+          if (v) { v.play().catch(() => {}); }
+        },
+        onEnterBack: () => {
+          const v = videoRef.current;
+          if (v) { v.play().catch(() => {}); }
+        },
         onLeave: () => videoRef.current?.pause(),
         onLeaveBack: () => videoRef.current?.pause(),
       });
-      return () => st.kill();
     },
     { scope: root }
   );
@@ -96,43 +125,47 @@ export default function DetectionFootage() {
     if (!v) return;
     if (v.paused) {
       v.play().catch(() => {});
-      setPaused(false);
     } else {
       v.pause();
-      setPaused(true);
     }
+    // State syncs via onPlay/onPause events
   };
 
   return (
-    <div ref={root} className="mx-auto w-full max-w-[860px] px-6 pb-24 pt-8">
+    <div
+      ref={root}
+      className="mx-auto flex w-full max-w-[860px] items-center justify-center px-6 pb-24 pt-8"
+      style={{ minHeight: "100vh" }}
+    >
       <div
+        ref={frameRef}
+        data-cursor-video
         className="footage-frame card-surface relative overflow-hidden bg-whitesmoke p-3 md:p-4"
         style={{ borderRadius: "var(--radius-card)" }}
       >
         <div className="relative overflow-hidden rounded-3xl">
           <video
             ref={videoRef}
-            className="block aspect-video w-full object-cover cursor-pointer"
+            className="block aspect-video w-full object-cover"
             poster="/media/detection-poster.jpg"
             autoPlay
             muted
             loop
             playsInline
-            preload="none"
+            preload="auto"
             onClick={toggle}
-            onCanPlay={() => {
-              const v = videoRef.current;
-              if (v) {
-                v.muted = true;
-                v.play().catch(() => {});
-              }
-            }}
+            onPlay={syncState}
+            onPause={syncState}
           >
-            {/* mp4 only — H.264 plays in every target browser and this clip
-                compressed smaller as mp4 than as vp9/webm, so the extra webm
-                source was pure dead weight. */}
             <source src="/media/detection.mp4" type="video/mp4" />
           </video>
+
+          {/* Dark vignette overlay — fades in when paused */}
+          <div
+            ref={overlayRef}
+            className="footage-paused-overlay"
+            aria-hidden
+          />
 
           {/* illustrated echo — fades out to reveal the real thing.
               Resting state is transparent so it can never trap the video. */}
@@ -149,23 +182,8 @@ export default function DetectionFootage() {
               <rect x="175" y="252" width="195" height="118" rx="14" stroke="#0072DA" strokeWidth="4" />
             </svg>
           </div>
-
-          {/* small corner control */}
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label={paused ? "تشغيل التسجيل" : "إيقاف التسجيل"}
-            className="absolute bottom-4 left-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-peacock shadow-[var(--shadow-soft)] transition-transform hover:scale-105"
-          >
-            {paused ? <Play24Filled /> : <Pause24Filled />}
-          </button>
         </div>
-
       </div>
-
-      <p className="footage-caption mt-5 text-center text-body-4 text-subtext">
-        لقطة فعلية من نموذج الكشف أثناء المسح الميداني.
-      </p>
     </div>
   );
 }

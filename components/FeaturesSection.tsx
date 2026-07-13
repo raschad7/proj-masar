@@ -6,6 +6,7 @@ import {
   Map24Filled,
   ArrowSort24Filled,
   ImageMultiple24Filled,
+  Warning24Filled,
 } from "@fluentui/react-icons"
 import { gsap, useGSAP } from "@/lib/gsap"
 
@@ -13,7 +14,7 @@ import { gsap, useGSAP } from "@/lib/gsap"
    PIN_DISTANCE : scroll consumed by the pinned horizontal gallery
    Timeline runs 0 → 3 (one unit per panel transition). The track's
    x is LINEAR (the user drives it); assembly beats are power3.     */
-const PIN_DISTANCE = "+=600%"
+const PIN_DISTANCE = "+=320%"
 const PANEL_COUNT = 4
 
 /* ── The 4 features ── */
@@ -131,10 +132,26 @@ function IlloDetect() {
   )
 }
 
-function MapGlyph({ x, y, fill, icon }: { x: number; y: number; fill: string; icon: string }) {
+function MapGlyph({
+  x,
+  y,
+  fill,
+  icon,
+}: {
+  x: number
+  y: number
+  fill: string
+  icon: string
+}) {
   const size = 32
   return (
-    <foreignObject x={x - size / 2} y={y - size / 2} width={size} height={size} className="pop">
+    <foreignObject
+      x={x - size / 2}
+      y={y - size / 2}
+      width={size}
+      height={size}
+      className="pop"
+    >
       <div
         style={{
           width: "100%",
@@ -202,6 +219,8 @@ function IlloPriority() {
   return (
     <svg viewBox="0 0 400 300" className="w-full" fill="none" aria-hidden>
       {/* stacked by priority — hot on top, calming downward */}
+
+      {/* Top Bar - 98% */}
       <rect
         className="pop"
         x="70"
@@ -211,7 +230,26 @@ function IlloPriority() {
         rx="28"
         fill="#16668E"
       />
-      <circle className="pop" cx="106" cy="80" r="10" fill="var(--white)" />
+      <g className="pop" transform="translate(86, 68)">
+        <Warning24Filled
+          style={{ color: "var(--white)", width: 24, height: 24 }}
+        />
+      </g>
+      <text
+        className="pop pct-1"
+        x="118"
+        y="86"
+        fill="var(--white)"
+        fontSize="20"
+        fontWeight="800"
+        fontFamily="var(--font-almarai), sans-serif"
+        textAnchor="start"
+        style={{ direction: "ltr" }}
+      >
+        98%
+      </text>
+
+      {/* Middle Bar - 64% */}
       <rect
         className="pop"
         x="95"
@@ -221,7 +259,26 @@ function IlloPriority() {
         rx="28"
         fill="#197FB0"
       />
-      <circle className="pop" cx="131" cy="156" r="10" fill="var(--white)" />
+      <g className="pop" transform="translate(111, 144)">
+        <Warning24Filled
+          style={{ color: "var(--white)", width: 24, height: 24 }}
+        />
+      </g>
+      <text
+        className="pop pct-2"
+        x="143"
+        y="162"
+        fill="var(--white)"
+        fontSize="20"
+        fontWeight="800"
+        fontFamily="var(--font-almarai), sans-serif"
+        textAnchor="start"
+        style={{ direction: "ltr" }}
+      >
+        64%
+      </text>
+
+      {/* Bottom Bar - 22% */}
       <rect
         className="pop"
         x="120"
@@ -231,7 +288,24 @@ function IlloPriority() {
         rx="28"
         fill="#34A8D8"
       />
-      <circle className="pop" cx="156" cy="232" r="10" fill="var(--white)" />
+      <g className="pop" transform="translate(136, 220)">
+        <Warning24Filled
+          style={{ color: "var(--white)", width: 24, height: 24 }}
+        />
+      </g>
+      <text
+        className="pop pct-3"
+        x="168"
+        y="238"
+        fill="var(--white)"
+        fontSize="20"
+        fontWeight="800"
+        fontFamily="var(--font-almarai), sans-serif"
+        textAnchor="start"
+        style={{ direction: "ltr" }}
+      >
+        22%
+      </text>
     </svg>
   )
 }
@@ -362,7 +436,11 @@ export default function FeaturesSection() {
           gsap.set(".feat-dot-fill-0", { opacity: 1 })
 
           // Hide panel 0 card background and make it extremely small initially
-          gsap.set(".feat-0 .feat-card-bg", { scale: 0.3, borderRadius: "100px", opacity: 0 })
+          gsap.set(".feat-0 .feat-card-bg", {
+            scale: 0.3,
+            borderRadius: "100px",
+            opacity: 0,
+          })
 
           /* PHASE 0: Grow the first card as it enters the viewport (before pinning) */
           gsap.to(".feat-0 .feat-card-bg", {
@@ -373,14 +451,14 @@ export default function FeaturesSection() {
             scrollTrigger: {
               trigger: root.current,
               start: "top 85%", // starts growing when section enters the bottom
-              end: "top top",   // finishes growing exactly when it pins
+              end: "top top", // finishes growing exactly when it pins
               scrub: 1,
-            }
+            },
           })
 
           /* Master timeline — pin + scrub */
-          const MOVE = 1.5 
-          const HOLD = 1.5 
+          const MOVE = 1.5
+          const HOLD = 1.5
 
           const tl = gsap.timeline({
             scrollTrigger: {
@@ -395,13 +473,45 @@ export default function FeaturesSection() {
 
           /* PHASE 1: Animate Panel 0 elements in (plays right after pinning) */
           const draws0 = gsap.utils.toArray(`.feat-0 .draw`)
-          tl.to(".feat-0 .feat-illo", { opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" })
-          tl.to(".feat-0 .pop", { scale: 1, opacity: 1, stagger: 0.05, duration: 0.5, ease: "back.out(1.7)" }, "-=0.2")
+          tl.to(".feat-0 .feat-illo", {
+            opacity: 1,
+            scale: 1,
+            duration: 0.5,
+            ease: "power3.out",
+          })
+          tl.to(
+            ".feat-0 .pop",
+            {
+              scale: 1,
+              opacity: 1,
+              stagger: 0.05,
+              duration: 0.5,
+              ease: "back.out(1.7)",
+            },
+            "-=0.2",
+          )
           if (draws0.length) {
-              tl.to(draws0, { drawSVG: "100%", stagger: 0.08, duration: 0.6, ease: "power2.out" }, "-=0.4")
+            tl.to(
+              draws0,
+              {
+                drawSVG: "100%",
+                stagger: 0.08,
+                duration: 0.6,
+                ease: "power2.out",
+              },
+              "-=0.4",
+            )
           }
-          tl.to(".feat-0 .feat-word", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, "-=0.5")
-          tl.to(".feat-0 .feat-sub", { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, "-=0.4")
+          tl.to(
+            ".feat-0 .feat-word",
+            { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" },
+            "-=0.5",
+          )
+          tl.to(
+            ".feat-0 .feat-sub",
+            { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" },
+            "-=0.4",
+          )
 
           /* DWELL on the first panel so the user can read it */
           tl.to({}, { duration: HOLD })
@@ -482,6 +592,39 @@ export default function FeaturesSection() {
               arr,
             )
 
+            if (i === 2) {
+              const targets = [98, 64, 22]
+              const obj = { v1: 0, v2: 0, v3: 0 }
+              tl.to(
+                obj,
+                {
+                  v1: targets[0],
+                  v2: targets[1],
+                  v3: targets[2],
+                  duration: 0.8,
+                  ease: "power3.out",
+                  onUpdate: () => {
+                    gsap.utils
+                      .toArray<Element>(".features-desktop .pct-1")
+                      .forEach(
+                        (n) => (n.textContent = Math.round(obj.v1) + "%"),
+                      )
+                    gsap.utils
+                      .toArray<Element>(".features-desktop .pct-2")
+                      .forEach(
+                        (n) => (n.textContent = Math.round(obj.v2) + "%"),
+                      )
+                    gsap.utils
+                      .toArray<Element>(".features-desktop .pct-3")
+                      .forEach(
+                        (n) => (n.textContent = Math.round(obj.v3) + "%"),
+                      )
+                  },
+                },
+                arr + 0.1,
+              )
+            }
+
             /* DWELL — the pause spans the whole reveal, then holds a beat */
             tl.to(track, { x: stepX(i), duration: HOLD }, arr)
           }
@@ -494,18 +637,53 @@ export default function FeaturesSection() {
         () => {
           gsap.utils
             .toArray<HTMLElement>(".feat-stack-item")
-            .forEach((item) => {
-              gsap.from(item, {
-                opacity: 0,
-                y: 60,
-                duration: 0.8,
-                ease: "power3.out",
+            .forEach((item, idx) => {
+              const stl = gsap.timeline({
                 scrollTrigger: {
                   trigger: item,
                   start: "top 75%",
                   toggleActions: "play none none reverse",
                 },
               })
+              stl.from(item, {
+                opacity: 0,
+                y: 60,
+                duration: 0.8,
+                ease: "power3.out",
+              })
+
+              if (idx === 2) {
+                const targets = [98, 64, 22]
+                const obj = { v1: 0, v2: 0, v3: 0 }
+                stl.to(
+                  obj,
+                  {
+                    v1: targets[0],
+                    v2: targets[1],
+                    v3: targets[2],
+                    duration: 1.2,
+                    ease: "power3.out",
+                    onUpdate: () => {
+                      item
+                        .querySelectorAll(".pct-1")
+                        .forEach(
+                          (n) => (n.textContent = Math.round(obj.v1) + "%"),
+                        )
+                      item
+                        .querySelectorAll(".pct-2")
+                        .forEach(
+                          (n) => (n.textContent = Math.round(obj.v2) + "%"),
+                        )
+                      item
+                        .querySelectorAll(".pct-3")
+                        .forEach(
+                          (n) => (n.textContent = Math.round(obj.v3) + "%"),
+                        )
+                    },
+                  },
+                  0.2,
+                )
+              }
             })
         },
       )
