@@ -49,7 +49,7 @@ const ROLES: Array<{
     hex: "#16668E",
     glass: "rgba(22, 102, 142, 0.10)",
     side: "left", // phone RIGHT → copy LEFT
-    char: "/chars/TheScanner.svg",
+    char: "/chars/3ammm.svg",
     copy: "المواطن أو الفريق الميداني يلتقط الطريق، فيصنّف مسار الضرر تلقائياً ويحدّد موقعه وخطورته.",
     num: "01",
     Icon: Camera24Filled,

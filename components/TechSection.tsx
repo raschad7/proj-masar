@@ -11,11 +11,11 @@ import DetectionFootage from "@/components/DetectionFootage"
 const PIN_DISTANCE = "+=500%"
 
 const STEPS = [
-  { label: "يلتقط", hex: "#34A8D8" },
-  { label: "يرى", hex: "#44729D" },
-  { label: "يصنّف", hex: "#D1A242" },
-  { label: "يحدد", hex: "#16668E" },
-  { label: "يزامن", hex: "#599664" },
+  { label: "يلتقط", hex: "#16668E" },
+  { label: "يرى", hex: "#197FB0" },
+  { label: "يصنّف", hex: "#34A8D8" },
+  { label: "يحدد", hex: "#197FB0" },
+  { label: "يزامن", hex: "#16668E" },
 ]
 
 /* Detection boxes (SVG viewBox coords) */
@@ -352,13 +352,16 @@ export default function TechSection() {
             style={{ right: "53%", top: "42%" }}
           >
             <span className="text-body-5 font-bold text-ink">حفرة</span>
-            <span className="pill bg-negative px-2 py-0.5 text-[11px] font-bold text-white">
+            <span
+              className="pill px-2 py-0.5 text-[11px] font-bold text-white"
+              style={{ backgroundColor: "#16668E" }}
+            >
               خطير
             </span>
             <span className="relative h-1.5 w-10 overflow-hidden rounded-full bg-seashell">
               <span
-                className="tech-conf absolute inset-0 rounded-full bg-negative"
-                style={{ width: "85%" }}
+                className="tech-conf absolute inset-0 rounded-full"
+                style={{ width: "85%", backgroundColor: "#16668E" }}
               />
             </span>
           </div>
@@ -367,13 +370,16 @@ export default function TechSection() {
             style={{ right: "8%", top: "26%" }}
           >
             <span className="text-body-5 font-bold text-ink">تشقّق</span>
-            <span className="pill bg-notice px-2 py-0.5 text-[11px] font-bold text-white">
+            <span
+              className="pill px-2 py-0.5 text-[11px] font-bold text-white"
+              style={{ backgroundColor: "#197FB0" }}
+            >
               متوسط
             </span>
             <span className="relative h-1.5 w-10 overflow-hidden rounded-full bg-seashell">
               <span
-                className="tech-conf absolute inset-0 rounded-full bg-notice"
-                style={{ width: "64%" }}
+                className="tech-conf absolute inset-0 rounded-full"
+                style={{ width: "64%", backgroundColor: "#197FB0" }}
               />
             </span>
           </div>
@@ -392,18 +398,70 @@ export default function TechSection() {
               <span className="absolute inset-x-0 top-1/2 h-2.5 -translate-y-1/2 rounded-full bg-white" />
               <span className="absolute inset-y-0 left-1/3 w-2.5 rounded-full bg-white" />
               {/* the dropped pin (severity color) + landing ring */}
-              <span className="tech-pin absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-negative" />
               <span
-                className="tech-pin-ring absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                className="tech-pin absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2"
                 style={{
-                  boxShadow: "inset 0 0 0 2px var(--negative)",
+                  backgroundColor: "#16668E",
+                  maskImage: 'url(/glyphs/long.svg)',
+                  WebkitMaskImage: 'url(/glyphs/long.svg)',
+                  maskSize: "contain",
+                  WebkitMaskSize: "contain",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskPosition: "center",
+                  WebkitMaskPosition: "center",
+                }}
+              />
+              <span
+                className="tech-pin-ring absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                style={{
+                  boxShadow: "inset 0 0 0 2px #16668E",
                   opacity: 0,
                 }}
               />
               {/* live city pins */}
-              <span className="tech-extra-pin absolute right-[18%] top-[22%] h-3 w-3 rounded-full bg-informative" />
-              <span className="tech-extra-pin absolute right-[70%] top-[30%] h-3 w-3 rounded-full bg-notice" />
-              <span className="tech-extra-pin absolute right-[30%] top-[72%] h-3 w-3 rounded-full bg-positive" />
+              <span
+                className="tech-extra-pin absolute right-[18%] top-[22%] h-4 w-4"
+                style={{
+                  backgroundColor: "#197FB0",
+                  maskImage: 'url(/glyphs/pothole.svg)',
+                  WebkitMaskImage: 'url(/glyphs/pothole.svg)',
+                  maskSize: "contain",
+                  WebkitMaskSize: "contain",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskPosition: "center",
+                  WebkitMaskPosition: "center",
+                }}
+              />
+              <span
+                className="tech-extra-pin absolute right-[70%] top-[30%] h-4 w-4"
+                style={{
+                  backgroundColor: "#34A8D8",
+                  maskImage: 'url(/glyphs/gator.svg)',
+                  WebkitMaskImage: 'url(/glyphs/gator.svg)',
+                  maskSize: "contain",
+                  WebkitMaskSize: "contain",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskPosition: "center",
+                  WebkitMaskPosition: "center",
+                }}
+              />
+              <span
+                className="tech-extra-pin absolute right-[30%] top-[72%] h-4 w-4"
+                style={{
+                  backgroundColor: "#16668E",
+                  maskImage: 'url(/glyphs/other.svg)',
+                  WebkitMaskImage: 'url(/glyphs/other.svg)',
+                  maskSize: "contain",
+                  WebkitMaskSize: "contain",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskRepeat: "no-repeat",
+                  maskPosition: "center",
+                  WebkitMaskPosition: "center",
+                }}
+              />
             </div>
             <p className="mt-2 text-center text-[11px] font-bold text-subtext">
               بلاغ جديد على الخريطة
