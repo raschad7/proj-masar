@@ -81,7 +81,7 @@ export default function Nav() {
     }
     const el = document.getElementById(id)
     if (!el) return
-    const target = el.closest('.pin-spacer') || el
+    const target = (el.closest('.pin-spacer') as HTMLElement) || el
     if (lenis) lenis.scrollTo(target, { offset: -80, duration: 1.1 })
     else target.scrollIntoView({ behavior: "smooth" })
   }
