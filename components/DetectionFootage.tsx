@@ -100,10 +100,12 @@ export default function DetectionFootage() {
         });
       });
 
-      // Play/pause based on viewport visibility (any motion pref)
+      // Play/pause based on viewport visibility (any motion pref).
+      // Starts one viewport early so preload="none" has time to fetch
+      // before the frame is actually on screen.
       ScrollTrigger.create({
         trigger: root.current,
-        start: "top bottom",
+        start: "top 200%",
         end: "bottom top",
         onEnter: () => {
           const v = videoRef.current;
@@ -148,11 +150,10 @@ export default function DetectionFootage() {
             ref={videoRef}
             className="block aspect-video w-full object-cover"
             poster="/media/detection-poster.jpg"
-            autoPlay
             muted
             loop
             playsInline
-            preload="auto"
+            preload="none"
             onClick={toggle}
             onPlay={syncState}
             onPause={syncState}

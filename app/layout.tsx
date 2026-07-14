@@ -5,13 +5,13 @@ import CursorFollower from "@/components/CursorFollower";
 import Preloader from "@/components/Preloader";
 import "./globals.css";
 
-/* Body — Almarai, local files (300/400/700/800).
+/* Body — Almarai, local files (400/700/800).
    WOFF2 (converted from the TTF sources kept beside them) — ~68% smaller,
-   and fonts are render-blocking so this directly moves FCP/LCP. */
+   and fonts are render-blocking so this directly moves FCP/LCP.
+   Light (300) was preloaded but never used anywhere — dropped (~47KB). */
 const almarai = localFont({
   variable: "--font-almarai",
   src: [
-    { path: "./fonts/Almarai/Almarai-Light.woff2", weight: "300" },
     { path: "./fonts/Almarai/Almarai-Regular.woff2", weight: "400" },
     { path: "./fonts/Almarai/Almarai-Bold.woff2", weight: "700" },
     { path: "./fonts/Almarai/Almarai-ExtraBold.woff2", weight: "800" },

@@ -39,10 +39,15 @@ export default function Nav() {
   const [inFooter, setInFooter] = useState(false)
   const [inAbout, setInAbout] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  /* The overlay's hover-preview images are invisible until the menu opens,
+     yet next/image fetched all five right after hydration (the hidden
+     overlay still intersects the viewport). Mount them on first open. */
+  const [menuImagesReady, setMenuImagesReady] = useState(false)
   const lenis = useLenis()
 
   useEffect(() => {
     if (menuOpen) {
+      setMenuImagesReady(true)
       document.body.style.overflow = "hidden"
       
       const handleScrollAttempt = () => {
@@ -390,7 +395,7 @@ export default function Nav() {
             
             {/* Box 1 - Home (RTL: Top Right) */}
             <a href="/" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
-              <Image src="/gallary/pathPic.png" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              {menuImagesReady && <Image src="/gallary/pathPic.png" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />}
               
               {/* Permanent Corner Brackets (All 4 Corners) */}
               <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
@@ -406,7 +411,7 @@ export default function Nav() {
             
             {/* Box 2 - Map */}
             <a href="/map" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
-              <Image src="/grid/Gemini_Generated_Image_v3jpk7v3jpk7v3jp.png" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              {menuImagesReady && <Image src="/grid/Gemini_Generated_Image_v3jpk7v3jpk7v3jp.png" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />}
               
               <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute top-0 right-0 h-8 w-8 rounded-tr-3xl border-t-[1px] border-r-[1px] border-black/15 pointer-events-none" />
@@ -421,7 +426,7 @@ export default function Nav() {
 
             {/* Box 3 - Gallery (New) */}
             <a href="/gallery" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
-              <Image src="/media/detection-poster.jpg" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              {menuImagesReady && <Image src="/media/detection-poster.jpg" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />}
               
               <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute top-0 right-0 h-8 w-8 rounded-tr-3xl border-t-[1px] border-r-[1px] border-black/15 pointer-events-none" />
@@ -436,7 +441,7 @@ export default function Nav() {
 
             {/* Box 4 - Tech / AI */}
             <a href="/#tech" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
-              <Image src="/media/detection-poster.jpg" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              {menuImagesReady && <Image src="/media/detection-poster.jpg" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />}
               
               <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute top-0 right-0 h-8 w-8 rounded-tr-3xl border-t-[1px] border-r-[1px] border-black/15 pointer-events-none" />
@@ -451,7 +456,7 @@ export default function Nav() {
 
             {/* Box 5 - Teams */}
             <a href="/#roles" onClick={() => setMenuOpen(false)} className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl transition-colors">
-              <Image src="/grid/pexels-gaion-27937015.jpg" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />
+              {menuImagesReady && <Image src="/grid/pexels-gaion-27937015.jpg" fill sizes="(max-width: 768px) 45vw, 340px" className="object-cover opacity-0 transition-opacity duration-700 delay-150 ease-in-out group-hover:duration-500 group-hover:delay-0 group-hover:opacity-20" alt="" />}
               
               <div className="absolute top-0 left-0 h-8 w-8 rounded-tl-3xl border-t-[1px] border-l-[1px] border-black/15 pointer-events-none" />
               <div className="absolute top-0 right-0 h-8 w-8 rounded-tr-3xl border-t-[1px] border-r-[1px] border-black/15 pointer-events-none" />

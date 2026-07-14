@@ -641,17 +641,34 @@ function PhoneBody({ pose }: { pose: PhonePose }) {
   )
 }
 
+/* Fires `onFirstFrame` after the first rendered frame — the section keeps
+   its flat stand-in on top until the WebGL phone is actually visible. */
+function FirstFrameProbe({ onFirstFrame }: { onFirstFrame?: () => void }) {
+  const fired = useRef(false)
+  useFrame(() => {
+    if (fired.current) return
+    fired.current = true
+    onFirstFrame?.()
+  })
+  return null
+}
+
 export default function PhoneCanvas({
   pose,
   fallback,
+  frameloop = "always",
+  onFirstFrame,
 }: {
   pose: PhonePose
   fallback?: ReactNode
+  frameloop?: "always" | "never"
+  onFirstFrame?: () => void
 }) {
   return (
     <Canvas
       flat
       dpr={[1, 1.75]}
+      frameloop={frameloop}
       fallback={fallback}
       camera={{ fov: 30, position: [0, 0, CAMERA_Z], near: 100, far: 4000 }}
     >
@@ -691,6 +708,7 @@ export default function PhoneCanvas({
         />
       </Environment>
       <PhoneBody pose={pose} />
+      <FirstFrameProbe onFirstFrame={onFirstFrame} />
     </Canvas>
   )
 }

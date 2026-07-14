@@ -275,7 +275,6 @@ export default function BentoGridImpact() {
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="bgi-photo-img object-cover"
-              priority
             />
             {/* centered figure, masked at the road line */}
             <div className="absolute inset-0 flex flex-col items-center justify-start pt-5 md:pt-6 text-center">

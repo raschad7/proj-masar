@@ -244,6 +244,9 @@ function RoleCard({
       src={role.char}
       alt=""
       aria-hidden
+      width={310}
+      height={310}
+      loading="lazy"
       className="role-char w-[170px] shrink-0 md:w-[310px] object-contain"
     />
   )
@@ -360,25 +363,60 @@ export default function PhoneSection() {
   }))
 
   /* Defer the WebGL canvas (three.js + drei ≈ 260KB of JS plus GL context
-     setup) until the section is within a viewport of arriving. Mounting it
-     on hydration was the page's single biggest main-thread cost — it ran
-     while the user was still reading the hero. The static shell fallback
-     fills the frame until then, so nothing visibly changes. */
+     setup) until the section approaches. Mounting it on hydration was the
+     page's single biggest main-thread cost — it ran while the user was
+     still reading the hero.
+
+     Three stages so the phone is NEVER missing when the user arrives:
+       · 3 viewports out — warm the three.js chunk (network only).
+       · 1.5 viewports out — mount the canvas. The static shell keeps
+         rendering underneath until the canvas paints its first frame
+         (canvasLive), so there is no gap while GL boots.
+     Desktop only: the mobile layout uses the static stack, and mounting
+     a hidden WebGL context there wasted battery for nothing. */
   const [canvasReady, setCanvasReady] = useState(false)
+  const [canvasLive, setCanvasLive] = useState(false)
+  /* frameloop gate — rendering every frame for a phone that's several
+     sections offscreen cost GPU/CPU through the whole rest of the page. */
+  const [canvasActive, setCanvasActive] = useState(true)
   useEffect(() => {
     const el = root.current
     if (!el) return
-    const io = new IntersectionObserver(
+    if (!window.matchMedia("(min-width: 768px)").matches) return
+
+    const warm = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          import("@/components/PhoneCanvas") // fetch the chunk ahead of mount
+          warm.disconnect()
+        }
+      },
+      { rootMargin: "300% 0px" },
+    )
+    warm.observe(el)
+
+    const mount = new IntersectionObserver(
       ([e]) => {
         if (e.isIntersecting) {
           setCanvasReady(true)
-          io.disconnect()
+          mount.disconnect()
         }
       },
-      { rootMargin: "100% 0px" }, // one viewport early — loads before arrival
+      { rootMargin: "150% 0px" },
     )
-    io.observe(el)
-    return () => io.disconnect()
+    mount.observe(el)
+
+    const live = new IntersectionObserver(
+      ([e]) => setCanvasActive(e.isIntersecting),
+      { rootMargin: "75% 0px" },
+    )
+    live.observe(el)
+
+    return () => {
+      warm.disconnect()
+      mount.disconnect()
+      live.disconnect()
+    }
   }, [])
 
   useGSAP(
@@ -654,14 +692,17 @@ export default function PhoneSection() {
               <div className="phone-float relative">
                 <div className="relative aspect-[236/480] h-[min(490px,70vh)]">
                   <div className="absolute -inset-x-[150%] -inset-y-[14%]">
-                    {canvasReady ? (
+                    {canvasReady && (
                       <PhoneCanvas
                         pose={pose}
+                        frameloop={canvasActive ? "always" : "never"}
+                        onFirstFrame={() => setCanvasLive(true)}
                         fallback={<PhoneShellFallback />}
                       />
-                    ) : (
-                      <PhoneShellFallback />
                     )}
+                    {/* the flat shell holds the frame until the canvas has
+                        actually painted — never a missing phone */}
+                    {!canvasLive && <PhoneShellFallback />}
                   </div>
                 </div>
                 <PhoneChips />

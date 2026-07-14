@@ -16,6 +16,13 @@
       "port": 3001,
       "autoPort": true,
       "env": { "NEXT_DIST_DIR": ".next-preview-alt" }
+    },
+    {
+      "name": "masar-prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "start", "-p", "3200"],
+      "port": 3200,
+      "env": { "NEXT_DIST_DIR": ".next-agent" }
     }
   ]
 }

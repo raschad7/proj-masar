@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { CheckmarkCircle24Filled } from "@fluentui/react-icons";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
@@ -70,6 +70,26 @@ const SplitText = ({ text, className, wordClass = "split-word" }: { text: string
 
 /* eslint-disable @next/next/no-img-element */
 function StickyMedia({ activeIndex }: { activeIndex: number }) {
+  /* The 4.7MB clip must not download at page load (it used to be the
+     single largest cost of the whole page). preload="none" + play/pause
+     from an IntersectionObserver: the fetch starts only once the section
+     is a half-viewport away, and decode stops when it scrolls out. */
+  const videoRef = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    /* No rootMargin: at hydration (before ScrollTrigger inserts its pin
+       spacers) the page is still short, so any early margin made this
+       fire at load and start the 4.7MB fetch. The poster covers the
+       brief moment between the section arriving and playback starting. */
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) v.play().catch(() => {});
+      else v.pause();
+    });
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <div className="relative w-full aspect-[4/5] md:aspect-square lg:aspect-[4/3] rounded-[32px] overflow-hidden bg-black">
       
@@ -96,12 +116,13 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
         }}
       >
         <video
+          ref={videoRef}
           className={`h-full w-full object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 0 ? 'scale-110' : 'scale-100'}`}
           poster="/media/detection-poster.jpg"
-          autoPlay
           muted
           loop
           playsInline
+          preload="none"
         >
           {/* mp4 only — H.264 is universally supported; the webm was larger
               and redundant. */}
@@ -123,7 +144,7 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
           src="/grid/Gemini_Generated_Image_v3jpk7v3jpk7v3jp.png"
           alt=""
           fill
-          sizes="100vw"
+          sizes="(max-width: 767px) 100vw, 50vw"
           className={`object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 1 ? 'scale-110' : 'scale-100'}`}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -132,7 +153,7 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
         <div className="absolute inset-x-6 bottom-6 transform transition-transform duration-700 delay-300" style={{ translate: activeIndex === 1 ? '0 0' : '0 20px', opacity: activeIndex === 1 ? 1 : 0 }}>
           <div className="flex items-center gap-4 rounded-2xl bg-white px-5 py-4 border border-black/5">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100">
-              <img src="/chars/TheFixer.svg" alt="" className="h-8 w-8" />
+              <img src="/chars/TheFixer.svg" alt="" width={32} height={32} loading="lazy" className="h-8 w-8" />
             </span>
             <div className="min-w-0 flex-1 text-right">
               <p className="text-[16px] font-bold text-ink">فريق الإصلاح · وحدة 3</p>
@@ -159,7 +180,7 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
           src="/grid/pexels-gaion-27937015.jpg"
           alt=""
           fill
-          sizes="100vw"
+          sizes="(max-width: 767px) 100vw, 50vw"
           className={`object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 2 ? 'scale-110' : 'scale-100'}`}
         />
       </div>
@@ -178,7 +199,7 @@ function StickyMedia({ activeIndex }: { activeIndex: number }) {
           src="/gallary/pathPic.png"
           alt="قبل وبعد الإصلاح"
           fill
-          sizes="100vw"
+          sizes="(max-width: 767px) 100vw, 50vw"
           className={`object-cover opacity-90 transition-transform duration-[20000ms] ease-out ${activeIndex === 3 ? 'scale-110' : 'scale-100'}`}
         />
         <div className="absolute inset-0 bg-black/20" />

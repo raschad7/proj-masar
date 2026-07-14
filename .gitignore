@@ -17,6 +17,8 @@
 /.next/
 /.next-preview/
 /.next-preview-alt/
+/.next-prod/
+/.next-agent/
 /out/
 
 # production

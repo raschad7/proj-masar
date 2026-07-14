@@ -32,7 +32,12 @@ export default function LenisProvider({
     gsap.ticker.lagSmoothing(0);
 
     // Pin distances depend on final font metrics — refresh once fonts land.
-    document.fonts.ready.then(() => ScrollTrigger.refresh());
+    // But ScrollTrigger already runs a full refresh on window "load"; a
+    // second full re-measure (hundreds of ms of forced layout) is only
+    // needed if fonts finish AFTER that. Skip it when load is still pending.
+    document.fonts.ready.then(() => {
+      if (document.readyState === "complete") ScrollTrigger.refresh();
+    });
 
     setLenis(instance);
     ;(window as unknown as { __lenis?: Lenis }).__lenis = instance;

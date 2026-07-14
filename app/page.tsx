@@ -1,18 +1,19 @@
 import Nav from "@/components/Nav"
 import Hero from "@/components/Hero"
-import PhoneSection from "@/components/PhoneSection"
 import SectionBreak from "@/components/SectionBreak"
-import FeaturesSection from "@/components/FeaturesSection"
-import TechSection from "@/components/TechSection"
-import DetectionFootage from "@/components/DetectionFootage"
-
-import CombinedCTA from "@/components/CombinedCTA"
-import Footer from "@/components/Footer"
-import ClaudeImpact from "@/components/ClaudeImpact"
-import GeminiPath from "@/components/GeminiPath"
-import AboutSection from "@/components/AboutSection"
-import BentoGridImpact from "@/components/BentoGridImpact"
-import AntiGridSection from "@/components/AntiGridSection"
+/* Below-fold sections come pre-rendered but hydrate from their own
+   chunks (see LazySections) so startup isn't one giant main-thread task. */
+import {
+  AboutSectionLazy,
+  GeminiPathLazy,
+  PhoneSectionLazy,
+  FeaturesSectionLazy,
+  TechSectionLazy,
+  DetectionFootageLazy,
+  BentoGridImpactLazy,
+  CombinedCTALazy,
+  FooterLazy,
+} from "@/components/LazySections"
 
 export default function Home() {
   return (
@@ -21,14 +22,14 @@ export default function Home() {
       <main className="relative z-[1] bg-white">
         <div className="relative isolate">
           <Hero />
-          <AboutSection />
-          <GeminiPath />
+          <AboutSectionLazy />
+          <GeminiPathLazy />
         </div>
-        <PhoneSection />
+        <PhoneSectionLazy />
         <SectionBreak label="الميزات" gap={10} />
-        <FeaturesSection />
+        <FeaturesSectionLazy />
         <SectionBreak label="كيف يعمل" />
-        <TechSection />
+        <TechSectionLazy />
 
         {/* ── Climax: the real thing ── */}
         <div className="pt-10 text-center relative z-10 bg-white">
@@ -36,17 +37,17 @@ export default function Home() {
             …وهذا هو فعلياً على الأرض
           </h3>
         </div>
-        <DetectionFootage />
+        <DetectionFootageLazy />
         <SectionBreak />
         {/* Sticky hand-off: BentoGridImpact holds pinned while CombinedCTA slides up over it */}
         <div className="relative isolate">
-          <BentoGridImpact />
+          <BentoGridImpactLazy />
           <div className="relative z-10">
-            <CombinedCTA />
+            <CombinedCTALazy />
           </div>
         </div>
       </main>
-      <Footer />
+      <FooterLazy />
     </>
   )
 }
