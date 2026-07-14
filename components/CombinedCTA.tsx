@@ -13,25 +13,26 @@ export default function CombinedCTA() {
       const mm = gsap.matchMedia()
 
       mm.add("(min-width: 768px)", () => {
-        // Pin the combined section when it hits the top of the screen
-        // and hold it for 100% of its height before continuing to the footer
-        gsap.to(root.current, {
+        // To match DetectionFootage, we just pin the section when it reaches top,
+        // hold for +=80%, then release. No overlapping slide-up needed.
+        const pinTl = gsap.timeline({
           scrollTrigger: {
             trigger: root.current,
             start: "top top",
-            end: "+=100%",
+            end: "+=80%",
             pin: true,
-            scrub: true,
+            scrub: 1,
           },
         })
+        pinTl.to({}, { duration: 1 })
       })
     },
     { scope: root }
   )
 
   return (
-    <div ref={root} className="flex min-h-[100vh] flex-col justify-center bg-white">
-      <div className="flex flex-col gap-4">
+    <div ref={root} className="relative min-h-[100vh] overflow-hidden">
+      <div className="cta-inner flex min-h-[100vh] flex-col justify-center gap-4 bg-white">
         <TrustBar />
         <CTASection />
       </div>

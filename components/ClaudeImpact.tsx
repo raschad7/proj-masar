@@ -4,26 +4,29 @@ import { useRef } from "react"
 import { gsap, useGSAP } from "@/lib/gsap"
 import CityMapBg from "@/components/CityMapBg"
 
-/* ClaudeImpact — typography-takeover scrollytelling.
-   Each figure owns the pinned stage in turn: a massive Almarai-ExtraBold
-   number rolls in odometer-style (each digit is a slot column), the title
-   rises out of a mask, and a giant outlined ghost of the figure drifts
-   behind it. One peacock-led palette, no gauges, no illustrations.
-   One pinned scrubbed timeline drives the sequence with snap-to-beat;
-   scroll up rewinds. Reduced motion → calm static stack (no pin). */
+/* ClaudeImpact — «كشفٌ مباشر»: the metrics get *detected*.
+   A normal-flow section (no pin, no scrub). When it enters the viewport
+   the sequence plays once, on its own clock: each figure first appears
+   as a sparse peacock dot-grid (raw signal), a scan band — the map
+   viewer's sweep motif — passes over it and the solid ink numeral
+   resolves in sync with the band's leading edge; focus-lock corner
+   brackets snap on (hero hotspot motif), a prediction chip stamps the
+   box, and the words rise out of a mask. Desktop: the three figures
+   are detected one after another, right to left. Mobile: each card
+   plays as it scrolls into view. Reduced motion: everything rendered
+   settled, no animation. */
 
 type Stat = {
   key: string
   value: number
-  prefix?: string // e.g. "×"
   suffix?: string // e.g. "%"
   title: string
   desc: string
-  chip: string // short context pill above the number
+  chip: string // detection-label text stamped on the box
 }
 
 /* Illustrative sample figures (أرقام توضيحية) — swap for pilot data.
-   Ordered as a sales argument: money → citizen → labour/time → proof. */
+   Ordered as a sales argument: money → citizen → proof. */
 const STATS: Stat[] = [
   {
     key: "savings",
@@ -42,14 +45,6 @@ const STATS: Stat[] = [
     chip: "بلاغُ المواطن",
   },
   {
-    key: "speed",
-    value: 3,
-    prefix: "×",
-    title: "أسرع في مسح شبكة الطرق",
-    desc: "سيارة واحدة تمسح المدينة بدل جولات تفتيش يدوية.",
-    chip: "مسحٌ أثناء القيادة",
-  },
-  {
     key: "accuracy",
     value: 90,
     suffix: "%",
@@ -59,315 +54,286 @@ const STATS: Stat[] = [
   },
 ]
 
-const SEG = 3 // timeline units per stat
-const HOLD = 1.4 // beat on the last figure before the pin releases
-const TOTAL = SEG * STATS.length + HOLD
+/* Scan geometry — the band is 22% of the figure box wide and travels
+   from past its right edge to past its left edge. The solid numeral's
+   clip-path opens left-inset 100%→0 over the same window, so the
+   reveal tracks the band's leading (left) edge: the band travels 122%
+   of the box, the edge crosses the box itself in the first 100/122. */
+const BAND_W = 22 // % of the figure box
+const SWEEP = 0.9 // seconds the sweep takes
+const EDGE_CROSS = 100 / (100 + BAND_W)
 
-/* Odometer column: 0–9 twice. Non-final digits stop in the first cycle,
-   the final digit rolls through a full extra revolution — so the ones
-   place spins fastest, like a real counter. */
-const COL = [...Array(10).keys(), ...Array(10).keys()]
-const STEP = 100 / COL.length // yPercent per index
-
-const digitsOf = (v: number) => String(v).split("")
-const targetIdx = (d: string, isLast: boolean) =>
-  isLast ? 10 + Number(d) : Number(d)
+/* The figure, rendered twice per card: a dotted "raw signal" copy and
+   the solid copy that the scan resolves. */
+function Figure({ s, dotted }: { s: Stat; dotted?: boolean }) {
+  return (
+    <span
+      dir="ltr"
+      className={`flex items-center font-body font-extrabold leading-none ${
+        dotted ? "cip-dotnum" : "text-ink"
+      }`}
+      style={{ fontSize: "clamp(88px, 10vw, 150px)" }}
+    >
+      {s.value}
+      {s.suffix && (
+        <span
+          className={dotted ? "cip-dotnum" : "text-peacock"}
+          style={{ fontSize: "0.42em" }}
+        >
+          {s.suffix}
+        </span>
+      )}
+    </span>
+  )
+}
 
 export default function ClaudeImpact() {
   const root = useRef<HTMLElement>(null)
-  const stage = useRef<HTMLDivElement>(null)
 
   useGSAP(
     () => {
       const mm = gsap.matchMedia()
 
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
-        // initial state — only the first panel showing, everything staged
-        STATS.forEach((s, i) => {
-          gsap.set(`.cip-panel-${i}`, {
-            opacity: i === 0 ? 1 : 0,
-            yPercent: i === 0 ? 0 : 6,
-          })
-          gsap.set(`.cip-chip-${i}`, { opacity: 0, y: 14 })
-          gsap.set(`.cip-title-in-${i}`, { yPercent: 110 })
-          gsap.set(`.cip-desc-${i}`, { opacity: 0, y: 16 })
-          gsap.set(`.cip-fix-${i}`, {
-            opacity: 0,
-            scale: 0.4,
-            transformOrigin: "50% 70%",
-          })
-          gsap.set(`.cip-tab-${i}`, { opacity: i === 0 ? 1 : 0.35 })
-          gsap.set(`.cip-tabline-${i}`, {
-            scaleX: i === 0 ? 1 : 0,
-            transformOrigin: "100% 50%",
-          })
-        })
-        gsap.set(".cip-progress", { scaleX: 0, transformOrigin: "100% 50%" })
+      // stage a card's hidden state (animated modes only)
+      const stageCard = (i: number) => {
+        gsap.set(`.cip-solid-${i}`, { clipPath: "inset(0% 0% 0% 100%)" })
+        gsap.set(`.cip-br-${i}`, { opacity: 0, scale: 1.7 })
+        gsap.set(`.cip-chip-${i}`, { opacity: 0, scale: 1.25 })
+        gsap.set(`.cip-title-in-${i}`, { yPercent: 110 })
+        gsap.set(`.cip-desc-${i}`, { opacity: 0, y: 14 })
+      }
 
-        // snap settles the scrub on a fully-revealed beat, never in between
-        const beats = STATS.map((_, i) => (i * SEG + SEG * 0.85) / TOTAL)
-
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: stage.current,
-            start: "top top",
-            end: "+=" + STATS.length * 700,
-            scrub: 1.2,
-            pin: true,
-            invalidateOnRefresh: true,
-            snap: {
-              snapTo: [...beats, 1],
-              duration: { min: 0.2, max: 0.6 },
-              delay: 0.1,
-              ease: "power1.inOut",
-            },
+      // one card's detection sequence, on its own local clock
+      const cardTl = (i: number) => {
+        const tl = gsap.timeline()
+        // raw signal condenses in
+        tl.fromTo(
+          `.cip-dots-${i}`,
+          { opacity: 0, scale: 1.04 },
+          { opacity: 0.9, scale: 1, duration: 0.35, ease: "power2.out" },
+          0,
+        )
+        // scan pass — solid resolves behind the band's leading edge
+        tl.set(`.cip-band-${i}`, { opacity: 1 }, 0.2)
+        tl.fromTo(
+          `.cip-band-${i}`,
+          { xPercent: (100 / BAND_W) * 100 },
+          { xPercent: -100, duration: SWEEP, ease: "none" },
+          0.2,
+        )
+        tl.to(
+          `.cip-band-${i}`,
+          { opacity: 0, duration: 0.18 },
+          0.2 + SWEEP - 0.12,
+        )
+        tl.to(
+          `.cip-solid-${i}`,
+          {
+            clipPath: "inset(0% 0% 0% 0%)",
+            duration: SWEEP * EDGE_CROSS,
+            ease: "none",
           },
-        })
+          0.2,
+        )
+        tl.to(`.cip-dots-${i}`, { opacity: 0, duration: 0.25 }, 0.2 + SWEEP)
+        // detection confirmed — brackets snap, chip stamps, words rise
+        const lockAt = 0.2 + SWEEP * EDGE_CROSS
+        tl.to(
+          `.cip-br-${i}`,
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.3,
+            ease: "back.out(2)",
+            stagger: 0.05,
+          },
+          lockAt,
+        )
+        tl.to(
+          `.cip-chip-${i}`,
+          { opacity: 1, scale: 1, duration: 0.25, ease: "power3.out" },
+          lockAt + 0.12,
+        )
+        tl.to(
+          `.cip-title-in-${i}`,
+          { yPercent: 0, duration: 0.5, ease: "power3.out" },
+          lockAt + 0.1,
+        )
+        tl.to(
+          `.cip-desc-${i}`,
+          { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" },
+          lockAt + 0.25,
+        )
+        return tl
+      }
 
-        // the ghosted city map slowly zooms across the whole sequence
-        tl.to(".cip-map", { scale: 1.12, yPercent: -3, ease: "none", duration: TOTAL }, 0)
-        tl.to(".cip-progress", { scaleX: 1, ease: "none", duration: TOTAL }, 0)
+      const stageHeader = () => {
+        gsap.set(".cip-eyebrow", { opacity: 0, y: 10 })
+        gsap.set(".cip-head-in", { yPercent: 110 })
+      }
+      const headerIn = (tl: gsap.core.Timeline) => {
+        tl.to(
+          ".cip-eyebrow",
+          { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+          0,
+        )
+        tl.to(
+          ".cip-head-in",
+          { yPercent: 0, duration: 0.6, ease: "power3.out" },
+          0.05,
+        )
+      }
 
-        STATS.forEach((s, i) => {
-          const at = i * SEG
+      // desktop — one choreography: figures detected one after another
+      mm.add(
+        "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          stageHeader()
+          STATS.forEach((_, i) => stageCard(i))
 
-          if (i > 0) {
-            // previous panel + tab hand over to this one
-            tl.to(
-              `.cip-panel-${i - 1}`,
-              { opacity: 0, yPercent: -6, duration: 0.5, ease: "power2.in" },
-              at - 0.3,
-            )
-            tl.to(`.cip-tab-${i - 1}`, { opacity: 0.35, duration: 0.4 }, at - 0.3)
-            tl.to(
-              `.cip-tabline-${i - 1}`,
-              { scaleX: 0, transformOrigin: "0% 50%", duration: 0.4 },
-              at - 0.3,
-            )
-            tl.fromTo(
-              `.cip-panel-${i}`,
-              { opacity: 0, yPercent: 6 },
-              { opacity: 1, yPercent: 0, duration: 0.6, ease: "power3.out" },
-              at,
-            )
-            tl.to(`.cip-tab-${i}`, { opacity: 1, duration: 0.4 }, at)
-            tl.to(
-              `.cip-tabline-${i}`,
-              { scaleX: 1, transformOrigin: "100% 50%", duration: 0.4 },
-              at,
-            )
-          }
+          const master = gsap.timeline({
+            scrollTrigger: {
+              trigger: root.current,
+              start: "top 70%",
+              toggleActions: "play none none none",
+            },
+          })
+          headerIn(master)
+          STATS.forEach((_, i) => master.add(cardTl(i), 0.35 + i * 0.55))
+        },
+      )
 
-          // context chip leads, the number follows
-          tl.to(
-            `.cip-chip-${i}`,
-            { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" },
-            at + 0.05,
-          )
+      // mobile — each card plays as it enters the viewport
+      mm.add(
+        "(max-width: 767px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          stageHeader()
+          STATS.forEach((_, i) => stageCard(i))
 
-          // odometer roll — every column starts together; longer distances
-          // spin faster, which is what sells the counter effect
-          const digits = digitsOf(s.value)
-          digits.forEach((d, j) => {
-            tl.to(
-              `.cip-col-${i}-${j}`,
-              {
-                yPercent: -STEP * targetIdx(d, j === digits.length - 1),
-                duration: SEG * 0.55,
-                ease: "power1.out",
+          const head = gsap.timeline({
+            scrollTrigger: {
+              trigger: root.current,
+              start: "top 80%",
+              toggleActions: "play none none none",
+            },
+          })
+          headerIn(head)
+
+          STATS.forEach((_, i) => {
+            const tl = gsap.timeline({
+              scrollTrigger: {
+                trigger: `.cip-card-${i}`,
+                start: "top 78%",
+                toggleActions: "play none none none",
               },
-              at + 0.1,
-            )
-          })
-
-          // ×/% pops once the roll is settling
-          tl.to(
-            `.cip-fix-${i}`,
-            { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" },
-            at + SEG * 0.5,
-          )
-
-          // ghost figure drifts sideways behind the whole beat
-          tl.fromTo(
-            `.cip-ghost-${i}`,
-            { xPercent: -4 },
-            { xPercent: 4, duration: SEG, ease: "none" },
-            at,
-          )
-
-          // title rises out of its mask, caption follows
-          tl.to(
-            `.cip-title-in-${i}`,
-            { yPercent: 0, duration: 0.55, ease: "power3.out" },
-            at + 0.25,
-          )
-          tl.to(
-            `.cip-desc-${i}`,
-            { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
-            at + 0.45,
-          )
-        })
-
-        // hold the last figure a beat before releasing the pin
-        tl.to({}, { duration: HOLD })
-      })
-
-      // reduced motion — static stack, final values, no pin
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        root.current!.classList.add("cip-static")
-        STATS.forEach((s, i) => {
-          const digits = digitsOf(s.value)
-          digits.forEach((d, j) => {
-            gsap.set(`.cip-col-${i}-${j}`, {
-              yPercent: -STEP * targetIdx(d, j === digits.length - 1),
             })
+            tl.add(cardTl(i))
           })
-        })
-      })
+        },
+      )
+
+      // reduced motion — no staging, everything renders settled
     },
     { scope: root },
   )
 
   return (
-    <section ref={root} id="impact-claude" className="relative bg-white">
-      {/* pinned stage */}
-      <div
-        ref={stage}
-        className="cip-stage relative flex h-screen flex-col overflow-hidden px-6"
-      >
-        <CityMapBg className="cip-map opacity-40" />
+    <section
+      ref={root}
+      id="impact-claude"
+      className="relative overflow-hidden bg-white px-6 py-24 md:py-28"
+    >
+      <CityMapBg className="opacity-30" />
 
+      <div className="relative z-10 mx-auto w-full max-w-6xl">
         {/* header */}
-        <div className="relative z-20 mx-auto w-full max-w-6xl pt-16 md:pt-20">
-          <p className="text-center text-body-5 font-bold tracking-widest text-peacock">
-            الأثر
-          </p>
-          <h2 className="mt-2 text-center font-display text-display-2 text-ink md:text-display-1">
+        <p className="cip-eyebrow text-center text-body-5 font-bold tracking-widest text-peacock">
+          الأثر
+        </p>
+        <div className="mt-2 overflow-hidden">
+          <h2 className="cip-head-in text-center font-display text-display-2 text-ink md:text-display-1">
             نتائجُ نفخر بها
           </h2>
         </div>
 
-        {/* stacked figure panels */}
-        <div className="cip-panels relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center justify-center">
+        {/* the three detections */}
+        <div className="mt-20 grid gap-16 md:mt-24 md:grid-cols-3 md:gap-10">
           {STATS.map((s, i) => (
             <div
               key={s.key}
-              className={`cip-panel-${i} cip-panel absolute inset-0 flex flex-col items-center justify-center text-center`}
+              className={`cip-card-${i} flex flex-col items-center text-center`}
             >
-              {/* giant outlined ghost of the figure, drifting behind */}
-              <div
-                aria-hidden
-                className={`cip-ghost-${i} pointer-events-none absolute inset-0 flex items-center justify-center`}
-              >
-                <span
-                  dir="ltr"
-                  className="font-body font-extrabold leading-none text-transparent"
-                  style={{
-                    fontSize: "clamp(220px, 46vw, 560px)",
-                    WebkitTextStroke: "1.5px var(--peacock)",
-                    opacity: 0.08,
-                  }}
+              {/* figure box — dotted raw signal under the clipped solid copy */}
+              <div className="relative w-full">
+                <div
+                  aria-hidden
+                  className={`cip-dots-${i} flex items-center justify-center`}
+                  style={{ opacity: 0 }}
                 >
-                  {s.value}
-                </span>
-              </div>
-
-              <div className="relative flex flex-col items-center">
-                {/* context chip */}
-                <span
-                  className={`cip-chip-${i} pill inline-flex items-center gap-2 bg-peacock/10 px-4 py-2 text-body-5 font-bold text-horizon`}
-                >
-                  <span className="rec-blink h-1.5 w-1.5 rounded-full bg-peacock" />
-                  {s.chip}
-                </span>
-
-                {/* the figure — odometer digit slots */}
-                <span
-                  dir="ltr"
-                  className="mt-4 flex items-center font-body font-extrabold leading-none text-ink"
-                  style={{ fontSize: "clamp(96px, 19vw, 230px)" }}
-                >
-                  {s.prefix && (
-                    <span
-                      className={`cip-fix-${i} text-peacock`}
-                      style={{ fontSize: "0.42em" }}
-                    >
-                      {s.prefix}
-                    </span>
-                  )}
-                  {digitsOf(s.value).map((_, j) => (
-                    <span
-                      key={j}
-                      className="inline-block overflow-hidden"
-                      style={{ height: "1em" }}
-                    >
-                      <span className={`cip-col-${i}-${j} flex flex-col`}>
-                        {COL.map((n, k) => (
-                          <span
-                            key={k}
-                            className="block leading-none"
-                            style={{ height: "1em" }}
-                          >
-                            {n}
-                          </span>
-                        ))}
-                      </span>
-                    </span>
-                  ))}
-                  {s.suffix && (
-                    <span
-                      className={`cip-fix-${i} text-peacock`}
-                      style={{ fontSize: "0.42em" }}
-                    >
-                      {s.suffix}
-                    </span>
-                  )}
-                </span>
-
-                {/* title rises out of a mask */}
-                <div className="mt-3 overflow-hidden">
-                  <h3
-                    className={`cip-title-in-${i} font-display text-display-4 text-ink md:text-display-3`}
-                  >
-                    {s.title}
-                  </h3>
+                  <Figure s={s} dotted />
                 </div>
-
-                <p
-                  className={`cip-desc-${i} mt-4 max-w-md text-body-3 leading-relaxed text-subtext`}
+                <div
+                  className={`cip-solid-${i} absolute inset-0 flex items-center justify-center`}
                 >
-                  {s.desc}
-                </p>
+                  <span className="relative inline-block">
+                    <Figure s={s} />
+                    {/* focus-lock brackets, em-scaled to the numeral */}
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute -inset-x-[0.12em] -inset-y-[0.06em] block"
+                      style={{ fontSize: "clamp(88px, 10vw, 150px)" }}
+                    >
+                      <span
+                        className={`cip-br-${i} absolute right-0 top-0 h-[0.14em] w-[0.14em] rounded-tr-[0.05em] border-r-[0.022em] border-t-[0.022em] border-peacock`}
+                      />
+                      <span
+                        className={`cip-br-${i} absolute left-0 top-0 h-[0.14em] w-[0.14em] rounded-tl-[0.05em] border-l-[0.022em] border-t-[0.022em] border-peacock`}
+                      />
+                      <span
+                        className={`cip-br-${i} absolute bottom-0 left-0 h-[0.14em] w-[0.14em] rounded-bl-[0.05em] border-b-[0.022em] border-l-[0.022em] border-peacock`}
+                      />
+                      <span
+                        className={`cip-br-${i} absolute bottom-0 right-0 h-[0.14em] w-[0.14em] rounded-br-[0.05em] border-b-[0.022em] border-r-[0.022em] border-peacock`}
+                      />
+                    </span>
+                    {/* prediction chip, stamped on the box */}
+                    <span
+                      dir="rtl"
+                      className={`cip-chip-${i} pill absolute -top-9 right-0 inline-flex items-center gap-2 bg-peacock px-4 py-1.5 text-body-5 font-bold text-white`}
+                    >
+                      <span className="rec-blink h-1.5 w-1.5 rounded-full bg-white" />
+                      {s.chip}
+                    </span>
+                  </span>
+                </div>
+                {/* scan band, clipped to the figure box */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 z-20 block overflow-hidden"
+                >
+                  <span
+                    className={`cip-band-${i} cip-scanband absolute inset-y-0 left-0 block`}
+                    style={{ width: `${BAND_W}%`, opacity: 0 }}
+                  />
+                </span>
               </div>
+
+              {/* title rises out of a mask */}
+              <div className="mt-6 overflow-hidden">
+                <h3
+                  className={`cip-title-in-${i} font-display text-display-4 text-ink`}
+                >
+                  {s.title}
+                </h3>
+              </div>
+
+              <p
+                className={`cip-desc-${i} mt-3 max-w-xs text-body-4 leading-relaxed text-subtext`}
+              >
+                {s.desc}
+              </p>
             </div>
           ))}
-        </div>
-
-        {/* bottom rail — progress line + beat tabs */}
-        <div className="relative z-20 mx-auto w-full max-w-6xl pb-8 md:pb-10">
-          <div className="relative h-[2px] w-full bg-seashell">
-            <div className="cip-progress absolute inset-y-0 right-0 w-full origin-right bg-peacock" />
-          </div>
-          <div className="mt-4 flex items-start justify-between gap-2">
-            {STATS.map((s, i) => (
-              <div
-                key={s.key}
-                className={`cip-tab-${i} flex flex-col gap-1.5 text-body-5 font-bold`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="tabular-nums text-peacock">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="hidden text-subtext sm:inline">
-                    {s.title}
-                  </span>
-                </div>
-                <span
-                  className={`cip-tabline-${i} block h-0.5 w-full bg-peacock`}
-                />
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </section>
