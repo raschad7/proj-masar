@@ -5,9 +5,8 @@ import { gsap, useGSAP } from "@/lib/gsap"
 
 /* ── Tuning constants ────────────────────────────────────────────
    PIN_DISTANCE : scroll consumed by the pinned analysis
-   Timeline runs 0 → 5, one unit per beat:
-   ٠ يلتقط · ١ يرى · ٢ يصنّف · ٣ يوطّن · ٤ يزامن                    */
-const PIN_DISTANCE = "+=500%"
+   Timeline runs 3 beats (condensed from 5 for better pacing) */
+const PIN_DISTANCE = "+=300%"
 
 const STEPS = [
   { label: "يلتقط", hex: "#16668E" },
@@ -45,6 +44,7 @@ export default function TechSection() {
           gsap.set(".tech-pin", { opacity: 0 })
           gsap.set(".tech-extra-pin", { opacity: 0, scale: 0 })
           gsap.set(".tech-step-fill", { opacity: 0 })
+          gsap.set(".tech-caption-1, .tech-caption-2", { opacity: 0 })
 
           /* pin ONLY the stage — the footage climax lives in the
              section's normal-scroll tail, after the unpin */
@@ -52,118 +52,79 @@ export default function TechSection() {
             scrollTrigger: {
               trigger: stageRef.current,
               pin: stageRef.current,
-              scrub: true,
+              scrub: 1, // Smooth momentum
               start: "top top",
               end: PIN_DISTANCE,
               invalidateOnRefresh: true,
+              snap: {
+                snapTo: "labels",
+                duration: { min: 0.2, max: 0.6 },
+                ease: "power1.inOut"
+              }
             },
           })
 
           const step = (i: number, at: number) =>
             tl.to(`.tech-step-fill-${i}`, { opacity: 1, duration: 0.12 }, at)
 
-          /* ── Beat 1 · يلتقط — scan-line sweeps once ── */
+          tl.addLabel("start", 0)
+
+          /* ── Beat 1 · يلتقط + يرى — scan sweeps and boxes draw in its wake ── */
           step(0, 0.05)
+          step(1, 0.4) // "يرى" pill lights up as boxes draw
           tl.to(".tech-scan", { opacity: 1, duration: 0.08 }, 0.08)
-          tl.to(
-            ".tech-scan",
-            { xPercent: 130, duration: 0.6, ease: "none" },
-            0.12,
-          )
-          tl.to(".tech-scan", { opacity: 0, duration: 0.12 }, 0.68)
+          tl.to(".tech-scan", { xPercent: 130, duration: 0.8, ease: "none" }, 0.12)
+          
+          // Boxes draw while scan passes over them
+          tl.to(".tb-pothole .tech-rect", { drawSVG: "100%", duration: 0.3, ease: "power2.out" }, 0.35)
+          tl.to(".tb-crack .tech-rect", { drawSVG: "100%", duration: 0.3, ease: "power2.out" }, 0.6)
+          
+          tl.to(".tech-scan", { opacity: 0, duration: 0.12 }, 0.9)
+          
+          // Caption crossfade 0 -> 1
+          tl.to(".tech-caption-0", { opacity: 0, duration: 0.15 }, 0.8)
+          tl.to(".tech-caption-1", { opacity: 1, duration: 0.15 }, 0.95)
 
-          /* ── Beat 2 · يرى — THE HERO BEAT.
-             Bounding boxes connect (machine-vision feel).
-             Draw both together. ── */
-          step(1, 1)
-          tl.to(
-            ".tb-pothole .tech-rect",
-            { drawSVG: "100%", duration: 0.4, ease: "power2.inOut" },
-            1.1,
-          )
-          tl.to(
-            ".tb-crack .tech-rect",
-            { drawSVG: "100%", duration: 0.4, ease: "power2.inOut" },
-            1.1,
-          )
+          tl.addLabel("beat1", 1.0)
 
-          /* ── Beat 3 · يصنّف — label chips pop + confidence fills ── */
-          step(2, 2)
-          tl.to(
-            ".tech-chip",
-            {
-              opacity: 1,
-              scale: 1,
-              duration: 0.25,
-              ease: "back.out(2)",
-              stagger: 0.18,
+          /* ── Beat 2 · يصنّف — label chips pop + confidence fills ── */
+          step(2, 1.1)
+          tl.to(".tech-chip", { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)", stagger: 0.18 }, 1.15)
+          tl.to(".tech-conf", { scaleX: 1, duration: 0.3, stagger: 0.18, ease: "power2.out" }, 1.35)
+
+          // Caption crossfade 1 -> 2
+          tl.to(".tech-caption-1", { opacity: 0, duration: 0.15 }, 1.8)
+          tl.to(".tech-caption-2", { opacity: 1, duration: 0.15 }, 1.95)
+
+          tl.addLabel("beat2", 2.0)
+
+          /* ── Beat 3 · يوطّن + يزامن — coords flash, map slides in, pin drops, then syncs ── */
+          step(3, 2.1)
+          tl.to(".tech-coords", { opacity: 1, y: 0, duration: 0.1 }, 2.1)
+          tl.to(".tech-map", { yPercent: 0, duration: 0.25, ease: "power3.out" }, 2.15)
+          tl.to(".tech-coords", { opacity: 0, duration: 0.1 }, 2.45)
+          
+          tl.to(".tech-pin", { opacity: 1, duration: 0.04 }, 2.3)
+          tl.from(".tech-pin", {
+            motionPath: {
+              path: [ { x: -30, y: -190 }, { x: 8, y: -90 }, { x: 0, y: 0 } ],
+              curviness: 1.4,
             },
-            2.08,
-          )
-          tl.to(
-            ".tech-conf",
-            { scaleX: 1, duration: 0.3, stagger: 0.18, ease: "power2.out" },
-            2.3,
-          )
-
-          /* ── Beat 4 · يوطّن — coords flash, map slides in, pin drops ── */
-          step(3, 3)
-          tl.to(".tech-coords", { opacity: 1, y: 0, duration: 0.1 }, 3.02)
-          tl.to(
-            ".tech-map",
-            { yPercent: 0, duration: 0.25, ease: "power3.out" },
-            3.05,
-          )
-          tl.to(".tech-coords", { opacity: 0, duration: 0.1 }, 3.4)
-          tl.to(".tech-pin", { opacity: 1, duration: 0.04 }, 3.25)
-          tl.from(
-            ".tech-pin",
-            {
-              motionPath: {
-                path: [
-                  { x: -30, y: -190 },
-                  { x: 8, y: -90 },
-                  { x: 0, y: 0 },
-                ],
-                curviness: 1.4,
-              },
-              duration: 0.25,
-              ease: "power2.in",
-              immediateRender: false,
-            },
-            3.25,
-          )
-          tl.fromTo(
-            ".tech-pin-ring",
+            duration: 0.25,
+            ease: "power2.in",
+            immediateRender: false,
+          }, 2.3)
+          tl.fromTo(".tech-pin-ring",
             { scale: 0.4, opacity: 0.6 },
-            {
-              scale: 2.4,
-              opacity: 0,
-              duration: 0.2,
-              transformOrigin: "50% 50%",
-            },
-            3.5,
+            { scale: 2.4, opacity: 0, duration: 0.2, transformOrigin: "50% 50%" },
+            2.55
           )
 
-          /* ── Beat 5 · يزامن — the report joins the live city ── */
-          step(4, 4)
-          tl.to(
-            ".tech-map",
-            { scale: 1.05, duration: 0.4, ease: "power2.out" },
-            4.1,
-          )
-          tl.to(
-            ".tech-extra-pin",
-            {
-              opacity: 1,
-              scale: 1,
-              duration: 0.2,
-              stagger: 0.1,
-              ease: "back.out(2)",
-            },
-            4.2,
-          )
-          tl.to({}, { duration: 0.4 }) // settle
+          step(4, 2.6) // "يزامن" pill lights up
+          tl.to(".tech-map", { scale: 1.05, duration: 0.4, ease: "power2.out" }, 2.65)
+          tl.to(".tech-extra-pin", { opacity: 1, scale: 1, duration: 0.2, stagger: 0.1, ease: "back.out(2)" }, 2.75)
+
+          tl.addLabel("beat3", 3.0)
         },
       )
     },
@@ -340,7 +301,7 @@ export default function TechSection() {
           >
             <div
               className="absolute inset-y-0 right-1/2 w-24"
-              style={{ background: "rgba(52,168,216,0.08)" }}
+              style={{ background: "linear-gradient(to right, transparent, rgba(52,168,216,0.15))" }}
             />
             <div className="absolute inset-y-0 right-1/2 w-1 rounded-full bg-peacock" />
           </div>
@@ -468,8 +429,21 @@ export default function TechSection() {
           </div>
         </div>
 
+        {/* ── Dynamic Captions ── */}
+        <div className="relative mt-6 h-6 w-full text-center text-body-2 font-medium text-ink md:mt-8">
+          <div className="tech-caption-0 absolute inset-0">
+            النموذج يمسح الطريق ويلتقط العيوب تلقائياً
+          </div>
+          <div className="tech-caption-1 absolute inset-0 opacity-0">
+            يصنّف العيوب المكتشفة ويحدد درجة خطورتها
+          </div>
+          <div className="tech-caption-2 absolute inset-0 opacity-0">
+            يوطّن البلاغ على الخريطة ويزامنه مع غرفة العمليات
+          </div>
+        </div>
+
         {/* ── Step tracker ── */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 md:mt-8">
           {STEPS.map(({ label, hex }, i) => (
             <span
               key={label}

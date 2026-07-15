@@ -84,39 +84,55 @@ export default function DetectionFootage() {
           },
         });
 
-        // Scroll-pause: pin with a subtle scrubbed scale to feel alive
+        // Scroll animation: pin and grow the video to nearly full screen
         const pinTl = gsap.timeline({
           scrollTrigger: {
             trigger: root.current,
             start: "top top",
-            end: "+=80%",
+            end: "+=100%", // Light, quick scroll distance to accommodate the hold
             pin: true,
             scrub: 1,
           },
         });
+        
+        // 1) Grow to nearly full screen safely without overflowing height
         pinTl.to(".footage-frame", {
-          scale: 1.02,
-          ease: "none",
+          width: "95vw",
+          height: "90vh",
+          ease: "power2.inOut",
+          duration: 0.6, // Takes 60% of the pin duration
+        });
+
+        // 2) Hold at full size for the remaining 40% of the scroll
+        pinTl.to({}, { duration: 0.4 });
+      });
+
+      // Play/pause based on viewport visibility.
+      // We create separate triggers based on motion preference so that the 
+      // no-preference case can account for the +=100% pin duration. This prevents
+      // the video from pausing while the user is still scrolling through the pinned section.
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        ScrollTrigger.create({
+          trigger: root.current,
+          start: "top 200%",
+          end: "bottom+=100% top",
+          onEnter: () => videoRef.current?.play().catch(() => {}),
+          onEnterBack: () => videoRef.current?.play().catch(() => {}),
+          onLeave: () => videoRef.current?.pause(),
+          onLeaveBack: () => videoRef.current?.pause(),
         });
       });
 
-      // Play/pause based on viewport visibility (any motion pref).
-      // Starts one viewport early so preload="none" has time to fetch
-      // before the frame is actually on screen.
-      ScrollTrigger.create({
-        trigger: root.current,
-        start: "top 200%",
-        end: "bottom top",
-        onEnter: () => {
-          const v = videoRef.current;
-          if (v) { v.play().catch(() => {}); }
-        },
-        onEnterBack: () => {
-          const v = videoRef.current;
-          if (v) { v.play().catch(() => {}); }
-        },
-        onLeave: () => videoRef.current?.pause(),
-        onLeaveBack: () => videoRef.current?.pause(),
+      mm.add("(prefers-reduced-motion: reduce)", () => {
+        ScrollTrigger.create({
+          trigger: root.current,
+          start: "top 200%",
+          end: "bottom top",
+          onEnter: () => videoRef.current?.play().catch(() => {}),
+          onEnterBack: () => videoRef.current?.play().catch(() => {}),
+          onLeave: () => videoRef.current?.pause(),
+          onLeaveBack: () => videoRef.current?.pause(),
+        });
       });
     },
     { scope: root }
@@ -136,19 +152,18 @@ export default function DetectionFootage() {
   return (
     <div
       ref={root}
-      className="mx-auto flex w-full max-w-[860px] items-center justify-center px-6 pb-24 pt-8"
-      style={{ minHeight: "100vh" }}
+      className="mx-auto flex h-[100vh] w-full items-center justify-center px-4 md:px-6"
     >
       <div
         ref={frameRef}
         data-cursor-video
-        className="footage-frame card-surface relative overflow-hidden bg-whitesmoke p-3 md:p-4"
-        style={{ borderRadius: "var(--radius-card)" }}
+        className="footage-frame card-surface relative flex flex-col overflow-hidden bg-whitesmoke p-2 md:p-3"
+        style={{ borderRadius: "var(--radius-card)", width: "35vw", minWidth: "300px", aspectRatio: "16/9" }}
       >
-        <div className="relative overflow-hidden rounded-3xl">
+        <div className="relative flex-grow overflow-hidden rounded-2xl w-full h-full">
           <video
             ref={videoRef}
-            className="block aspect-video w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
             poster="/media/detection-poster.jpg"
             muted
             loop
@@ -158,7 +173,7 @@ export default function DetectionFootage() {
             onPlay={syncState}
             onPause={syncState}
           >
-            <source src="/media/detection.mp4" type="video/mp4" />
+            <source src="/media/videoFootage.mp4" type="video/mp4" />
           </video>
 
           {/* Dark vignette overlay — fades in when paused */}
